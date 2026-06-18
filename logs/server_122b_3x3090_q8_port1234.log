@@ -1,0 +1,79 @@
+/home/op/exllamav3_ampere/server_27b_layer.py:447: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1596120]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 3-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+  GPU split    : [23.5, 23.5, 23.5]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 299,776
+  Model limit  : 262,144
+  KV cache     : quantized 8-bit
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Embed device : GPU (EXLLAMA_EMBED_PREFER_CPU=0)
+  OMP threads  : 1
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1,4
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 2: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating quantized 8-bit KV cache (299,776 tokens)...
+Loading weights (layer-split across GPUs)...
+  GPU 0: alloc=21.81GB  reserved=21.82GB
+  GPU 1: alloc=22.77GB  reserved=22.80GB
+  GPU 2: alloc=18.70GB  reserved=18.72GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.279s
+
+Server ready.  Cache = 299,776 tokens.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+HF chat template failed: Unexpected message role., falling back to ChatML
+INFO:     127.0.0.1:56070 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+HF chat template failed: Unexpected message role., falling back to ChatML
+INFO:     127.0.0.1:58428 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 828 thinking tokens
+INFO:     127.0.0.1:45600 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:45610 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:45616 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:37316 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58694 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:58704 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:58710 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58712 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:58728 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:58744 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1596120]

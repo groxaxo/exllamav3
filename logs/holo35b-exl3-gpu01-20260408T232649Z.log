@@ -1,0 +1,70 @@
+/home/op/exllamav3_ampere/server_27b_tp2.py:434: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [260466]
+INFO:     Waiting for application startup.
+
+============================================================
+  ExLlamaV3 TP 2-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Holo3-35B-A3B-exl3-6bpw
+  GPU split    : [22.0, 22.0]
+  TP backend   : nccl
+  Cache tokens : 262,144
+  Model limit  : 262,144
+  Usable ctx   : 262,144
+  KV cache     : quantized 8-bit
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 4096 (cap 16000)
+  Thinking     : True (preserve=False, budget=512)
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  OMP threads          : 1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating quantized 8-bit KV cache (262,144 tokens)...
+Loading weights (tensor parallel)...
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:53151
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:53151
+ -- NCCL warmup, device 0, please wait...
+ -- NCCL warmup, device 1, please wait...
+ -- Finished NCCL warmup, device 0
+ -- Finished NCCL warmup, device 1
+  GPU 0: alloc=13.46GB  reserved=17.08GB
+  GPU 1: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+[rank1]:[W409 11:27:21.437932745 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank0]:[W409 11:27:21.438029506 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+  Warmup complete in 0.369s
+
+Server ready.  Cache = 262,144 tokens, usable context = 262,144.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     Shutting down
+[rank1]:[W409 11:28:14.281031633 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=73, addr=[localhost]:33526, remote=[localhost]:53151): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x7fb109b72fdd in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a3325d (0x7fb05143325d in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x273 (0x7fb0514311f3 in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x44c (0x7fb00e34ceec in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xecdb4 (0x7fb0d8eecdb4 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #5: <unknown function> + 0x9caa4 (0x7fb10b49caa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c6c (0x7fb10b529c6c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank1]:[W409 11:28:14.282380801 ProcessGroupNCCL.cpp:1802] [PG ID 0 PG GUID 0(default_pg) Rank 1] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [260466]
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

@@ -146,6 +146,12 @@ class GatedRMSNorm(Module):
         module.device = device
         w = consumer.recv(exported["weight"], cuda = True)
         module.weight = nn.Parameter(w)
+        module._numel = w.numel()
+        module.bc = ext.BC_GatedRMSNorm(
+            module.weight,
+            module.rms_norm_eps,
+            module.constant_bias,
+        )
         torch.cuda.synchronize()
         return module
 
@@ -163,6 +169,14 @@ class GatedRMSNorm(Module):
         w = consumer.recv(exported["weight"], cuda = True)
         if w.dim() == 2:
             w = w[first : last, :]
+        else:
+            w = w[first : last]
         module.weight = nn.Parameter(w.to(module.device).contiguous())
+        module._numel = module.weight.numel()
+        module.bc = ext.BC_GatedRMSNorm(
+            module.weight,
+            module.rms_norm_eps,
+            module.constant_bias,
+        )
 
         return module

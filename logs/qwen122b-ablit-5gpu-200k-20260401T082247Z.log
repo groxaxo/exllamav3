@@ -1,0 +1,58 @@
+[2026-04-01T08:22:48Z] Starting qwen122b_ablit_5gpu_200k
+Model              : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+Model ID           : Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+Host:Port          : 0.0.0.0:1234
+CUDA_VISIBLE_DEVICES: 0,1,2,3,4
+GPU split          : auto
+Cache tokens       : 200000
+Cache quant        : auto
+Reserve per GPU    : 0.50 GiB
+VRAM utilization   : 0.97
+Thinking           : true (preserve=true, budget=1024)
+Conda env          : exl3-dev
+Log                : /home/op/exllamav3_ampere/logs/qwen122b-ablit-5gpu-200k-20260401T082247Z.log
+
+/home/op/exllamav3_ampere/server_27b_layer_optimized.py:1278: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [175813]
+INFO:     Waiting for application startup.
+
+========================================================================
+Strictly GPU-only ExLlamaV3 layer-split server
+========================================================================
+Model               : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+Visible GPUs        : ['0', '1', '2', '3', '4']
+Requested split     : auto
+Requested cache     : 199936 tokens (auto)
+Host recurrent cache: disabled
+Endpoint            : http://0.0.0.0:1234/v1
+
+ERROR:    Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_27b_layer_optimized.py", line 709, in iter_plan_candidates
+    plan = build_load_plan(
+           ^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/server_27b_layer_optimized.py", line 641, in build_load_plan
+    raise RuntimeError(
+RuntimeError: Planned stage exceeds requested GPU budget: stage=2 total=11.82GiB headroom=1.00GiB budget=10.79GiB
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 228, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4562, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_27b_layer_optimized.py", line 1299, in load_model_on_startup
+    for plan, cache, model, tokenizer in iter_plan_candidates(_startup_args):
+  File "/home/op/exllamav3_ampere/server_27b_layer_optimized.py", line 728, in iter_plan_candidates
+    raise RuntimeError(f"Unable to produce a GPU-only load plan: {last_error}") from last_error
+RuntimeError: Unable to produce a GPU-only load plan: Planned stage exceeds requested GPU budget: stage=2 total=11.82GiB headroom=1.00GiB budget=10.79GiB
+
+ERROR:    Application startup failed. Exiting.

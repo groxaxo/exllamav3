@@ -1,0 +1,12 @@
+[2026-03-31T08:55:46Z] Starting qwen9b_gptq_3060
+Model:    /home/op/outputs/Qwen3.5-9B-abliterated-gptq-w4g128
+GPU:      2 (RTX 3060 12GB)
+GPU split: 8.5GB (0.80 util)
+Cache:    100k tokens
+
+/home/op/miniconda3/lib/python3.13/site-packages/torch/cuda/__init__.py:1007: UserWarning: Can't initialize NVML
+  raw_cnt = _raw_device_count_nvml()
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_27b_layer.py", line 54, in <module>
+    from exllamav3 import Config, Model, Tokenizer, Cache, Generator, Job
+ImportError: cannot import name 'Generator' from 'exllamav3' (/home/op/exllamav3_ampere/exllamav3/__init__.py)

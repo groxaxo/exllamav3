@@ -1,0 +1,539 @@
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1000: UserWarning: Can't initialize NVML
+  uuids = _raw_device_uuid_nvml()
+/home/op/exllamav3_ampere/server_mixed.py:121: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2515620]
+INFO:     Waiting for application startup.
+2026-04-04 18:32:56,384 INFO Loading model from /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw...
+2026-04-04 18:32:56,384 INFO Using split [22.8, 22.8, 11.5, 22.8] across visible GPUs
+Loading (LS): 40/51 ( 78.4%) elapsed 30s eta 8s
+2026-04-04 18:33:43,967 INFO Model loaded!
+2026-04-04 18:33:43,967 INFO === Testing Maximum Context Length ===
+2026-04-04 18:33:43,967 INFO Logical GPU 0 free memory: 1.52 GB
+2026-04-04 18:33:43,967 INFO Logical GPU 1 free memory: 1.52 GB
+2026-04-04 18:33:43,967 INFO Logical GPU 2 free memory: 0.62 GB
+2026-04-04 18:33:43,967 INFO Logical GPU 3 free memory: 18.86 GB
+2026-04-04 18:33:43,968 INFO   65536 tokens: OK
+2026-04-04 18:33:43,968 INFO   98304 tokens: OK
+2026-04-04 18:33:43,968 INFO   131072 tokens: OK
+2026-04-04 18:33:43,968 INFO   32000 tokens: OK
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     172.20.0.3:37352 - "GET /v1/models HTTP/1.1" 200 OK
+2026-04-04 18:36:53,920 WARNING hf_chat_template_failed_falling_back_to_manual
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 211, in _encode_messages
+    return tokenizer.hf_chat_template(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/tokenizer/tokenizer.py", line 693, in hf_chat_template
+    ids = torch.tensor(ids, dtype = torch.long).unsqueeze(0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object cannot be interpreted as an integer
+
+2026-04-04 18:36:53,922 INFO request_id=chatcmpl-fb4ef1d2 stream=True prompt_tokens=9 max_tokens=16000 temperature=0.7 top_p=0.9 messages=1
+INFO:     172.20.0.3:55246 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+2026-04-04 18:36:53,991 ERROR request_id=chatcmpl-fb4ef1d2 stream_generation_failed
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 275, in generate_stream
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_utils.py", line 81, in collapse_excgroups
+  |     yield
+  |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 270, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/applications.py", line 1138, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/cors.py", line 87, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 121, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 108, in app
+    |     await response(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 269, in __call__
+    |     with collapse_excgroups():
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 273, in wrap
+    |     await func()
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 253, in stream_response
+    |     async for chunk in self.body_iterator:
+    |   File "/home/op/exllamav3_ampere/server_mixed.py", line 275, in generate_stream
+    |     for r in gen.iterate():
+    |              ^^^^^^^^^^^^^
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    |     return func(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    |     job.prefill(results)
+    |   File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    |     self.generator.model.prefill(
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    |     return func(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    |     return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    |     x = module.forward(x, params)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    |     y = self.attn.forward(y, params)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    |     _assert_paged_flash_attn()
+    |   File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    |     assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/cors.py", line 87, in __call__
+    await self.app(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 108, in app
+    await response(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 269, in __call__
+    with collapse_excgroups():
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 273, in wrap
+    await func()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 253, in stream_response
+    async for chunk in self.body_iterator:
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 275, in generate_stream
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+2026-04-04 18:36:54,694 WARNING hf_chat_template_failed_falling_back_to_manual
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 211, in _encode_messages
+    return tokenizer.hf_chat_template(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/tokenizer/tokenizer.py", line 693, in hf_chat_template
+    ids = torch.tensor(ids, dtype = torch.long).unsqueeze(0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object cannot be interpreted as an integer
+
+2026-04-04 18:36:54,695 INFO request_id=chatcmpl-a1149d55 stream=False prompt_tokens=14 max_tokens=20 temperature=0.7 top_p=0.9 messages=1
+2026-04-04 18:36:54,701 ERROR request_id=chatcmpl-a1149d55 generation_failed
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 329, in chat_completions
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+
+INFO:     127.0.0.1:37026 - "POST /v1/chat/completions HTTP/1.1" 500 Internal Server Error
+2026-04-04 18:37:24,134 WARNING hf_chat_template_failed_falling_back_to_manual
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 211, in _encode_messages
+    return tokenizer.hf_chat_template(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/tokenizer/tokenizer.py", line 693, in hf_chat_template
+    ids = torch.tensor(ids, dtype = torch.long).unsqueeze(0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object cannot be interpreted as an integer
+
+2026-04-04 18:37:24,135 INFO request_id=chatcmpl-9394e3c4 stream=False prompt_tokens=14 max_tokens=20 temperature=0.7 top_p=0.9 messages=1
+2026-04-04 18:37:24,178 ERROR request_id=chatcmpl-9394e3c4 generation_failed
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 329, in chat_completions
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+
+INFO:     127.0.0.1:48332 - "POST /v1/chat/completions HTTP/1.1" 500 Internal Server Error
+2026-04-04 18:39:18,746 WARNING hf_chat_template_failed_falling_back_to_manual
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 211, in _encode_messages
+    return tokenizer.hf_chat_template(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/tokenizer/tokenizer.py", line 693, in hf_chat_template
+    ids = torch.tensor(ids, dtype = torch.long).unsqueeze(0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object cannot be interpreted as an integer
+
+2026-04-04 18:39:18,746 INFO request_id=chatcmpl-14705a64 stream=True prompt_tokens=9 max_tokens=16000 temperature=0.7 top_p=0.9 messages=1
+INFO:     172.20.0.3:57888 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+2026-04-04 18:39:18,774 ERROR request_id=chatcmpl-14705a64 stream_generation_failed
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 275, in generate_stream
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+
+ERROR:    Exception in ASGI application
+  + Exception Group Traceback (most recent call last):
+  |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_utils.py", line 81, in collapse_excgroups
+  |     yield
+  |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 270, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 783, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    |     result = await app(  # type: ignore[func-returns-value]
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    |     return await self.app(scope, receive, send)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/applications.py", line 1138, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/cors.py", line 87, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 121, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 108, in app
+    |     await response(scope, receive, send)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 269, in __call__
+    |     with collapse_excgroups():
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+    |     raise exc
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 273, in wrap
+    |     await func()
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 253, in stream_response
+    |     async for chunk in self.body_iterator:
+    |   File "/home/op/exllamav3_ampere/server_mixed.py", line 275, in generate_stream
+    |     for r in gen.iterate():
+    |              ^^^^^^^^^^^^^
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    |     return func(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    |     job.prefill(results)
+    |   File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    |     self.generator.model.prefill(
+    |   File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    |     return func(*args, **kwargs)
+    |            ^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    |     return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    |     x = module.forward(x, params)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    |     y = self.attn.forward(y, params)
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    |     _assert_paged_flash_attn()
+    |   File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    |     assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+    +------------------------------------
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/applications.py", line 1138, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/cors.py", line 87, in __call__
+    await self.app(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 121, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 108, in app
+    await response(scope, receive, send)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 269, in __call__
+    with collapse_excgroups():
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/contextlib.py", line 158, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 273, in wrap
+    await func()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/responses.py", line 253, in stream_response
+    async for chunk in self.body_iterator:
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 275, in generate_stream
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2515620]

@@ -2,7 +2,6 @@
 
 #define TILESIZE_M 8
 #define TILESIZE_K 512
-#define TILESIZE_N 32
 
 #include "../ptx.cuh"
 #include "exl3_dq.cuh"
@@ -39,7 +38,7 @@ __device__ inline float2 shfl_float2(float2 v, int src, int width)
     return make_float2(__shfl_sync(0xffffffff, v.x, src, width), __shfl_sync(0xffffffff, v.y, src, width));
 }
 
-template <int bits, bool c_fp32, int cb, int split_k>
+template <int bits, bool c_fp32, int cb, int split_k, int TILESIZE_N>
 __global__
 __launch_bounds__(32 * TILESIZE_K / 16 * 1)
 void exl3_gemv_kernel
@@ -64,7 +63,7 @@ void exl3_gemv_kernel
     int t = threadIdx.x + (threadIdx.y + threadIdx.z * blockDim.y) * blockDim.x;
     int lane_id = threadIdx.x; // & 31;
 
-    int k_slice = blockIdx.z;
+    const int k_slice = blockIdx.z;
 
     const int blocks_n = TILESIZE_N / 16;
     const int blocks_k = TILESIZE_K / 16;
@@ -107,8 +106,10 @@ void exl3_gemv_kernel
     // Tile buffer
     constexpr int bsh0 = num_stages ? num_stages : 1;
     constexpr int bsh1 = num_stages ? str_B_sh_tile : 32;
-    __shared__ uint8_t B_sh_tile[bsh0][bsh1];
-    __shared__ float C_sh_red[MAX(blocks_k / 2, 1)][blocks_n][128];
+    __align__(16) extern __shared__ uint8_t shared_mem[];
+    constexpr size_t b_sh_size = (bsh0 * bsh1 + 15) & ~15;
+    auto B_sh_tile = reinterpret_cast<uint8_t(*)[bsh1]>(shared_mem);
+    auto C_sh_red = reinterpret_cast<float(*)[blocks_n][128]>(shared_mem + b_sh_size);
 
     // Fragments
     register FragA_m8 frag_a;
@@ -146,7 +147,11 @@ void exl3_gemv_kernel
             {
                 int x = i % (str_B_sh_tile_n / 16);
                 int y = i / (str_B_sh_tile_n / 16);
+                #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ == 800 || __CUDA_ARCH__ == 860)
+                cp_async_stream(dst + i, src + y * (str_B_gl_tile_n / 16 * tiles_n) + x);
+                #else
                 cp_async(dst + i, src + y * (str_B_gl_tile_n / 16 * tiles_n) + x);
+                #endif
             }
         }
 
@@ -157,7 +162,8 @@ void exl3_gemv_kernel
     // Load B fragment from shared tile in warp
     auto load_sh2fr_b = [&](int block_n)
     {
-        dq_dispatch<bits, cb>((uint32_t*) B_sh_block, lane_id << 3, frag_b[block_n][0], frag_b[block_n][1]);
+        uint32_t* shb = (uint32_t*) B_sh_block;
+        dq_dispatch<bits, cb>(shb, lane_id << 3, frag_b[block_n][0], frag_b[block_n][1]);
     };
 
     // Load B fragment from gmem tile in warp
@@ -177,7 +183,6 @@ void exl3_gemv_kernel
     auto reduce_fr_c = [&]()
     {
         int frag_row = lane_id >> 2;
-        int frag_col = lane_id & 3;
 
         #pragma unroll
         for (int r_k = blocks_k / 2; r_k > 0; r_k >>= 1)
@@ -242,9 +247,18 @@ void exl3_gemv_kernel
                 float2 s0 = low ? c00 : c01;
                 float2 s1 = low ? c10 : c11;
 
+            if constexpr (split_k > 1) {
+                // Atomic accumulation across k-slices
+                float* base_ptr = (float*)stc + frag_col * 4;
+                atomicAdd(base_ptr + 0, s0.x);
+                atomicAdd(base_ptr + 1, s0.y);
+                atomicAdd(base_ptr + 2, s1.x);
+                atomicAdd(base_ptr + 3, s1.y);
+            } else {
                 // Store 4x4 bytes per thread, coalesced
                 float4 s01 = make_float4(s0.x, s0.y, s1.x, s1.y);
                 ((float4*) stc)[frag_col] = s01;
+            }
             }
             else
             {
@@ -264,9 +278,15 @@ void exl3_gemv_kernel
                 half2 s0 = low ? c00 : c01;
                 half2 s1 = low ? c10 : c11;
 
+            if constexpr (split_k > 1) {
+                // Atomic accumulation across k-slices (SM 60+ supports __half2 atomicAdd)
+                atomicAdd(stc + frag_col * 2,     s0);
+                atomicAdd(stc + frag_col * 2 + 1, s1);
+            } else {
                 // Store 4x2 bytes per thread, coalesced
                 half4 s01(s0, s1);
                 ((half4*) stc)[frag_col] = s01;
+            }
             }
         }
     };
@@ -274,7 +294,9 @@ void exl3_gemv_kernel
     // Direct
     if constexpr (num_stages == 0)
     {
-        for (int tile_k = 0; tile_k < tiles_k_slice; ++tile_k)
+        const int k_start = k_slice * tiles_k_slice;
+        const int k_end   = k_start + tiles_k_slice;
+        for (int tile_k = k_start; tile_k < k_end; ++tile_k)
         {
             // Load A frag
             A_gl_tile = ((uint8_t*) A) + str_A_gl_tile_k * tile_k;
@@ -302,16 +324,20 @@ void exl3_gemv_kernel
     // Staged
     else
     {
+        const int k_start = k_slice * tiles_k_slice;
+        const int k_end   = k_start + tiles_k_slice;
+
         // Load first B chunk
-        B_gl_tile = ((uint8_t*) B) + str_B_gl_tile_n * tile_n;
+        B_gl_tile = ((uint8_t*) B) + str_B_gl_tile_k * k_start + str_B_gl_tile_n * tile_n;
         load_gl2sh_b(0, true);
 
         #pragma unroll
-        for (int tile_k = 0; tile_k < tiles_k_slice; ++tile_k)
+        for (int tile_k = k_start; tile_k < k_end; ++tile_k)
         {
             // Load next B chunk
             B_gl_tile = ((uint8_t*) B) + str_B_gl_tile_k * (tile_k + 1) + str_B_gl_tile_n * tile_n;
-            load_gl2sh_b((tile_k + 1) % num_stages, tile_k < tiles_k_slice - 1);
+            int rel_k = tile_k - k_start;  // relative tile index for stage buffer cycling
+            load_gl2sh_b((rel_k + 1) % num_stages, tile_k < k_end - 1);
 
             // Load A frag
             A_gl_tile = ((uint8_t*) A) + str_A_gl_tile_k * tile_k;
@@ -323,8 +349,8 @@ void exl3_gemv_kernel
             __syncthreads();
 
             // Load B frag
+            B_sh_block = B_sh_tile[rel_k % num_stages] + str_B_sh_block_k * block_k;
             #pragma unroll
-            B_sh_block = B_sh_tile[tile_k % num_stages] + str_B_sh_block_k * block_k;
             for (int block_n = 0; block_n < blocks_n; ++block_n)
             {
                 load_sh2fr_b(block_n);

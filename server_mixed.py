@@ -17,6 +17,7 @@ import uuid
 import torch
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Any, Optional, List
@@ -42,6 +43,14 @@ logging.basicConfig(
 logger = logging.getLogger("server_mixed")
 
 app = FastAPI(title=f"ExLlamaV3 OpenAI Server - {MODEL_ID} Mixed")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 model = None
 config = None
@@ -84,7 +93,7 @@ def test_max_context():
 
     logger.info("=== Testing Maximum Context Length ===")
 
-    for gpu_id in [0, 1]:
+    for gpu_id in range(torch.cuda.device_count()):
         torch.cuda.set_device(gpu_id)
         free_mem = torch.cuda.mem_get_info()[0] / (1024**3)
         logger.info(f"Logical GPU {gpu_id} free memory: {free_mem:.2f} GB")
@@ -189,6 +198,12 @@ def _strip_thinking(text: str) -> str:
     return text
 
 
+def _render_response_text(text: str) -> str:
+    if ENABLE_THINKING:
+        return text
+    return _strip_thinking(text)
+
+
 def _encode_messages(messages: List[ChatMessage]):
     assert tokenizer is not None
     hf_messages = [{"role": m.role, "content": m.content} for m in messages]
@@ -223,6 +238,14 @@ async def chat_completions(request: ChatCompletionRequest):
     prompt_tokens = input_ids.shape[-1]
     _log_request_start(request_id, request, prompt_tokens)
 
+    prompt_capacity = CACHE_TOKENS - prompt_tokens - 1
+    if prompt_capacity < 1:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Prompt length {prompt_tokens} exceeds cache size {CACHE_TOKENS}",
+        )
+    effective_max_tokens = min(request.max_tokens, prompt_capacity)
+
     stop_tokens = [tokenizer.eos_token_id, tokenizer.single_id("<|im_end|>")]
 
     from exllamav3.generator.sampler import ComboSampler
@@ -236,7 +259,7 @@ async def chat_completions(request: ChatCompletionRequest):
 
     job = Job(
         input_ids=input_ids,
-        max_new_tokens=request.max_tokens,
+        max_new_tokens=effective_max_tokens,
         stop_conditions=stop_tokens,
         sampler=sampler,
     )
@@ -310,7 +333,7 @@ async def chat_completions(request: ChatCompletionRequest):
                     if r.get("eos"):
                         finish_reason = "stop"
 
-            cleaned_response_text = _strip_thinking(response_text)
+            cleaned_response_text = _render_response_text(response_text)
             _log_request_end(request_id, finish_reason, prompt_tokens, total_new_tokens)
             return {
                 "id": request_id,

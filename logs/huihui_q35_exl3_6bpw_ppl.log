@@ -1,0 +1,9 @@
+ -- Loading /home/op/exllamav3_ampere/models/Huihui-Qwen3.5-9B-abliterated-exl3-6.00bpw
+
+ -- Loading tokenizer...
+
+
+ -- Model: /home/op/exllamav3_ampere/models/Huihui-Qwen3.5-9B-abliterated-exl3-6.00bpw
+ -- Bitrate: 6.01 bpw / 6.00 bpw (head)
+ -- Evaluated: 100 rows of 2048 tokens
+ -- Perplexity: 10.288004

@@ -1,0 +1,46 @@
+/home/op/exllamav3_ampere/server_27b_layer.py:359: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1042099]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 2-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-27B-exl3
+  GPU split    : [11.0, 22.0]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 131,072
+  Model limit  : 262,144
+  KV cache     : fp16 (no quantization)
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Endpoint     : http://x86_64-conda-linux-gnu:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (131,072 tokens)...
+Loading weights (layer-split across GPUs)...
+
+  GPU 0: alloc=9.45GB  reserved=10.02GB
+  GPU 1: alloc=18.88GB  reserved=19.96GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.470s
+
+Server ready.  Cache = 131,072 tokens.
+
+INFO:     Application startup complete.
+ERROR:    [Errno -2] Name or service not known
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.

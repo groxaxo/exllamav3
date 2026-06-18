@@ -1,0 +1,26 @@
+[2026-03-31T15:02:36Z] === Perplexity Evaluation: Qwen3.5-122B-A10B-abliterated-exl3-4bpw ===
+[2026-03-31T15:02:36Z] Model: /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+[2026-03-31T15:02:36Z] Dataset: wikitext-2-raw-v1 (test), 100 rows × 2048 tokens
+[2026-03-31T15:02:36Z] 
+ -- Loading /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/eval/ppl.py", line 94, in <module>
+    main(_args)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/eval/ppl.py", line 44, in main
+    model, config, _, tokenizer = model_init.init(
+                                  ^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model_init.py", line 224, in init
+    model.load(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 345, in load
+    for _ in f: pass
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 281, in load_gen
+    yield from self._load_autosplit(
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 161, in _load_autosplit
+    raise RuntimeError("Insufficient VRAM in split for model and cache")
+RuntimeError: Insufficient VRAM in split for model and cache

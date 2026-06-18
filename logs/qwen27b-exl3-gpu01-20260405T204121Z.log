@@ -1,0 +1,108 @@
+/home/op/exllamav3_ampere/server_27b_tp2.py:364: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2682042]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - TP 2-GPU server (cached)
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated-exl3-6bpw
+  GPU split    : [23.0, 23.0]
+  TP backend   : nccl
+  Cache tokens : 130,048
+  Model limit  : 262,144
+  KV cache     : fp16 (no quantization)
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  OMP threads          : 1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (130,048 tokens)...
+Loading weights (tensor parallel)...
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:54117
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:54117
+ -- NCCL warmup, device 1, please wait... -- NCCL warmup, device 0, please wait...
+
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 68, in mp_model_worker
+    local_context = init_pg(device, active_devices, output_device, backend_args)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 30, in init_pg
+    backend = TPBackendNCCL(
+              ^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 61, in __init__
+    self.mp_warmup_nccl(device)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 81, in mp_warmup_nccl
+    dist.all_reduce(x)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py", line 3007, in all_reduce
+    work = group.allreduce([tensor], opts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.cpp:93, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.28.9
+ncclUnhandledCudaError: Call to CUDA function failed.
+Last error:
+Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+ERROR:    Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 228, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4562, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_27b_tp2.py", line 419, in load_model
+    _model.load(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 345, in load
+    for _ in f: pass
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 311, in load_gen
+    yield from self._load_tp(
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp.py", line 254, in _load_tp
+    self.create_tp_context(tp_backend)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp.py", line 78, in create_tp_context
+    self.mp_parent_conn[device] = PseudoParentConn(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 311, in __init__
+    self.local_context = init_pg(device, active_devices, output_device, backend_args, master = True)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 30, in init_pg
+    backend = TPBackendNCCL(
+              ^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 61, in __init__
+    self.mp_warmup_nccl(device)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 81, in mp_warmup_nccl
+    dist.all_reduce(x)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py", line 3007, in all_reduce
+    work = group.allreduce([tensor], opts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.cpp:93, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.28.9
+ncclUnhandledCudaError: Call to CUDA function failed.
+Last error:
+Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+
+ERROR:    Application startup failed. Exiting.
+[rank0]:[W406 08:41:25.005005562 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

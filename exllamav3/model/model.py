@@ -137,7 +137,7 @@ class Model(Model_TPMixin, Model_LSMixin):
         callback: Callable[[int, int], None] | None = None,
         generator: bool = True,
         tp_dev_limits: dict | None = None,
-        tp_backend: str = "native",
+        tp_backend: str = "nccl",
         verbose: bool = False,
         tp_options: dict | None = None,
     ):

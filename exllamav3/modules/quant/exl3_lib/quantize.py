@@ -272,23 +272,36 @@ def block_ldl(H: torch.Tensor, b: int, verbose: bool):
     m = n // b
 
     # Cholesky factorization: H = L @ L.T
-    # Try on GPU first
-    try:
-        retry_cpu = False
-        L = torch.linalg.cholesky(H)
-        # H is not needed after this, move to CPU. Then overwrite H's GPU storage with L, since we can't otherwise
-        # free up that VRAM as the tensor is referenced by the parent frame
-        H_cpu = H.cpu()
-        H.copy_(L)  # VRAM copy, tiny overhead
-        L = H
-        H = H_cpu
+    # Try on GPU first, then add a small diagonal jitter if the block is numerically singular.
+    retry_cpu = False
+    jitter = None
+    for attempt in range(6):
+        try:
+            L = torch.linalg.cholesky(H)
+            # H is not needed after this, move to CPU. Then overwrite H's GPU storage with L, since we can't otherwise
+            # free up that VRAM as the tensor is referenced by the parent frame
+            H_cpu = H.cpu()
+            H.copy_(L)  # VRAM copy, tiny overhead
+            L = H
+            H = H_cpu
+            break
+        except Exception as e:
+            if e.__class__.__name__ == "OutOfMemoryError" or "CUDA out of memory" in str(e) or "HIP out of memory" in str(e):
+                retry_cpu = True
+                break
+            if attempt == 5:
+                raise e
+            if not torch.isfinite(H).all():
+                H = torch.nan_to_num(H, nan = 0.0, posinf = 0.0, neginf = 0.0)
+            diag_mean = torch.diag(H).abs().mean().clamp_min(1e-12)
+            jitter = float(diag_mean.item() * (10.0 ** attempt) * 1e-6)
+            if verbose:
+                print(f" !! Cholesky failed on {str(H.device)}, retrying with diagonal jitter {jitter:.3e}")
+            H = H.clone()
+            dr = torch.arange(n, device = H.device)
+            H[dr, dr] += jitter
 
     # Fall back on CPU factorization
-    except Exception as e:
-        if e.__class__.__name__ == "OutOfMemoryError" or "CUDA out of memory" in str(e) or "HIP out of memory" in str(e):
-            retry_cpu = True
-        else:
-            raise e
     if retry_cpu:
         print(f" !! Out of memory on {str(H.device)}, trying CPU fallback")
         free_mem()
@@ -569,6 +582,10 @@ def finalize_capture_H(H_data: dict, quant_args: dict, verbose: bool):
             q_fallback = True
         else:
             H /= count
+            if not torch.isfinite(H).all():
+                bad = int((~torch.isfinite(H)).sum().item())
+                print(f" !! Warning: H has {bad} non-finite values; sanitizing before factorization")
+                H = torch.nan_to_num(H, nan = 0.0, posinf = 0.0, neginf = 0.0)
             diag_mean = torch.diag(H).mean()
             q_fallback = diag_mean.item() < 1e-20
 

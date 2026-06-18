@@ -1,12 +1,13 @@
 #pragma once
 
 // Force integer MAD on sm<=86. For some reason this performs better than letting the compiler emit IMUL
+// B5: Extended from __CUDA_ARCH__ == 860 to <= 860 to also cover SM 8.0 (A100/A30)
 // TODO: Keep an eye on new behavior in future versions of nvcc. While this is faster on RTX 3090, it really shouldn't be.
 template <uint32_t w>
 __device__ __forceinline__
 uint32_t mul_const_u32(uint32_t x)
 {
-    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ == 860)
+    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ <= 860)
         uint32_t r;
         asm volatile (
             "{ .reg .u32 z,t;"

@@ -6,21 +6,21 @@ from exllamav3 import Config, Model
 
 torch.set_printoptions(precision = 5, sci_mode = False, linewidth = 200)
 
-test_model = "/mnt/str/eval_models/llama3.1-8b-instruct/exl3/3.0bpw/"
+test_model = "/home/op/exllamav3_ampere/models/test_model_qwen27b"
 
 test_keys = [
-    ("model.layers.0.self_attn.q_proj", "model.layers.0.input_layernorm"),
-    ("model.layers.0.self_attn.k_proj", "model.layers.0.input_layernorm"),
-    ("model.layers.0.self_attn.v_proj", "model.layers.0.input_layernorm"),
-    ("model.layers.0.self_attn.o_proj", "model.layers.0.input_layernorm"),
-    ("model.layers.0.mlp.up_proj", "model.layers.0.post_attention_layernorm"),
-    ("model.layers.0.mlp.gate_proj", "model.layers.0.post_attention_layernorm"),
-    ("model.layers.0.mlp.down_proj", None),
-    ("lm_head", "model.norm"),
+    ("model.language_model.layers.0.self_attn.q_proj", "model.language_model.layers.0.input_layernorm"),
+    ("model.language_model.layers.0.self_attn.k_proj", "model.language_model.layers.0.input_layernorm"),
+    ("model.language_model.layers.0.self_attn.v_proj", "model.language_model.layers.0.input_layernorm"),
+    ("model.language_model.layers.0.self_attn.o_proj", "model.language_model.layers.0.input_layernorm"),
+    ("model.language_model.layers.0.mlp.up_proj", "model.language_model.layers.0.post_attention_layernorm"),
+    ("model.language_model.layers.0.mlp.gate_proj", "model.language_model.layers.0.post_attention_layernorm"),
+    ("model.language_model.layers.0.mlp.down_proj", None),
+    ("lm_head", "model.language_model.norm"),
 ]
 
 devices = [
-    "cuda:2"
+    "cuda:0"
 ]
 
 batch_sizes = [1, 2, 8, 16, 17, 31, 32, 33, 256, 2048]

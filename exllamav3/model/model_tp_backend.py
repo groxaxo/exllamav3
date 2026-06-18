@@ -1,3 +1,4 @@
+import os
 import torch
 import torch.distributed as dist
 import time
@@ -45,6 +46,9 @@ class TPBackendNCCL:
         self.active_devices = active_devices
         self.world_size = len(active_devices)
         self.rank = active_devices.index(device)
+        self.enable_fwd_barrier = os.environ.get("EXLLAMA_NCCL_FWD_BARRIER", "0") == "1"
+        self.use_fallback_gather = os.environ.get("EXLLAMA_NCCL_GATHER_FALLBACK", "0") == "1"
+        self._fp16_bufs: dict[tuple, torch.Tensor] = {}
 
         log_tp(device, f"NCCL init: world_size {self.world_size}, rank {self.rank}, device {device}, init_method {init_method}")
         print(f" -- NCCL init: world_size {self.world_size}, rank {self.rank}, device {device}, init_method {init_method}")
@@ -83,13 +87,15 @@ class TPBackendNCCL:
             log_tp(self.device, f"NCCL close: skip CPU process")
             return
 
-        dist.barrier()
+        if self.world_size > 1:
+            dist.barrier()
         self.fallback.close()
         dist.destroy_process_group()
 
 
     def fwd_barrier(self):
-        dist.barrier()
+        if self.world_size > 1 and self.enable_fwd_barrier:
+            dist.barrier()
 
 
     def broadcast(self, tensor: torch.Tensor, src_device: int):
@@ -98,14 +104,30 @@ class TPBackendNCCL:
         # dist.broadcast(tensor, src = src_rank)
 
 
+    # FP16 transport threshold for all_reduce.
+    # On Ampere (SM 8.x), the FP32→FP16 cast overhead is non-trivial for small
+    # decode tensors (e.g. [1, 1, 5632] = 22 KB).  Benchmarks show FP32 all_reduce
+    # is ~8% faster for tensors below ~65K elements on PCIe-connected 3090s, while
+    # FP16 transport is beneficial for large prefill tensors where PCIe BW dominates.
+    # Default: 65536 elements (≈128 KB FP32). Override with EXLLAMA_FP16_REDUCE_THRESHOLD.
+    _FP16_CAST_THRESHOLD = int(os.environ.get("EXLLAMA_FP16_REDUCE_THRESHOLD", "65536"))
+
     def all_reduce(self, tensor: torch.Tensor, contribution: bool = True):
-        if tensor.dtype == torch.float32:
-            temp = tensor.to(torch.bfloat16)
-            dist.all_reduce(temp, async_op = False)
-            temp = temp.to(torch.float32)
-            tensor.copy_(temp)
+        if self.world_size <= 1:
+            return
+        if tensor.dtype == torch.float32 and tensor.numel() >= self._FP16_CAST_THRESHOLD:
+            # FP16 reduction transport — natively fast on Ampere (SM 8.x).
+            # BF16 is emulated on SM 8.6 (RTX 3090) and adds unnecessary overhead.
+            shape = tensor.shape
+            buf = self._fp16_bufs.get(shape)
+            if buf is None:
+                buf = torch.empty(shape, dtype=torch.float16, device=tensor.device)
+                self._fp16_bufs[shape] = buf
+            buf.copy_(tensor)
+            dist.all_reduce(buf, async_op=False)
+            tensor.copy_(buf)
         else:
-            dist.all_reduce(tensor, async_op = False)
+            dist.all_reduce(tensor, async_op=False)
 
 
     def gather(
@@ -116,30 +138,29 @@ class TPBackendNCCL:
         out_device: int,
         ldims: list[int]
     ):
-        self.fallback.gather(tensor, out_tensor, gather_devices, out_device, ldims)
-        # dst_rank = self.active_devices.index(out_device)
-        # d_ldims = [0] * (max(self.active_devices) + 1)
-        # for d, m in zip(gather_devices, ldims):
-        #     d_ldims[d] = m
-        # ldims = [d_ldims[d] for d in self.active_devices]
-        #
-        # if self.rank == dst_rank:
-        #     od = 0
-        #     for src, ldim in enumerate(ldims):
-        #         if ldim == 0:
-        #             continue
-        #         out_slice = out_tensor[..., od : od + ldim]
-        #         od += ldim
-        #         if src == self.rank:
-        #             out_slice.copy(tensor)
-        #         else:
-        #             # print(f"rank {self.rank} recv {out_slice.shape[-1]} from {src}")
-        #             rbuf = torch.empty_like(out_slice)
-        #             dist.recv(rbuf, src = src)
-        #             out_slice.copy_(rbuf)
-        # elif tensor.shape[-1] > 0:
-        #     # print(f"rank {self.rank} send {tensor.shape[-1]} to {dst_rank}")
-        #     dist.send(tensor, dst = dst_rank)
+        if self.world_size <= 1:
+            return
+        if self.use_fallback_gather:
+            self.fallback.gather(tensor, out_tensor, gather_devices, out_device, ldims)
+            return
+
+        dst_rank = self.active_devices.index(out_device)
+        if self.rank == dst_rank:
+            assert out_tensor is not None, "Gather destination must provide out_tensor"
+            od = 0
+            for src_device, ldim in zip(gather_devices, ldims):
+                if ldim == 0:
+                    continue
+                src_rank = self.active_devices.index(src_device)
+                out_slice = out_tensor[..., od : od + ldim]
+                od += ldim
+                if src_rank == self.rank:
+                    out_slice.copy_(tensor)
+                else:
+                    assert out_slice.is_contiguous(), "Gather destination slice must be contiguous"
+                    dist.recv(out_slice, src = src_rank)
+        elif tensor.shape[-1] > 0:
+            dist.send(tensor, dst = dst_rank)
 
 
     def run_cpu_reduce_jobs(self):
@@ -300,6 +321,8 @@ class TPBackendNative:
 
 
     def fwd_barrier(self):
+        if len(self.active_devices) <= 1:
+            return
         ext.pg_barrier(self.ptr_g, self.active_devices, self.device, self.abort_flag)
 
 
@@ -329,6 +352,8 @@ class TPBackendNative:
 
 
     def all_reduce(self, tensor: torch.Tensor, contribution: bool = True):
+        if len(self.active_devices) <= 1:
+            return
         # if tensor.numel() * 2 < MAX_CPU_REDUCE:
         ext.pg_all_reduce_cpu(
             self.ptr_g,

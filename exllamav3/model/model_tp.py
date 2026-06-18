@@ -26,6 +26,7 @@ class Model_TPMixin:
         self.tp_output_device = None
         self.tp_producer = None
         self.tp_backend = None
+        self.tp_needs_cpu_reduce = False
 
     def create_tp_context(self, tp_backend: str):
         """
@@ -40,6 +41,7 @@ class Model_TPMixin:
 
         # Backend args
         self.tp_backend = tp_backend
+        self.tp_needs_cpu_reduce = tp_backend != "nccl"
         master_addr = os.environ.get("EXLLAMA_MASTER_ADDR", "127.0.0.1")
         master_port = os.environ.get("EXLLAMA_MASTER_PORT", find_free_port())
         match tp_backend:
@@ -69,7 +71,8 @@ class Model_TPMixin:
         self.mp_child_conn: list = [None] * (num_devices + 1)
         self.tp_producer = SMProducer(buffer_size = 64 * 1024**2)
 
-        for rank, device in enumerate(self.active_devices + [-1]):
+        worker_devices = self.active_devices + ([-1] if self.tp_needs_cpu_reduce else [])
+        for rank, device in enumerate(worker_devices):
             log_tp(None, f"Spawning child process: {device}")
             if self.tp_output_device == device:
                 self.mp_parent_conn[device] = PseudoParentConn(
@@ -339,6 +342,7 @@ class Model_TPMixin:
         self.destroy_tp_context()
         self.loaded_tp = False
         self.tp_output_device = None
+        self.tp_needs_cpu_reduce = False
         cleanupper.unregister_atexit(self.destroy_tp_context)
 
 
@@ -347,12 +351,19 @@ class Model_TPMixin:
         # Use ID of Cache object as reference to avoid having to pickle it
         if "cache" in params:
             params["cache"] = id(params["cache"])
+        # Recurrent states: replace with an ID so workers use their own local states
+        # (GPU tensors in recurrent_states can't be pickled through multiprocessing pipes)
+        rs = params.pop("recurrent_states", None)
+        if rs is not None:
+            params["_recurrent_state_id"] = id(rs)
+            params["_recurrent_states_ref"] = rs
         # Share memory of any additional CPU tensors
         for tensor_param in [
             "block_table",
             "cache_seqlens",
             "positions",
             "position_ids",
+            "inv_freq",
         ]:
             p = params.get(tensor_param)
             if p is not None:
@@ -372,7 +383,9 @@ class Model_TPMixin:
         last_kv_module_idx: int,
         modules: list,
     ):
-        self.tp_worker_dispatch(-1, mp_cpu_reduce, ())
+        seqlen = x.shape[1]
+        if self.tp_needs_cpu_reduce:
+            self.tp_worker_dispatch(-1, mp_cpu_reduce, ())
 
         x = self.prepare_inputs_for_tp(x, params)
         for device in self.active_devices:
@@ -386,7 +399,19 @@ class Model_TPMixin:
             r = self.tp_worker_result(device)
             assert r is None, "TP logic error"
 
-        self.tp_worker_result(-1)
+        if self.tp_needs_cpu_reduce:
+            self.tp_worker_result(-1)
+
+        # Sync recurrent state positions back to main-process shadow objects
+        rs_ref = params.pop("_recurrent_states_ref", None)
+        params.pop("_recurrent_state_id", None)
+        if rs_ref is not None:
+            for state in rs_ref.values():
+                if not state.batched:
+                    state.position += seqlen
+                else:
+                    state.positions = [p + seqlen for p in state.positions]
+
         return None
 
 
@@ -397,7 +422,9 @@ class Model_TPMixin:
         last_kv_module_idx: int,
         modules: list,
     ):
-        self.tp_worker_dispatch(-1, mp_cpu_reduce, ())
+        seqlen = x.shape[1]
+        if self.tp_needs_cpu_reduce:
+            self.tp_worker_dispatch(-1, mp_cpu_reduce, ())
 
         x = self.prepare_inputs_for_tp(x, params)
         for device in self.active_devices:
@@ -414,8 +441,27 @@ class Model_TPMixin:
                 return_tensors.append(r)
         assert len(return_tensors) == 1, "TP logic error"
 
-        self.tp_worker_result(-1)
+        if self.tp_needs_cpu_reduce:
+            self.tp_worker_result(-1)
+
+        # Sync recurrent state positions back to main-process shadow objects
+        rs_ref = params.pop("_recurrent_states_ref", None)
+        params.pop("_recurrent_state_id", None)
+        if rs_ref is not None:
+            for state in rs_ref.values():
+                if not state.batched:
+                    state.position += seqlen
+                else:
+                    state.positions = [p + seqlen for p in state.positions]
+
         return return_tensors[0]
+
+
+    def tp_cleanup_recurrent_state(self, state_id: int):
+        """Clean up worker-local recurrent state when a job finishes."""
+        self.tp_worker_dispatch_wait_multi(
+            self.active_devices, mp_cleanup_recurrent_state, (state_id,)
+        )
 
 
     def tp_rotate_cache_pages(self, cache_id: int, all_rotations: torch.Tensor):

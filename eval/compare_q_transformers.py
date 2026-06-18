@@ -36,6 +36,19 @@ def get_tensors_size(tensors):
 def get_tensor_size(tensor):
     return 8 * tensor.element_size() * tensor.numel()
 
+def is_instance_of_any(obj, classes):
+    classes = tuple(c for c in classes if c is not None)
+    return bool(classes) and isinstance(obj, classes)
+
+def get_auto_max_memory():
+    max_memory = {}
+    for idx in range(torch.cuda.device_count()):
+        total_gib = int(torch.cuda.get_device_properties(idx).total_memory / 1024**3)
+        headroom_gib = 2 if idx == 0 else 1
+        max_memory[idx] = f"{max(1, total_gib - headroom_gib)}GiB"
+    max_memory["cpu"] = "64GiB"
+    return max_memory
+
 def scan_gpu_tensors(obj, seen = None):
     if seen is None:
         seen = set()
@@ -74,7 +87,7 @@ def get_storage_info(model):
     head_bpw = 0
     head_numel = 0
     for name, module in model.named_modules():
-        if any(isinstance(module, x) for x in [Linear4bit]):
+        if is_instance_of_any(module, [Linear4bit]):
             if module.out_features >= model.vocab_size * 0.9:  # this is foolproof
                 head_numel = module.in_features * module.out_features
                 head_bpw = module.weight.numel() * 8
@@ -83,24 +96,24 @@ def get_storage_info(model):
                 sum_bits += module.weight.numel() * 8
                 sum_bits += scan_gpu_tensors(module.quant_state) * 8
                 sum_numel += module.in_features * module.out_features
-        elif any(isinstance(module, x) for x in [torch.nn.Linear]):
+        elif is_instance_of_any(module, [torch.nn.Linear]):
             if module.out_features >= model.vocab_size * 0.9:
                 head_bpw = module.weight.element_size() * 8
                 head_numel = module.weight.numel()
             else:
                 sum_bits += get_tensor_size(module.weight)
                 sum_numel +=  module.weight.numel()
-        elif any(isinstance(module, x) for x in [QuantizedLinear, VQuantLinear]):
+        elif is_instance_of_any(module, [QuantizedLinear, VQuantLinear]):
             sum_bits += get_tensors_size(dict(module.named_parameters()))
             sum_numel += module.in_features * module.out_features
-        elif any(isinstance(module, x) for x in [WQLinear_GEMM]):
+        elif is_instance_of_any(module, [WQLinear_GEMM]):
             sum_bits += get_tensors_size({
                 "qweight": module.qweight,
                 "qzeros": module.qzeros,
                 "scales": module.scales,
             })
             sum_numel += module.in_features * module.out_features
-        elif any(isinstance(module, x) for x in [MarlinQuantLinear]):
+        elif is_instance_of_any(module, [MarlinQuantLinear]):
             sum_bits += get_tensors_size({
                 "g_idx": module.g_idx,
                 "g_idx_sort_indices": module.g_idx_sort_indices,
@@ -109,7 +122,7 @@ def get_storage_info(model):
                 "scales": module.scales,
             })
             sum_numel += module.in_features * module.out_features
-        elif any(isinstance(module, x) for x in [TritonV2QuantLinear]):
+        elif is_instance_of_any(module, [TritonV2QuantLinear]):
             sum_bits += get_tensors_size({
                 "g_idx": module.g_idx,
                 "qweight": module.qweight,
@@ -117,7 +130,7 @@ def get_storage_info(model):
                 "scales": module.scales,
             })
             sum_numel += module.in_features * module.out_features
-        elif any(isinstance(module, x) for x in [ExllamaV2QuantLinear]):
+        elif is_instance_of_any(module, [ExllamaV2QuantLinear]):
             sum_bits += get_tensors_size(module.q_tensors)
             sum_numel += module.in_features * module.out_features
     vram_bits = head_numel * head_bpw + sum_bits
@@ -125,11 +138,15 @@ def get_storage_info(model):
 
 @torch.inference_mode
 def load_transformers(model_dir: str, auto = False, bf16 = False):
-    model = AutoModelForCausalLM.from_pretrained(
-        model_dir,
-        device_map = "auto" if auto else "cuda:0",
-        torch_dtype = torch.bfloat16 if bf16 else torch.half
-    )
+    kwargs = {
+        "torch_dtype": torch.bfloat16 if bf16 else torch.half,
+    }
+    if auto:
+        kwargs["device_map"] = "auto"
+        kwargs["max_memory"] = get_auto_max_memory()
+    else:
+        kwargs["device_map"] = "cuda:0"
+    model = AutoModelForCausalLM.from_pretrained(model_dir, **kwargs)
     bpw_layer, bpw_head, vram_bits = get_storage_info(model)
     return model, bpw_layer, bpw_head, vram_bits
 

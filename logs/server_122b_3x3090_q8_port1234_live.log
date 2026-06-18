@@ -1,0 +1,63 @@
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1000: UserWarning: Can't initialize NVML
+  uuids = _raw_device_uuid_nvml()
+/home/op/exllamav3_ampere/server_27b_layer.py:500: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [935634]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 3-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+  GPU split    : [23.5, 23.5, 23.5]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 150,016
+  Model limit  : 262,144
+  KV cache     : quantized 8-bit
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Embed device : GPU (EXLLAMA_EMBED_PREFER_CPU=0)
+  OMP threads  : 1
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47,GPU-78996a05-18c5-e153-b621-096273299d41,GPU-89c6bfdc-6f42-d312-de77-a9fb1ae370d8
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 2: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating quantized 8-bit KV cache (150,016 tokens)...
+Loading weights (layer-split across GPUs)...
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+  GPU 0: alloc=22.07GB  reserved=22.11GB
+  GPU 1: alloc=21.83GB  reserved=21.87GB
+  GPU 2: alloc=16.65GB  reserved=16.70GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.284s
+
+Server ready.  Cache = 150,016 tokens.
+
+INFO:     127.0.0.1:35190 - "GET /health HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 300 thinking tokens
+INFO:     127.0.0.1:35200 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:58926 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:49976 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:49990 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:57344 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 849 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.20.0.3:55232 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.20.0.3:51500 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60034 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:36458 - "GET /v1/models HTTP/1.1" 200 OK

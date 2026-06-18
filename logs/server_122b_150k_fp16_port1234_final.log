@@ -1,0 +1,188 @@
+/home/op/exllamav3_ampere/server_27b_layer.py:447: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1658011]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 4-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+  GPU split    : [22.8, 22.8, 22.8, 10.6]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 150,016
+  Model limit  : 262,144
+  KV cache     : fp16
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : False (preserve=False, budget=1024)
+  Embed device : GPU (EXLLAMA_EMBED_PREFER_CPU=0)
+  OMP threads  : 1
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1,4,3
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 2: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 3: NVIDIA GeForce RTX 3060  (11.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (150,016 tokens)...
+Loading weights (layer-split across GPUs)...
+  GPU 0: alloc=21.78GB  reserved=21.79GB
+  GPU 1: alloc=21.56GB  reserved=21.58GB
+  GPU 2: alloc=19.87GB  reserved=19.88GB
+  GPU 3: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.254s
+
+Server ready.  Cache = 150,016 tokens.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59008 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59016 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57416 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39818 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.20.0.3:33330 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:58468 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:46076 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38892 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38898 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:59812 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:59826 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:35106 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:33246 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43522 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43220 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43228 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43232 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60736 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60752 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60762 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:40894 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:45858 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:56238 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:33414 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38810 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38824 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:34176 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:57068 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:52970 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:51858 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:49034 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:35244 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:35246 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38020 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43012 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:55290 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:48916 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:46692 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38494 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38504 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:40520 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:52950 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:55618 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:50282 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:39094 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60310 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60324 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:34204 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:54400 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:40584 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:42112 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:59984 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:54356 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:54360 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:54368 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43400 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43412 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43608 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:55532 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:36204 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:53796 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:51084 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:55426 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:55430 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:47808 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:49580 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:39500 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:59448 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:48474 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:58316 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:56504 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:47092 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:47094 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:43056 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:43066 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:43070 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:41722 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:41726 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:41736 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:41746 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:41756 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:41768 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52178 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:52194 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:52210 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:53954 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:53960 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:53970 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55832 - "GET /v1/models HTTP/1.1" 200 OK
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:55844 - "GET /system HTTP/1.1" 404 Not Found
+WARNING:  Unsupported upgrade request.
+WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+INFO:     127.0.0.1:55848 - "GET /llm HTTP/1.1" 404 Not Found
+INFO:     172.20.0.3:33628 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:37474 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:44884 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:46798 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:59490 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:60022 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:38782 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:39432 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:52630 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:52646 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:43704 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.3:54808 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51588 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51592 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52162 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33106 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37730 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:37742 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:41276 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60116 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60114 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.3:37976 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35474 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35490 - "POST /v1/chat/completions HTTP/1.1" 200 OK

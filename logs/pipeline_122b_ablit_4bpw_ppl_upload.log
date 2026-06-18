@@ -1,0 +1,92 @@
+nohup: ignoring input
+[2026-03-31T09:52:35Z] Waiting for quantization process to finish...
+[2026-03-31T09:52:35Z]   Still running (PID 42403) | latest layer: ? | ETA: unknown
+[2026-03-31T09:57:35Z]   Still running (PID 42403) | latest layer: 0 | ETA: warming up (1/3 timed blocks)
+[2026-03-31T10:02:35Z]   Still running (PID 42403) | latest layer: 1 | ETA: warming up (2/3 timed blocks)
+[2026-03-31T10:07:35Z]   Still running (PID 42403) | latest layer: 1 | ETA: warming up (2/3 timed blocks)
+[2026-03-31T10:12:35Z]   Still running (PID 42403) | latest layer: 2 | ETA: 4 hours, 57 minutes (avg over last 3 blocks)
+[2026-03-31T10:17:35Z]   Still running (PID 42403) | latest layer: 3 | ETA: 4 hours, 51 minutes (avg over last 4 blocks)
+[2026-03-31T10:22:35Z]   Still running (PID 42403) | latest layer: 4 | ETA: 4 hours, 45 minutes (avg over last 5 blocks)
+[2026-03-31T10:27:35Z]   Still running (PID 42403) | latest layer: 5 | ETA: 4 hours, 39 minutes (avg over last 6 blocks)
+[2026-03-31T10:32:35Z]   Still running (PID 42403) | latest layer: 5 | ETA: 4 hours, 39 minutes (avg over last 6 blocks)
+[2026-03-31T10:37:35Z]   Still running (PID 42403) | latest layer: 6 | ETA: 4 hours, 33 minutes (avg over last 7 blocks)
+[2026-03-31T10:42:35Z]   Still running (PID 42403) | latest layer: 7 | ETA: 4 hours, 27 minutes (avg over last 8 blocks)
+[2026-03-31T10:47:35Z]   Still running (PID 42403) | latest layer: 8 | ETA: 4 hours, 21 minutes (avg over last 8 blocks)
+[2026-03-31T10:52:35Z]   Still running (PID 42403) | latest layer: 8 | ETA: 4 hours, 21 minutes (avg over last 8 blocks)
+[2026-03-31T10:57:35Z]   Still running (PID 42403) | latest layer: 9 | ETA: 4 hours, 15 minutes (avg over last 8 blocks)
+[2026-03-31T11:02:35Z]   Still running (PID 42403) | latest layer: 10 | ETA: 4 hours, 9 minutes (avg over last 8 blocks)
+[2026-03-31T11:07:35Z]   Still running (PID 42403) | latest layer: 11 | ETA: 4 hours, 3 minutes (avg over last 8 blocks)
+[2026-03-31T11:12:35Z]   Still running (PID 42403) | latest layer: 12 | ETA: 3 hours, 56 minutes (avg over last 8 blocks)
+[2026-03-31T11:17:35Z]   Still running (PID 42403) | latest layer: 12 | ETA: 3 hours, 56 minutes (avg over last 8 blocks)
+[2026-03-31T11:22:35Z]   Still running (PID 42403) | latest layer: 13 | ETA: 3 hours, 50 minutes (avg over last 8 blocks)
+[2026-03-31T11:27:35Z]   Still running (PID 42403) | latest layer: 14 | ETA: 3 hours, 44 minutes (avg over last 8 blocks)
+[2026-03-31T11:32:35Z]   Still running (PID 42403) | latest layer: 15 | ETA: 3 hours, 37 minutes (avg over last 8 blocks)
+[2026-03-31T11:37:35Z]   Still running (PID 42403) | latest layer: 16 | ETA: 3 hours, 37 minutes (avg over last 8 blocks)
+[2026-03-31T11:42:35Z]   Still running (PID 42403) | latest layer: 16 | ETA: 3 hours, 31 minutes (avg over last 8 blocks)
+[2026-03-31T11:47:35Z]   Still running (PID 42403) | latest layer: 17 | ETA: 3 hours, 25 minutes (avg over last 8 blocks)
+[2026-03-31T11:52:35Z]   Still running (PID 42403) | latest layer: 18 | ETA: 3 hours, 18 minutes (avg over last 8 blocks)
+[2026-03-31T11:57:35Z]   Still running (PID 42403) | latest layer: 19 | ETA: 3 hours, 12 minutes (avg over last 8 blocks)
+[2026-03-31T12:02:35Z]   Still running (PID 42403) | latest layer: 19 | ETA: 3 hours, 12 minutes (avg over last 8 blocks)
+[2026-03-31T12:07:35Z]   Still running (PID 42403) | latest layer: 20 | ETA: 3 hours, 5 minutes (avg over last 8 blocks)
+[2026-03-31T12:12:35Z]   Still running (PID 42403) | latest layer: 21 | ETA: 2 hours, 59 minutes (avg over last 8 blocks)
+[2026-03-31T12:17:35Z]   Still running (PID 42403) | latest layer: 22 | ETA: 2 hours, 53 minutes (avg over last 8 blocks)
+[2026-03-31T12:22:35Z]   Still running (PID 42403) | latest layer: 23 | ETA: 2 hours, 46 minutes (avg over last 8 blocks)
+[2026-03-31T12:27:35Z]   Still running (PID 42403) | latest layer: 23 | ETA: 2 hours, 46 minutes (avg over last 8 blocks)
+[2026-03-31T12:32:35Z]   Still running (PID 42403) | latest layer: 24 | ETA: 2 hours, 40 minutes (avg over last 8 blocks)
+[2026-03-31T12:37:35Z]   Still running (PID 42403) | latest layer: 25 | ETA: 2 hours, 33 minutes (avg over last 8 blocks)
+[2026-03-31T12:42:35Z]   Still running (PID 42403) | latest layer: 26 | ETA: 2 hours, 27 minutes (avg over last 8 blocks)
+[2026-03-31T12:47:35Z]   Still running (PID 42403) | latest layer: 26 | ETA: 2 hours, 27 minutes (avg over last 8 blocks)
+[2026-03-31T12:52:35Z]   Still running (PID 42403) | latest layer: 27 | ETA: 2 hours, 20 minutes (avg over last 8 blocks)
+[2026-03-31T12:57:35Z]   Still running (PID 42403) | latest layer: 28 | ETA: 2 hours, 14 minutes (avg over last 8 blocks)
+[2026-03-31T13:02:35Z]   Still running (PID 42403) | latest layer: 29 | ETA: 2 hours, 7 minutes (avg over last 8 blocks)
+[2026-03-31T13:07:35Z]   Still running (PID 42403) | latest layer: 30 | ETA: 2 hours, 1 minute (avg over last 8 blocks)
+[2026-03-31T13:12:35Z]   Still running (PID 42403) | latest layer: 30 | ETA: 2 hours, 1 minute (avg over last 8 blocks)
+[2026-03-31T13:17:35Z]   Still running (PID 42403) | latest layer: 31 | ETA: 1 hour, 55 minutes (avg over last 8 blocks)
+[2026-03-31T13:22:36Z]   Still running (PID 42403) | latest layer: 32 | ETA: 1 hour, 48 minutes (avg over last 8 blocks)
+[2026-03-31T13:27:36Z]   Still running (PID 42403) | latest layer: 33 | ETA: 1 hour, 42 minutes (avg over last 8 blocks)
+[2026-03-31T13:32:36Z]   Still running (PID 42403) | latest layer: 33 | ETA: 1 hour, 42 minutes (avg over last 8 blocks)
+[2026-03-31T13:37:36Z]   Still running (PID 42403) | latest layer: 34 | ETA: 1 hour, 36 minutes (avg over last 8 blocks)
+[2026-03-31T13:42:36Z]   Still running (PID 42403) | latest layer: 35 | ETA: 1 hour, 29 minutes (avg over last 8 blocks)
+[2026-03-31T13:47:36Z]   Still running (PID 42403) | latest layer: 36 | ETA: 1 hour, 23 minutes (avg over last 8 blocks)
+[2026-03-31T13:52:36Z]   Still running (PID 42403) | latest layer: 37 | ETA: 1 hour, 16 minutes (avg over last 8 blocks)
+[2026-03-31T13:57:36Z]   Still running (PID 42403) | latest layer: 37 | ETA: 1 hour, 16 minutes (avg over last 8 blocks)
+[2026-03-31T14:02:36Z]   Still running (PID 42403) | latest layer: 38 | ETA: 1 hour, 10 minutes (avg over last 8 blocks)
+[2026-03-31T14:07:36Z]   Still running (PID 42403) | latest layer: 39 | ETA: 1 hour, 4 minutes (avg over last 8 blocks)
+[2026-03-31T14:12:36Z]   Still running (PID 42403) | latest layer: 40 | ETA: 57 minutes (avg over last 8 blocks)
+[2026-03-31T14:17:36Z]   Still running (PID 42403) | latest layer: 40 | ETA: 57 minutes (avg over last 8 blocks)
+[2026-03-31T14:22:36Z]   Still running (PID 42403) | latest layer: 41 | ETA: 51 minutes (avg over last 8 blocks)
+[2026-03-31T14:27:36Z]   Still running (PID 42403) | latest layer: 42 | ETA: 44 minutes (avg over last 8 blocks)
+[2026-03-31T14:32:36Z]   Still running (PID 42403) | latest layer: 43 | ETA: 38 minutes (avg over last 8 blocks)
+[2026-03-31T14:37:36Z]   Still running (PID 42403) | latest layer: 44 | ETA: 32 minutes (avg over last 8 blocks)
+[2026-03-31T14:42:36Z]   Still running (PID 42403) | latest layer: 44 | ETA: 32 minutes (avg over last 8 blocks)
+[2026-03-31T14:47:36Z]   Still running (PID 42403) | latest layer: 45 | ETA: 25 minutes (avg over last 8 blocks)
+[2026-03-31T14:52:36Z]   Still running (PID 42403) | latest layer: 46 | ETA: 19 minutes (avg over last 8 blocks)
+[2026-03-31T14:57:36Z]   Still running (PID 42403) | latest layer: 47 | ETA: 5 minutes (avg over last 8 blocks)
+[2026-03-31T15:02:36Z] Quantization complete!
+[2026-03-31T15:02:36Z] Starting perplexity evaluation on /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw...
+[2026-03-31T15:02:36Z] === Perplexity Evaluation: Qwen3.5-122B-A10B-abliterated-exl3-4bpw ===
+[2026-03-31T15:02:36Z] Model: /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+[2026-03-31T15:02:36Z] Dataset: wikitext-2-raw-v1 (test), 100 rows × 2048 tokens
+[2026-03-31T15:02:36Z] 
+ -- Loading /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/eval/ppl.py", line 94, in <module>
+    main(_args)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/eval/ppl.py", line 44, in main
+    model, config, _, tokenizer = model_init.init(
+                                  ^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model_init.py", line 224, in init
+    model.load(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 345, in load
+    for _ in f: pass
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 281, in load_gen
+    yield from self._load_autosplit(
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 161, in _load_autosplit
+    raise RuntimeError("Insufficient VRAM in split for model and cache")
+RuntimeError: Insufficient VRAM in split for model and cache

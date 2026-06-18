@@ -11,10 +11,13 @@ namespace cg = cooperative_groups;
 #include "exl3_devctx.cuh"
 #include <set>
 
+#define MOE_MAX_EXPERTS 256
+
 int exl3_moe_max_concurrency(int device)
 {
     int num_sms = DevCtx::instance().get_num_sms(device);
-    return num_sms / MOE_SMS_PER_EXPERT;
+    int sms_per_expert = (num_sms >= 100) ? 12 : ((num_sms >= 80) ? 7 : ((num_sms >= 50) ? 5 : 3));
+    return num_sms / sms_per_expert;
 }
 
 std::set<void*> moe_kernel_attr_set[MAX_DEVICES] = {};
@@ -195,18 +198,22 @@ void exl3_moe
     int device;
     cudaGetDevice(&device);
     int num_sms = DevCtx::instance().get_num_sms(device);
+    int sms_per_expert = (num_sms >= 100) ? 12 : ((num_sms >= 80) ? 7 : ((num_sms >= 50) ? 5 : 3));
     int cc = DevCtx::instance().get_cc(device);
     int* locks = DevCtx::instance().get_locks(device);
+    // B2: Query runtime-configurable SMEM limit
+    int smem_max = DevCtx::instance().get_smem_max(device);
 
     // Launch
     int block_dim = EXL3_GEMM_BASE_THREADS * MOE_TILESIZE_K / 16;
-    TORCH_CHECK(concurrency * MOE_SMS_PER_EXPERT <= num_sms, "Concurrency too high for device num_sms");
-    dim3 grid_dim(MOE_SMS_PER_EXPERT, 1, concurrency);
+    TORCH_CHECK(concurrency * sms_per_expert <= num_sms, "Concurrency too high for device num_sms");
+    dim3 grid_dim(sms_per_expert, 1, concurrency);
     fp_exl3_moe_kernel kernel = exl3_moe_kernel_instances[K];
 
     if (moe_kernel_attr_set[device].find((void*) kernel) == moe_kernel_attr_set[device].end())
     {
-        cudaFuncSetAttribute(kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, SMEM_MAX);
+        // B2: Use runtime smem_max instead of compile-time SMEM_MAX
+        cudaFuncSetAttribute(kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_max);
         moe_kernel_attr_set[device].insert((void*) kernel);
         cuda_check(cudaPeekAtLastError());
     }
@@ -262,6 +269,7 @@ void exl3_moe
         (void*) &K_gate,
         (void*) &K_up,
         (void*) &K_down,
+        (void*) &sms_per_expert,
         (void*) &locks
     };
 
@@ -271,7 +279,7 @@ void exl3_moe
         grid_dim,
         block_dim,
         kernelArgs,
-        SMEM_MAX,
+        smem_max,
         stream
     );
 

@@ -7,13 +7,8 @@ namespace cg = cooperative_groups;
 #include "../util.h"
 #include "../util.cuh"
 
-//DevCtx::DevCtc()
-//{
-//    int num_sms[MAX_DEVICES] = {};
-//    int cc[MAX_DEVICES] = {};
-//    void* locks[MAX_DEVICES] = {};
-//    std::mutex mtx;
-//}
+// B2: Runtime-configurable shared memory cap, initialized per-device in prepare_ctx
+int g_smem_max = 0;
 
 DevCtx& DevCtx::instance()
 {
@@ -43,6 +38,19 @@ int DevCtx::get_cc(int device)
         else cc[device] = CC_OLD;
     }
     return cc[device];
+}
+
+// B2: Query per-device max optin shared memory
+int DevCtx::get_smem_max(int device)
+{
+    std::lock_guard<std::mutex> lock(mtx);
+    if (!smem_max[device])
+    {
+        cuda_check(cudaDeviceGetAttribute(&smem_max[device], cudaDevAttrMaxSharedMemoryPerBlockOptin, device));
+        // Ensure we don't exceed what's actually available
+        if (smem_max[device] <= 0) smem_max[device] = 90 * 1024;  // fallback
+    }
+    return smem_max[device];
 }
 
 void* DevCtx::get_ws(int device)
@@ -84,4 +92,10 @@ void prepare_ctx(int device)
     DevCtx::instance().get_num_sms(device);
     DevCtx::instance().get_cc(device);
     DevCtx::instance().get_locks(device);
+
+    // B2: Initialize the global SMEM max for the current device
+    int device_smem = DevCtx::instance().get_smem_max(device);
+    if (!g_smem_max || device_smem < g_smem_max)
+        g_smem_max = device_smem;
 }
+

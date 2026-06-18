@@ -1,0 +1,76 @@
+/home/op/exllamav3_ampere/server_27b_tp2.py:416: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [203405]
+INFO:     Waiting for application startup.
+
+============================================================
+  ExLlamaV3 TP 2-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Holo3-35B-A3B-exl3-6bpw
+  GPU split    : [22.0, 22.0]
+  TP backend   : nccl
+  Cache tokens : 262,144
+  Model limit  : 262,144
+  Usable ctx   : 262,144
+  KV cache     : quantized 8-bit
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 4096 (cap 16000)
+  Thinking     : False (preserve=False, budget=512)
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  OMP threads          : 1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating quantized 8-bit KV cache (262,144 tokens)...
+Loading weights (tensor parallel)...
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:57557
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:57557
+ -- NCCL warmup, device 0, please wait...
+ -- NCCL warmup, device 1, please wait...
+ -- Finished NCCL warmup, device 1
+ -- Finished NCCL warmup, device 0
+  GPU 0: alloc=13.46GB  reserved=17.08GB
+  GPU 1: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+[rank1]:[W409 11:01:31.942454208 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank0]:[W409 11:01:31.942622240 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+  Warmup complete in 0.398s
+
+Server ready.  Cache = 262,144 tokens, usable context = 262,144.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58966 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58972 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58974 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58986 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52882 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52888 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51856 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38208 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.20.0.2:36296 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:36302 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:36310 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:60152 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:60156 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:49402 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57918 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57932 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57944 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [203405]
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

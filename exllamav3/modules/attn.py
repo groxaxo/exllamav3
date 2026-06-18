@@ -7,7 +7,60 @@ from ..util.rope import RopeSettings, RoPE
 from ..util.tensor import get_for_device, to2
 from . import Module, Linear, RMSNorm, LayerNorm
 from ..constants import PAGE_SIZE
-from flash_attn import flash_attn_func, flash_attn_with_kvcache, flash_attn_varlen_func
+import inspect
+import os
+
+flash_attn_func = None
+flash_attn_with_kvcache = None
+flash_attn_varlen_func = None
+_has_flash_attn = False
+_has_flash_attn_with_paged = False
+_has_flash_attn_with_window = False
+_has_flash_attn_with_softcap = False
+
+if "EXLLAMAV3_NO_FLASH_ATTN" not in os.environ:
+    try:
+        import flash_attn
+
+        flash_attn_ver = [int(t) for t in flash_attn.__version__.split(".") if t.isdigit()]
+        is_ampere_or_newer_gpu = any(
+            torch.cuda.get_device_properties(i).major >= 8
+            for i in range(torch.cuda.device_count())
+        )
+
+        if is_ampere_or_newer_gpu:
+            if flash_attn_ver >= [2, 5, 7]:
+                from flash_attn import flash_attn_func, flash_attn_with_kvcache, flash_attn_varlen_func
+                signature = list(inspect.signature(flash_attn_func).parameters)
+                _has_flash_attn_with_window = "window_size" in signature
+                _has_flash_attn_with_softcap = "softcap" in signature
+                _has_flash_attn = True
+                _has_flash_attn_with_paged = True
+            elif flash_attn_ver >= [2, 2, 1]:
+                from flash_attn import flash_attn_func, flash_attn_varlen_func
+                signature = list(inspect.signature(flash_attn_func).parameters)
+                _has_flash_attn_with_window = "window_size" in signature
+                _has_flash_attn_with_softcap = "softcap" in signature
+                _has_flash_attn = True
+    except Exception:
+        pass
+
+
+def _flash_attn_extra_kwargs(window_size: tuple[int, int], softcap: float) -> dict:
+    kwargs = {}
+    if _has_flash_attn_with_window:
+        kwargs["window_size"] = window_size
+    if _has_flash_attn_with_softcap and softcap:
+        kwargs["softcap"] = softcap
+    return kwargs
+
+
+def _assert_flash_attn() -> None:
+    assert _has_flash_attn, "FlashAttention not available. Install flash_attn on Ampere/Ada/Hopper or switch attn_mode to sdpa_nc."
+
+
+def _assert_paged_flash_attn() -> None:
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
 from .multilinear import MultiLinear
 from ..ext import exllamav3_ext as ext
 from ..model.model_tp_alloc import TPAllocation
@@ -148,6 +201,7 @@ class Attention(Module):
         logit_softcapping: float = 0.0,
         q_norm: RMSNorm | LayerNorm | None = None,
         k_norm: RMSNorm | LayerNorm | None = None,
+        v_norm_eps: float | None = None,
         q_proj: Linear | Module | None = None,
         k_proj: Linear | Module | None = None,
         v_proj: Linear | Module | None = None,
@@ -249,6 +303,7 @@ class Attention(Module):
             self.k_norm = None
             self.norm_eps = 1e-6
             self.norm_constant_bias = 0.0
+        self.v_norm_eps = v_norm_eps
 
         # Register headwise gate
         if key_g:
@@ -370,9 +425,13 @@ class Attention(Module):
                 case "sdpa_nc":
                     x = self.decode_sdpa_nc(x, bsz, seqlen, params)
                 case "flash_attn":
+                    _assert_paged_flash_attn()
                     x = self.decode_flash_attn(x, bsz, seqlen, params)
                 case "flash_attn_nc":
-                    x = self.decode_flash_attn_nc(x, bsz, seqlen, params)
+                    if _has_flash_attn:
+                        x = self.decode_flash_attn_nc(x, bsz, seqlen, params)
+                    else:
+                        x = self.decode_sdpa_nc(x, bsz, seqlen, params)
                 case _:
                     raise ValueError(f"Unknown attn_mode: {attn_mode}")
             if self.tp_reduce:
@@ -492,6 +551,14 @@ class Attention(Module):
         return q, k
 
 
+    def apply_v_norm(self, v: torch.Tensor) -> torch.Tensor:
+        if self.v_norm_eps is None:
+            return v
+        v_float = v.float()
+        mean_squared = v_float.pow(2).mean(-1, keepdim = True) + self.v_norm_eps
+        return (v_float * torch.pow(mean_squared, -0.5)).to(v.dtype)
+
+
     def decode_sdpa_nc(
         self,
         x: torch.Tensor,
@@ -510,8 +577,6 @@ class Attention(Module):
         k = k.view(bsz, seqlen, self.num_kv_heads, self.head_dim)
         v = v.view(bsz, seqlen, self.num_kv_heads, self.head_dim)
 
-        assert self.sliding_window < 0, \
-            "Torch SDPA does not support sliding window attention (SWA)"
         assert self.logit_softcapping == 0.0, \
             "Torch SDPA does not support logit softcapping"
 
@@ -538,14 +603,37 @@ class Attention(Module):
                 self.post_rope_norm
             )
 
+        v = self.apply_v_norm(v)
         q = q.transpose(1, 2)
         k = k.transpose(1, 2)
         v = v.transpose(1, 2)
-        o = F.scaled_dot_product_attention(q, k, v, is_causal = causal, enable_gqa = self.gqa, scale = self.sm_scale)
+        if self.sliding_window >= 0:
+            key_idx = torch.arange(seqlen, device = q.device)
+            query_idx = torch.arange(seqlen, device = q.device).unsqueeze(-1)
+            min_key = torch.clamp(query_idx - self.sliding_window + 1, min = 0)
+            attn_mask = (key_idx <= query_idx) & (key_idx >= min_key)
+            o = F.scaled_dot_product_attention(
+                q,
+                k,
+                v,
+                attn_mask = attn_mask,
+                is_causal = False,
+                enable_gqa = self.gqa,
+                scale = self.sm_scale,
+            )
+        else:
+            o = F.scaled_dot_product_attention(
+                q,
+                k,
+                v,
+                is_causal = causal,
+                enable_gqa = self.gqa,
+                scale = self.sm_scale,
+            )
         o = o.transpose(1, 2)
 
         if self.headwise_gate: o *= g.sigmoid().unsqueeze(-1)
-        o = o.view((bsz, seqlen, self.num_q_heads * self.head_dim))
+        o = o.reshape((bsz, seqlen, self.num_q_heads * self.head_dim))
         if self.interleaved_gate: o *= g.sigmoid()
 
         o = self.project_o(o, bsz, seqlen, params)
@@ -593,6 +681,13 @@ class Attention(Module):
                 self.post_rope_norm
             )
 
+        v = self.apply_v_norm(v)
+        _assert_flash_attn()
+        flash_kwargs = _flash_attn_extra_kwargs(
+            (self.sliding_window, self.sliding_window),
+            self.logit_softcapping
+        )
+
         if self.use_cu_seqlens and (cu_seqlens := get_for_device(params, "cu_seqlens", self.device, None)) is not None:
             max_seqlen = params["max_seqlen"]
             o = flash_attn_varlen_func(
@@ -605,8 +700,7 @@ class Attention(Module):
                 max_seqlen_k = max_seqlen,
                 causal = causal,
                 softmax_scale = self.sm_scale,
-                window_size = (self.sliding_window, self.sliding_window),
-                softcap = self.logit_softcapping
+                **flash_kwargs
             )
         else:
             o = flash_attn_func(
@@ -615,12 +709,11 @@ class Attention(Module):
                 v = v,
                 causal = causal,
                 softmax_scale = self.sm_scale,
-                window_size = (self.sliding_window, self.sliding_window),
-                softcap = self.logit_softcapping
+                **flash_kwargs
             )
 
         if self.headwise_gate: o *= g.sigmoid().unsqueeze(-1)
-        o = o.view((bsz, seqlen, self.num_q_heads * self.head_dim))
+        o = o.reshape((bsz, seqlen, self.num_q_heads * self.head_dim))
         if self.interleaved_gate: o *= g.sigmoid()
 
         o = self.project_o(o, bsz, seqlen, params)
@@ -672,10 +765,25 @@ class Attention(Module):
                 self.post_rope_norm
             )
 
+        v = self.apply_v_norm(v)
         if self.has_split_cache:
-            cache_k, cache_v = self.tp_cache_lookup[cache].get_kv(cache_seqlens, block_table)
+            cache_layer = self.tp_cache_lookup[cache]
         else:
-            cache_k, cache_v = cache.get_layer(self.layer_idx, cache_seqlens, block_table)
+            cache_layer = cache.layers[self.layer_idx]
+
+        local_state = None
+        if hasattr(cache_layer, "get_kv_local_pages"):
+            cache_k, cache_v, local_state = cache_layer.get_kv_local_pages(cache_seqlens, block_table)
+            flash_block_table = local_state["local_block_table"]
+        else:
+            cache_k, cache_v = cache_layer.get_kv(cache_seqlens, block_table)
+            flash_block_table = block_table
+
+        _assert_paged_flash_attn()
+        flash_kwargs = _flash_attn_extra_kwargs(
+            (self.sliding_window, self.sliding_window),
+            self.logit_softcapping
+        )
 
         o = flash_attn_with_kvcache(
             q = q,
@@ -683,25 +791,26 @@ class Attention(Module):
             v = v,
             k_cache = cache_k,
             v_cache = cache_v,
-            block_table = block_table,
+            block_table = flash_block_table,
             cache_seqlens = cache_seqlens,
             causal = causal,
             softmax_scale = self.sm_scale,
-            window_size = (self.sliding_window, self.sliding_window),
-            softcap = self.logit_softcapping
+            **flash_kwargs
         )
 
-        if self.has_split_cache:
-            self.tp_cache_lookup[cache].update_kv(cache_seqlens, block_table, cache_k, cache_v, seqlen)
+        if local_state is not None and hasattr(cache_layer, "update_kv_local_pages"):
+            cache_layer.update_kv_local_pages(cache_seqlens, block_table, local_state, cache_k, cache_v, seqlen)
         else:
-            cache.update_layer(self.layer_idx, cache_seqlens, block_table, cache_k, cache_v, seqlen)
+            cache_layer.update_kv(cache_seqlens, block_table, cache_k, cache_v, seqlen)
 
         if self.headwise_gate: o *= g.sigmoid().unsqueeze(-1)
-        o = o.view((bsz, seqlen, self.num_q_heads * self.head_dim))
+        o = o.reshape((bsz, seqlen, self.num_q_heads * self.head_dim))
         if self.interleaved_gate: o *= g.sigmoid()
 
         o = self.project_o(o, bsz, seqlen, params)
         return o
+
+
 
 
     def make_tp_allocation(self, options: dict) -> list[TPAllocation]:
@@ -776,8 +885,11 @@ class Attention(Module):
                 "out_dtype": self.out_dtype,
                 "sliding_window": self.sliding_window,
                 "logit_softcapping": self.logit_softcapping,
+                "interleaved_gate": self.interleaved_gate,
+                "use_cu_seqlens": self.use_cu_seqlens,
                 "post_rope_norm": self.post_rope_norm,
                 "tp_split_norm": self.tp_split_norm,
+                "v_norm_eps": self.v_norm_eps,
             },
             "num_kv_heads": self.num_kv_heads,
             **{name: _export(getattr(self, name, None)) for name in (
@@ -809,12 +921,14 @@ class Attention(Module):
         n_gqa = exported["n_gqa"]
         device = local_context["device"]
         tp_split_norm = exported["kwargs"]["tp_split_norm"]
+        interleaved_gate = exported["kwargs"].get("interleaved_gate", False)
         first, last, unit = plan[key]
         assert unit == "heads"
         num_kv_heads = last - first
         num_q_heads = num_kv_heads * n_gqa
 
-        q_split = (True, first * head_dim * n_gqa, last * head_dim * n_gqa) \
+        q_width = head_dim * n_gqa * (2 if interleaved_gate else 1)
+        q_split = (True, first * q_width, last * q_width) \
             if num_kv_heads else None
         qh_split = (True, first * n_gqa, last * n_gqa) \
             if num_kv_heads else None

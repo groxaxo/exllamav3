@@ -1,0 +1,2 @@
+'(\'[{"dataset": "wiki2", "eval_len": 1024, "eval_stride": 512, "max_rows": 10, "tokenize_fn": "transformers", "tokenizer_dir": "/home/op/outputs/unsloth-qwen35-35b-a3b-freed0m-exl3-b6/merged-hf"}]\', \'{}\')', (0, 82322)
+'(\'[{"dataset": "wiki2", "eval_len": 512, "eval_stride": 256, "max_rows": 10, "tokenize_fn": "transformers", "tokenizer_dir": "/home/op/outputs/unsloth-qwen35-35b-a3b-freed0m-exl3-b6/merged-hf"}]\', \'{}\')', (82432, 41355)

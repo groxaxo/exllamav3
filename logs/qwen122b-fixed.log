@@ -1,0 +1,46 @@
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:180: UserWarning: CUDA initialization: The NVIDIA driver on your system is too old (found version 12080). Please update your GPU driver by downloading and installing a new version from the URL: http://www.nvidia.com/Download/index.aspx Alternatively, go to: https://pytorch.org to install a PyTorch version that has been compiled with your version of the CUDA driver. (Triggered internally at /pytorch/c10/cuda/CUDAFunctions.cpp:119.)
+  return torch._C._cuda_getDeviceCount() > 0
+W0404 19:00:35.991000 2607911 site-packages/torch/utils/cpp_extension.py:140] No CUDA runtime is found, using CUDA_HOME='/usr'
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1054: UserWarning: Can't initialize NVML
+  uuids = _raw_device_uuid_nvml()
+/home/op/exllamav3_ampere/server_mixed.py:121: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2607911]
+INFO:     Waiting for application startup.
+2026-04-04 19:00:36,189 INFO Loading model from /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw...
+2026-04-04 19:00:36,189 INFO Using split [22.8, 22.8, 11.5, 22.8] across visible GPUs
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1054: UserWarning: Can't initialize NVML
+  uuids = _raw_device_uuid_nvml()
+ERROR:    Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 228, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4562, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 139, in load_model
+    model.load(use_per_device=GPU_SPLIT, progressbar=True)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 345, in load
+    for _ in f: pass
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 281, in load_gen
+    yield from self._load_autosplit(
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 97, in _load_autosplit
+    set_memory_fraction_use(use_per_device[i], i)
+  File "/home/op/exllamav3_ampere/exllamav3/util/memory.py", line 43, in set_memory_fraction_use
+    touch_device(device)
+  File "/home/op/exllamav3_ampere/exllamav3/util/memory.py", line 14, in touch_device
+    d = torch.empty((32, 32), device = device, dtype = torch.float)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py", line 478, in _lazy_init
+    torch._C._cuda_init()
+RuntimeError: The NVIDIA driver on your system is too old (found version 12080). Please update your GPU driver by downloading and installing a new version from the URL: http://www.nvidia.com/Download/index.aspx Alternatively, go to: https://pytorch.org to install a PyTorch version that has been compiled with your version of the CUDA driver.
+
+ERROR:    Application startup failed. Exiting.

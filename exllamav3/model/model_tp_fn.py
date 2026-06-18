@@ -194,6 +194,7 @@ def mp_model_forward(
         "cache_seqlens",
         "positions",
         "position_ids",
+        "inv_freq",
     ]:
         p = params.get(tensor_param)
         if p is not None:
@@ -202,6 +203,21 @@ def mp_model_forward(
     p = params.get("indexed_embeddings")
     if p is not None:
         params["indexed_embeddings"] = recv_embeddings(consumer, p)
+
+    # Handle recurrent states: workers maintain their own local states keyed by state_id
+    state_id = params.pop("_recurrent_state_id", None)
+    params.pop("_recurrent_states_ref", None)
+    if state_id is not None:
+        if "recurrent_states" not in local_context:
+            local_context["recurrent_states"] = {}
+        all_states = local_context["recurrent_states"]
+        if state_id not in all_states:
+            all_states[state_id] = {}
+            for module in modules:
+                for submod in module:
+                    if submod.caps.get("recurrent_cache"):
+                        all_states[state_id][submod.layer_idx] = submod.new_recurrent_state()
+        params["recurrent_states"] = all_states[state_id]
 
     params["backend"] = backend
 
@@ -238,6 +254,16 @@ def mp_cache_page_copy(
     for idx, module in enumerate(kv_modules):
         cache_layer = module.tp_cache_lookup[cache_id]
         cache_layer.copy_page(cache_layer, from_page, to_page, num_tokens)
+
+
+def mp_cleanup_recurrent_state(local_context: dict, state_id: int):
+    """
+    Remove a recurrent state from the worker's local cache.
+    Called when a Generator job finishes to prevent memory leaks.
+    """
+    all_states = local_context.get("recurrent_states", {})
+    all_states.pop(state_id, None)
+    return None
 
 
 def mp_rotate_cache_pages(

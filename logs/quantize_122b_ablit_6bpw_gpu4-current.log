@@ -1,0 +1,87 @@
+ !! Warning: Overriding checkpoint_interval from existing job, was: 300, new value: 1800
+ !! Warning: Overriding devices from existing job, was: 0,1,2,3,4, new value: 0
+ -- Resuming existing job
+    Input directory: /home/op/models/Qwen3.5-122B-A10B-abliterated
+    Output directory: /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-6bpw
+    Working directory: /home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+    Calibration size: 250 rows, 2048 columns
+    Target bitrate: 6.0 (decoder), 8 (head)
+    Output scales: always
+    Codebook: mcg
+ -- Loaded model config
+    Architecture: Qwen3_5MoeForCausalLM
+ -- Created model instance:
+     - Qwen3_5MoeModel
+         - Embedding
+         - [12x]
+             - [3x] TransformerBlock
+                 - RMSNorm
+                 - GatedDeltaNet
+                     - [5x] Linear
+                     - GatedRMSNorm
+                 - RMSNorm
+                 - BlockSparseMLP
+                     - [770x] Linear
+                     - GatedMLP
+                         - [3x] Linear
+             - TransformerBlock
+                 - RMSNorm
+                 - Attention
+                     - [4x] Linear
+                     - [2x] RMSNorm
+                 - RMSNorm
+                 - BlockSparseMLP
+                     - [770x] Linear
+                     - GatedMLP
+                         - [3x] Linear
+         - RMSNorm
+         - Linear
+ -- Loaded tokenizer
+    Vocab size: 248077
+ -- RoPE settings
+    head_dim: 256
+    rope_scaling: {'mrope_interleaved': True, 'mrope_section': [11, 11, 10], 'partial_rotary_factor': 0.25, 'rope_theta': 10000000, 'rope_type': 'default'}
+    rope_theta: 10000000.0
+    rotary_dim: None
+    partial_rotary_factor: 0.25
+    max_position_embeddings: 262144
+    original_max_position_embeddings: None
+    rope_style: NEOX
+    llama_4_scaling_beta: 0.0
+ -- Resuming at: model.language_model.layers.27
+ -- Loading unquantized module: model.language_model.layers.27
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/convert.py", line 11, in <module>
+    main(_in_args, _job_state)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/lib/python3.13/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/op/exllamav3_ampere/exllamav3/conversion/convert_model.py", line 433, in main
+    module.load(
+    ~~~~~~~~~~~^
+        torch.device("cpu") if module.caps.get("prefer_cpu") else device,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        load_slice=current_slice if slicing else None,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/module.py", line 62, in load
+    module.load(device, **kwargs)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/block_sparse_mlp.py", line 560, in load
+    super().load(device, **kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/module.py", line 62, in load
+    module.load(device, **kwargs)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/linear.py", line 284, in load
+    if any(self.load_fp16(k) for k in keys): return
+       ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/linear.py", line 284, in <genexpr>
+    if any(self.load_fp16(k) for k in keys): return
+           ~~~~~~~~~~~~~~^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/linear.py", line 141, in load_fp16
+    weight = self.config.stc.get_tensor(key + ".weight", dev, float2half = True, transpose = self.transposed_load, pad_to = pad2, no_defer = no_defer)
+  File "/home/op/exllamav3_ampere/exllamav3/loader/safetensors.py", line 369, in get_tensor
+    tensor = tensor.to(torch.float16)
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 has a total capacity of 23.57 GiB of which 1.69 MiB is free. Process 1744046 has 18.34 GiB memory in use. Including non-PyTorch memory, this process has 5.21 GiB memory in use. Of the allocated memory 4.45 GiB is allocated by PyTorch, and 486.48 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)

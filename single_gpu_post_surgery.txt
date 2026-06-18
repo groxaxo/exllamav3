@@ -1,0 +1,27 @@
+ -- Loading /home/op/models/Llama-3.1-8B-Instruct-exl3-4.0bpw
+
+ -- Loading tokenizer...
+ -- Bitrate: 4.01 bpw / 6.00 bpw (head)
+ -- Chunk size: 4096
+
+
+[33;1mPrefill:[0m
+Length     256: [32;1m   2809.39[0m tokens/s
+Length     512: [32;1m   3243.86[0m tokens/s
+Length    1024: [32;1m   3395.04[0m tokens/s
+Length    2048: [32;1m   3643.01[0m tokens/s
+Length    4096: [32;1m   3527.49[0m tokens/s
+Length    8192: [32;1m   3285.96[0m tokens/s
+
+
+
+[33;1mGeneration[0m
+Context      0: [32;1m     92.20[0m tokens/s
+Context    256: [32;1m     91.78[0m tokens/s
+Context    512: [32;1m     91.07[0m tokens/s
+Context   1024: [32;1m     90.49[0m tokens/s
+Context   2048: [32;1m     87.35[0m tokens/s
+Context   4096: [32;1m     83.86[0m tokens/s
+Context   8192: [32;1m     78.45[0m tokens/s
+
+

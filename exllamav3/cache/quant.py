@@ -64,6 +64,47 @@ class CacheLayer_quant(CacheLayer):
         self.sv = None
 
 
+    def _local_page_state(self, block_table: torch.Tensor) -> dict:
+        used_pages = torch.unique(block_table[block_table >= 0].contiguous()).to(dtype = torch.int32)
+        assert used_pages.numel() > 0, "block_table does not reference any cache pages"
+
+        page_remap = torch.full(
+            (self.shape[0],),
+            -1,
+            dtype = torch.int32,
+            device = block_table.device
+        )
+        page_remap[used_pages.long()] = torch.arange(used_pages.numel(), dtype = torch.int32, device = block_table.device)
+        local_block_table = page_remap[block_table.long()]
+
+        qk_local = self.qk.index_select(0, used_pages.long()).contiguous()
+        qv_local = self.qv.index_select(0, used_pages.long()).contiguous()
+        sk_local = self.sk.index_select(0, used_pages.long()).contiguous()
+        sv_local = self.sv.index_select(0, used_pages.long()).contiguous()
+
+        return {
+            "used_pages": used_pages,
+            "local_block_table": local_block_table,
+            "qk": qk_local,
+            "qv": qv_local,
+            "sk": sk_local,
+            "sv": sv_local,
+        }
+
+
+    def get_kv_local_pages(self, cache_seqlens: torch.Tensor, block_table: torch.Tensor):
+        local_state = self._local_page_state(block_table)
+        local_shape = (local_state["used_pages"].numel(),) + self.shape[1:]
+        k = torch.empty(local_shape, dtype = torch.half, device = self.device)
+        v = torch.empty(local_shape, dtype = torch.half, device = self.device)
+        ext.dequant_cache_paged(
+            local_state["qk"], local_state["sk"], k,
+            local_state["qv"], local_state["sv"], v,
+            cache_seqlens, local_state["local_block_table"], PAGE_SIZE
+        )
+        return k, v, local_state
+
+
     @override
     def get_kv(self, cache_seqlens: torch.Tensor, block_table: torch.Tensor):
         k = torch.empty(self.shape, dtype = torch.half, device = self.device)
@@ -77,6 +118,29 @@ class CacheLayer_quant(CacheLayer):
         k = torch.empty(self.shape, dtype = torch.half, device = self.device)
         v = torch.empty(self.shape, dtype = torch.half, device = self.device)
         return k, v
+
+
+    def update_kv_local_pages(
+        self,
+        cache_seqlens: torch.Tensor,
+        block_table: torch.Tensor,
+        local_state: dict,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        length: int
+    ):
+        ext.quant_cache_paged(
+            k, local_state["qk"], local_state["sk"],
+            v, local_state["qv"], local_state["sv"],
+            cache_seqlens, local_state["local_block_table"],
+            PAGE_SIZE,
+            length
+        )
+        used_pages = local_state["used_pages"].long()
+        self.qk.index_copy_(0, used_pages, local_state["qk"])
+        self.qv.index_copy_(0, used_pages, local_state["qv"])
+        self.sk.index_copy_(0, used_pages, local_state["sk"])
+        self.sv.index_copy_(0, used_pages, local_state["sv"])
 
 
     @override

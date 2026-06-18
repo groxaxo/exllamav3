@@ -85,6 +85,8 @@ int exl3_gemm_gr
     int num_sms = force_num_sms ? force_num_sms : DevCtx::instance().get_num_sms(device);
     int cc = DevCtx::instance().get_cc(device);
     int* locks = DevCtx::instance().get_locks(device);
+    // B2: Query runtime-configurable SMEM limit
+    int smem_max = DevCtx::instance().get_smem_max(device);
 
     // Dispatch
     int K = B.size(2) / 16;
@@ -128,7 +130,8 @@ int exl3_gemm_gr
     // Launch
     if (kernel_attr_set[device].find((void*) kernel) == kernel_attr_set[device].end())
     {
-        cudaFuncSetAttribute(kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, SMEM_MAX);
+        // B2: Use runtime smem_max instead of compile-time SMEM_MAX
+        cudaFuncSetAttribute(kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_max);
         kernel_attr_set[device].insert((void*) kernel);
         cuda_check(cudaPeekAtLastError());
     }
@@ -151,7 +154,7 @@ int exl3_gemm_gr
         num_sms,
         block_dim,
         kernelArgs,
-        SMEM_MAX,
+        smem_max,
         stream
     );
 
@@ -284,6 +287,8 @@ int exl3_mgemm_gr
     int num_sms = force_num_sms ? force_num_sms : total_sms;
     int cc = DevCtx::instance().get_cc(device);
     int* locks = DevCtx::instance().get_locks(device);
+    // B2: Query runtime-configurable SMEM limit
+    int smem_max = DevCtx::instance().get_smem_max(device);
 
     // Dispatch
     const half* A_ptr = (const half*) A.data_ptr();
@@ -335,7 +340,8 @@ int exl3_mgemm_gr
     // Launch
     if (kernel_attr_set[device].find((void*) kernel) == kernel_attr_set[device].end())
     {
-        cudaFuncSetAttribute(kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, SMEM_MAX);
+        // B2: Use runtime smem_max instead of compile-time SMEM_MAX
+        cudaFuncSetAttribute(kernel, cudaFuncAttributeMaxDynamicSharedMemorySize, smem_max);
         kernel_attr_set[device].insert((void*) kernel);
     }
     void* kernelArgs[] =
@@ -364,7 +370,7 @@ int exl3_mgemm_gr
         block_grid,
         block_dim,
         kernelArgs,
-        SMEM_MAX,
+        smem_max,
         stream
     );
 

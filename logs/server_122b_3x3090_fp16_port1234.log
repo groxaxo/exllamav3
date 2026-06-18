@@ -1,0 +1,52 @@
+/home/op/exllamav3_ampere/server_27b_layer.py:425: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1377287]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 3-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+  GPU split    : [23.5, 23.5, 23.5]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 74,752
+  Model limit  : 262,144
+  KV cache     : fp16
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Embed device : GPU (EXLLAMA_EMBED_PREFER_CPU=0)
+  OMP threads  : 1
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1,4
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 2: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (74,752 tokens)...
+Loading weights (layer-split across GPUs)...
+  GPU 0: alloc=22.42GB  reserved=22.44GB
+  GPU 1: alloc=22.20GB  reserved=22.21GB
+  GPU 2: alloc=16.91GB  reserved=16.92GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.237s
+
+Server ready.  Cache = 74,752 tokens.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     127.0.0.1:53116 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48892 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 595 thinking tokens
+INFO:     127.0.0.1:50096 - "POST /v1/chat/completions HTTP/1.1" 200 OK

@@ -1,2 +1,6 @@
 from .filter import Filter
-from .formatron import FormatronFilter
+
+try:
+    from .formatron import FormatronFilter
+except Exception:
+    FormatronFilter = None

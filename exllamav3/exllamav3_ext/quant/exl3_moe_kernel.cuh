@@ -9,7 +9,9 @@
 #define MOE_ACT_SILU 0
 #define MOE_ACT_GELU 1  // TODO
 
-#define MOE_SMS_PER_EXPERT 12
+// B4: MOE_SMS_PER_EXPERT is now a runtime parameter instead of hardcoded #define
+// Default fallback for compile-time contexts that still reference it
+#define MOE_SMS_PER_EXPERT_DEFAULT 12
 #define MOE_TILESIZE_K 32
 #define MOE_TILESIZE_M 16
 #define MOE_TILESIZE_N 256
@@ -49,6 +51,7 @@
     const int K_up,                             \
     const int K_down,                           \
                                                 \
+    const int sms_per_expert,                   \
     int* __restrict__ locks
 
 template<int t_bits>
@@ -58,7 +61,8 @@ void exl3_moe_kernel(EXL3_MOE_KERNEL_ARGS)
     const int group_idx = blockIdx.z;
     const int block_idx = blockIdx.x;
     const int block_threads = blockDim.x;
-    const int group_threads = MOE_SMS_PER_EXPERT * block_threads;
+    // B4: Use runtime sms_per_expert instead of hardcoded MOE_SMS_PER_EXPERT
+    const int group_threads = sms_per_expert * block_threads;
     const int warp_id = threadIdx.x / 32;
     const int warps_per_group = group_threads / 32;
     const int warps_per_block = block_threads / 32;
@@ -134,7 +138,7 @@ void exl3_moe_kernel(EXL3_MOE_KERNEL_ARGS)
                     0.088388347648f
                 );
             }
-            group_barrier(group_idx, MOE_SMS_PER_EXPERT, barrier_counters_sense);
+            group_barrier(group_idx, sms_per_expert, barrier_counters_sense);
         };
 
         had_gather_gu_in();
@@ -178,7 +182,7 @@ void exl3_moe_kernel(EXL3_MOE_KERNEL_ARGS)
                 in_addr += 16 * hidden_dim;
                 out_addr += 16 * intermediate_dim;
                 size_m -= 16;
-                group_barrier(group_idx, MOE_SMS_PER_EXPERT, barrier_counters_sense);
+                group_barrier(group_idx, sms_per_expert, barrier_counters_sense);
             }
         };
 
@@ -205,7 +209,7 @@ void exl3_moe_kernel(EXL3_MOE_KERNEL_ARGS)
                     act_limit
                 );
             }
-            group_barrier(group_idx, MOE_SMS_PER_EXPERT, barrier_counters_sense);
+            group_barrier(group_idx, sms_per_expert, barrier_counters_sense);
         };
 
         had_guad();
@@ -249,7 +253,7 @@ void exl3_moe_kernel(EXL3_MOE_KERNEL_ARGS)
                 in_addr += 16 * intermediate_dim;
                 out_addr += 16 * hidden_dim;
                 size_m -= 16;
-                group_barrier(group_idx, MOE_SMS_PER_EXPERT, barrier_counters_sense);
+                group_barrier(group_idx, sms_per_expert, barrier_counters_sense);
             }
         };
 
@@ -276,7 +280,7 @@ void exl3_moe_kernel(EXL3_MOE_KERNEL_ARGS)
                     0.088388347648f * __half2float(weight)
                 );
             }
-            group_barrier(group_idx, MOE_SMS_PER_EXPERT, barrier_counters_sense);
+            group_barrier(group_idx, sms_per_expert, barrier_counters_sense);
         };
 
         had_d_out();

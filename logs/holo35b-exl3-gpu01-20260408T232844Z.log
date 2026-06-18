@@ -1,0 +1,88 @@
+/home/op/exllamav3_ampere/server_27b_tp2.py:434: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [264332]
+INFO:     Waiting for application startup.
+
+============================================================
+  ExLlamaV3 TP 2-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Holo3-35B-A3B-exl3-6bpw
+  GPU split    : [22.0, 22.0]
+  TP backend   : nccl
+  Cache tokens : 262,144
+  Model limit  : 262,144
+  Usable ctx   : 262,144
+  KV cache     : quantized 8-bit
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 4096 (cap 16000)
+  Thinking     : True (preserve=False, budget=512)
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  OMP threads          : 1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating quantized 8-bit KV cache (262,144 tokens)...
+Loading weights (tensor parallel)...
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:49263
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:49263
+ -- NCCL warmup, device 0, please wait...
+ -- NCCL warmup, device 1, please wait...
+ -- Finished NCCL warmup, device 1
+ -- Finished NCCL warmup, device 0
+  GPU 0: alloc=13.46GB  reserved=17.08GB
+  GPU 1: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+[rank1]:[W409 11:29:07.134206602 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank0]:[W409 11:29:07.134342809 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+  Warmup complete in 0.351s
+
+Server ready.  Cache = 262,144 tokens, usable context = 262,144.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     127.0.0.1:41634 - "GET /health HTTP/1.1" 200 OK
+INFO:     172.20.0.2:57550 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:51318 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 512 tokens exhausted — injecting </think> after 511 thinking tokens
+  [ThinkBudget] budget of 512 tokens exhausted — injecting </think> after 378 thinking tokens
+INFO:     172.20.0.2:47162 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 512 tokens exhausted — injecting </think> after 121 thinking tokens
+INFO:     172.20.0.2:57224 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 512 tokens exhausted — injecting </think> after 511 thinking tokens
+INFO:     172.20.0.2:46048 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [264332]
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 73, in mp_model_worker
+    msg = conn.recv()
+          ^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/connection.py", line 250, in recv
+    buf = self._recv_bytes()
+          ^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/connection.py", line 430, in _recv_bytes
+    buf = self._recv(4)
+          ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/connection.py", line 399, in _recv
+    raise EOFError
+EOFError
+[rank0]:[W409 11:43:17.786078748 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

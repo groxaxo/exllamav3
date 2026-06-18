@@ -229,6 +229,71 @@ __device__ __forceinline__ void dq8_aligned_1bit(const uint32_t* ptr, int t_offs
     frag1[1] = decode_3inst_2<cb>(w6, w7);
 }
 
+// B8: Specialized 3-bit dequantization exploiting alignment for shift reuse
+// 3 bits * 8 words = 24 bits; we load two uint32s and extract via cascading shifts
+template <int cb>
+__device__ __forceinline__ void dq8_aligned_3bits(const uint32_t* ptr, int t_offset, FragB& frag0, FragB& frag1)
+{
+    // Each group of 8 words = 24 bits. Compute the bit range.
+    int bit_start = (t_offset + 257) * 3 - 16;
+    int i0 = bit_start / 32;
+    int i_end = (bit_start + 8 * 3 + 16 - 1) / 32;
+    uint32_t a = ptr[i0 % (3 * 256 / 32)];
+    uint32_t b = ptr[i_end % (3 * 256 / 32)];
+    int s = (i_end + 1) * 32 - (bit_start + 8 * 3 + 16);
+
+    // Extract 8 words with shift reuse: pairs share an intermediate shift
+    uint32_t t0 = fshift(b, a, s);
+    uint32_t w7 = t0 & 0xffff;
+    uint32_t w6 = (t0 >> 3) & 0xffff;
+    uint32_t t1 = fshift(b, a, s + 6);
+    uint32_t w5 = t1 & 0xffff;
+    uint32_t w4 = (t1 >> 3) & 0xffff;
+    uint32_t t2 = fshift(b, a, s + 12);
+    uint32_t w3 = t2 & 0xffff;
+    uint32_t w2 = (t2 >> 3) & 0xffff;
+    uint32_t t3 = fshift(b, a, s + 18);
+    uint32_t w1 = t3 & 0xffff;
+    uint32_t w0 = (t3 >> 3) & 0xffff;
+
+    frag0[0] = decode_3inst_2<cb>(w0, w1);
+    frag0[1] = decode_3inst_2<cb>(w2, w3);
+    frag1[0] = decode_3inst_2<cb>(w4, w5);
+    frag1[1] = decode_3inst_2<cb>(w6, w7);
+}
+
+// B8: Specialized 5-bit dequantization exploiting alignment for shift reuse
+// 5 bits * 8 words = 40 bits; we load two uint32s and extract via cascading shifts
+template <int cb>
+__device__ __forceinline__ void dq8_aligned_5bits(const uint32_t* ptr, int t_offset, FragB& frag0, FragB& frag1)
+{
+    int bit_start = (t_offset + 257) * 5 - 16;
+    int bit_end_pos = bit_start + 8 * 5 + 16 - 1;
+    int i0 = bit_start / 32;
+    int i_end = bit_end_pos / 32;
+    uint32_t a = ptr[i0 % (5 * 256 / 32)];
+    uint32_t b = ptr[i_end % (5 * 256 / 32)];
+    int s = (i_end + 1) * 32 - (bit_start + 8 * 5 + 16);
+
+    // Extract 8 words with shift reuse: pairs share an intermediate shift
+    uint32_t t0 = fshift(b, a, s);
+    uint32_t w7 = t0 & 0xffff;
+    uint32_t w6 = (t0 >> 5) & 0xffff;
+    uint32_t t1 = fshift(b, a, s + 10);
+    uint32_t w5 = t1 & 0xffff;
+    uint32_t w4 = (t1 >> 5) & 0xffff;
+    uint32_t t2 = fshift(b, a, s + 20);
+    uint32_t w3 = t2 & 0xffff;
+    uint32_t w2 = (t2 >> 5) & 0xffff;
+    uint32_t t3 = fshift(b, a, s + 30);
+    uint32_t w1 = t3 & 0xffff;
+    uint32_t w0 = (t3 >> 5) & 0xffff;
+
+    frag0[0] = decode_3inst_2<cb>(w0, w1);
+    frag0[1] = decode_3inst_2<cb>(w2, w3);
+    frag1[0] = decode_3inst_2<cb>(w4, w5);
+    frag1[1] = decode_3inst_2<cb>(w6, w7);
+}
 
 template <int cb>
 __device__ __forceinline__ void dq8_aligned_4bits_bfe64(const uint32_t* ptr, int t_offset, FragB& frag0, FragB& frag1)

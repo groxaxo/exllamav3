@@ -1,0 +1,126 @@
+/home/op/exllamav3_ampere/server_27b_tp2.py:344: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1123192]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - TP 2-GPU server (cached)
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-27B-exl3
+  GPU split    : [22.0, 22.0]
+  TP backend   : nccl
+  Cache tokens : 131,072
+  Model limit  : 262,144
+  KV cache     : fp16 (no quantization)
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (131,072 tokens)...
+Loading weights (tensor parallel)...
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:59677
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:59677
+ -- NCCL warmup, device 0, please wait... -- NCCL warmup, device 1, please wait...
+
+
+[2026-03-26 23:27:54] 12700:1123484:1123484 [0] misc/cudawrap.cc:270 NCCL WARN Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+
+[2026-03-26 23:27:54] 12700:1123484:1123484 [0] init.cc:2152 NCCL WARN Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+
+[2026-03-26 23:27:54] 12700:1123192:1123192 [0] misc/cudawrap.cc:270 NCCL WARN Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+
+[2026-03-26 23:27:54] 12700:1123192:1123192 [0] init.cc:2152 NCCL WARN Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+Process Process-1:
+Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 68, in mp_model_worker
+    local_context = init_pg(device, active_devices, output_device, backend_args)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 30, in init_pg
+    backend = TPBackendNCCL(
+              ^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 61, in __init__
+    self.mp_warmup_nccl(device)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 81, in mp_warmup_nccl
+    dist.all_reduce(x)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py", line 3007, in all_reduce
+    work = group.allreduce([tensor], opts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.cpp:93, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.28.9
+ncclUnhandledCudaError: Call to CUDA function failed.
+Last error:
+Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+ERROR:    Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 237, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4880, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_27b_tp2.py", line 398, in load_model
+    _model.load(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 345, in load
+    for _ in f: pass
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 311, in load_gen
+    yield from self._load_tp(
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp.py", line 254, in _load_tp
+    self.create_tp_context(tp_backend)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp.py", line 78, in create_tp_context
+    self.mp_parent_conn[device] = PseudoParentConn(
+                                  ^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 311, in __init__
+    self.local_context = init_pg(device, active_devices, output_device, backend_args, master = True)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 30, in init_pg
+    backend = TPBackendNCCL(
+              ^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 61, in __init__
+    self.mp_warmup_nccl(device)
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_backend.py", line 81, in mp_warmup_nccl
+    dist.all_reduce(x)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/c10d_logger.py", line 83, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/distributed/distributed_c10d.py", line 3007, in all_reduce
+    work = group.allreduce([tensor], opts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.distributed.DistBackendError: NCCL error in: /pytorch/torch/csrc/distributed/c10d/NCCLUtils.cpp:93, unhandled cuda error (run with NCCL_DEBUG=INFO for details), NCCL version 2.28.9
+ncclUnhandledCudaError: Call to CUDA function failed.
+Last error:
+Cuda failure 'CUDA driver version is insufficient for CUDA runtime version'
+
+ERROR:    Application startup failed. Exiting.
+[rank0]:[W326 23:27:54.373972340 ProcessGroupNCCL.cpp:1553] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())
+[rank1]:[W326 23:27:56.788493133 TCPStore.cpp:125] [c10d] recvValue failed on SocketImpl(fd=66, addr=[localhost]:53038, remote=[localhost]:59677): Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+Exception raised from recvBytes at /pytorch/torch/csrc/distributed/c10d/Utils.hpp:682 (most recent call first):
+frame #0: c10::Error::Error(c10::SourceLocation, std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >) + 0x9d (0x7109b3f72fdd in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libc10.so)
+frame #1: <unknown function> + 0x6a3325d (0x7108fb23325d in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #2: c10d::TCPStore::check(std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > > const&) + 0x273 (0x7108fb2311f3 in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_cpu.so)
+frame #3: c10d::ProcessGroupNCCL::HeartbeatMonitor::runLoop() + 0x44c (0x7108b814ceec in /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_cuda.so)
+frame #4: <unknown function> + 0xecdb4 (0x7109758ecdb4 in /lib/x86_64-linux-gnu/libstdc++.so.6)
+frame #5: <unknown function> + 0x9caa4 (0x7109b589caa4 in /lib/x86_64-linux-gnu/libc.so.6)
+frame #6: <unknown function> + 0x129c6c (0x7109b5929c6c in /lib/x86_64-linux-gnu/libc.so.6)
+
+[rank1]:[W326 23:27:56.791142078 ProcessGroupNCCL.cpp:1802] [PG ID 0 PG GUID 0(default_pg) Rank 1] Failed to check the "should dump" flag on TCPStore, (maybe TCPStore server has shut down too early), with error: Failed to recv, got 0 bytes. Connection was likely closed. Did the remote server shutdown or crash?
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "<string>", line 4, in <module>
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 17, in <module>
+    import torch
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/__init__.py", line 436, in <module>
+    from torch._C import *  # noqa: F403
+    ^^^^^^^^^^^^^^^^^^^^^^
+ImportError: /usr/NX/lib/libstdc++.so.6: version `CXXABI_1.3.11' not found (required by /home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/lib/libtorch_python.so)

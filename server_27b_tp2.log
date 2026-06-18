@@ -1,0 +1,41 @@
+nohup: ignoring input
+/home/op/exllamav3_ampere/server_27b_tp2.py:134: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1237761]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic – layer-split 2-GPU server
+============================================================
+  Model dir   : /home/op/exllamav3_ampere/models/Qwen3.5-27B-exl3
+  GPU split   : [11.0, 22.0]  (layer-split, not TP)
+  Max context : 262,144 tokens
+  KV cache    : 4-bit quantised (CacheLayer_quant)
+  Endpoint    : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Loading weights (layer-split)...
+
+ERROR:    Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 237, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4880, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_27b_tp2.py", line 177, in load_model
+    mem_alloc = torch.cuda.memory_allocated(int(dev.split(":")[1])) / 1024**3
+                                                ~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+ERROR:    Application startup failed. Exiting.
+Module placement:

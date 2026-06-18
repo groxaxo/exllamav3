@@ -1,0 +1,48 @@
+{
+  "tp_size": 2,
+  "mode": "layer-split-2GPU",
+  "gpu_split": [
+    9.5,
+    11.0
+  ],
+  "gpu_names": [
+    "NVIDIA GeForce RTX 3060",
+    "NVIDIA GeForce RTX 3060"
+  ],
+  "layer_split": true,
+  "cache_tokens": 65536,
+  "max_new_tokens": 500,
+  "tp_backend": "n/a",
+  "prompt_tokens": 74,
+  "avg_decode_tps": 31.48,
+  "avg_prefill_tps": 356.59,
+  "runs": [
+    {
+      "run": 1,
+      "gen_tokens": 499,
+      "total_time": 16.513,
+      "prefill_time": 0.359,
+      "decode_time": 16.154,
+      "decode_tps": 30.89,
+      "prefill_tps": 205.87
+    },
+    {
+      "run": 2,
+      "gen_tokens": 499,
+      "total_time": 15.837,
+      "prefill_time": 0.17,
+      "decode_time": 15.666,
+      "decode_tps": 31.85,
+      "prefill_tps": 434.2
+    },
+    {
+      "run": 3,
+      "gen_tokens": 499,
+      "total_time": 15.91,
+      "prefill_time": 0.172,
+      "decode_time": 15.738,
+      "decode_tps": 31.71,
+      "prefill_tps": 429.7
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+nohup: ignoring input
+/home/op/exllamav3_ampere/server_27b_tp2.py:134: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1253512]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic – layer-split 2-GPU server
+============================================================
+  Model dir   : /home/op/exllamav3_ampere/models/Qwen3.5-27B-exl3
+  GPU split   : [11.0, 22.0]  (layer-split, not TP)
+  Max context : 262,144 tokens
+  KV cache    : 4-bit quantised (CacheLayer_quant)
+  Endpoint    : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Loading weights (layer-split)...
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+Module placement:
+  cpu: 1 modules
+  cuda:0: 27 modules  (alloc=8.90GB  reserved=9.36GB)
+  cuda:1: 39 modules  (alloc=13.57GB  reserved=13.91GB)
+
+Loading tokenizer...
+
+Server ready.  Max context = 262,144 tokens.
+
+INFO:     127.0.0.1:34860 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34874 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50114 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54546 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39908 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52774 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50800 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:40712 - "GET /health HTTP/1.1" 200 OK
+INFO:     100.85.200.51:37794 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.51:34302 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     100.85.200.51:37588 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     100.85.200.51:37590 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:42240 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.51:51646 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.51:37628 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.51:41840 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.51:41854 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1253512]

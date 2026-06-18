@@ -1,0 +1,13 @@
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:40427
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:40427
+ -- NCCL warmup, device 0, please wait...
+ -- NCCL warmup, device 1, please wait...
+ -- Finished NCCL warmup, device 0
+ -- Finished NCCL warmup, device 1
+[
+  {
+    "cache_mode": "fp16",
+    "seconds": 23.153,
+    "output": "สนานst - w. o conto was级-cha idi,1:宽敞 `,deka.当天的chiwaxtduu pip::,-nt,,du/.设为首页太se,1,,上akchiaeekaak and,他的话 多年来"
+  }
+]

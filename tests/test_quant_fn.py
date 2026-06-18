@@ -12,16 +12,16 @@ import math
 
 torch.set_printoptions(precision = 5, sci_mode = False, linewidth = 200)
 
-device = "cuda:2"
-test_model = "/mnt/str/models/llama3.1-8b-instruct/hf/"
+device = "cuda:0"
+test_model = "/home/op/exllamav3_ampere/models/test_model_qwen27b"
 test_keys = [
-    "model.layers.0.self_attn.q_proj",
-    "model.layers.0.self_attn.k_proj",
-    "model.layers.0.self_attn.v_proj",
-    "model.layers.0.self_attn.o_proj",
-    "model.layers.0.mlp.up_proj",
-    "model.layers.0.mlp.gate_proj",
-    "model.layers.0.mlp.down_proj",
+    "model.language_model.layers.0.self_attn.q_proj",
+    "model.language_model.layers.0.self_attn.k_proj",
+    "model.language_model.layers.0.self_attn.v_proj",
+    "model.language_model.layers.0.self_attn.o_proj",
+    "model.language_model.layers.0.mlp.up_proj",
+    "model.language_model.layers.0.mlp.gate_proj",
+    "model.language_model.layers.0.mlp.down_proj",
 ]
 
 config = Config.from_directory(test_model)

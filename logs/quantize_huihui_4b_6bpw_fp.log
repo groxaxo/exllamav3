@@ -1,0 +1,2150 @@
+ -- Resuming existing job
+    Input directory: /home/op/models/Huihui-Qwen3-4B-Instruct-2507-abliterated
+    Output directory: models/Huihui-Qwen3-4B-exl3-6bpw
+    Working directory: models/work_huihui_4b_6bpw
+    Calibration size: 250 rows, 2048 columns
+    Target bitrate: 6.0 (decoder), 8 (head)
+    Output scales: always
+    Codebook: mcg
+ -- Loaded model config
+    Architecture: Qwen3ForCausalLM
+ -- Created model instance:
+     - Qwen3Model
+         - Embedding
+         - [36x] TransformerBlock
+             - RMSNorm
+             - Attention
+                 - [4x] Linear
+                 - [2x] RMSNorm
+             - RMSNorm
+             - GatedMLP
+                 - [3x] Linear
+         - RMSNorm
+         - Linear
+ -- Loaded tokenizer
+    Vocab size: 151669
+ -- RoPE settings
+    head_dim: 128
+    rope_scaling: None
+    rope_theta: 5000000.0
+    rotary_dim: None
+    partial_rotary_factor: 1.0
+    max_position_embeddings: 262144
+    original_max_position_embeddings: None
+    rope_style: NEOX
+    llama_4_scaling_beta: 0.0
+ -- Resuming at: model.layers.12
+ -- Loading unquantized module: model.layers.12
+ -- Captured: model.layers.12
+     - H min/max: -10.632499   49.845753
+     - H mean/std: 0.000039   0.036508
+     - H diag min/max: 0.007912   49.845753 
+     - input tensor rms: 0.022861
+     - input state skew: 0.113071
+     - out ch scales std/mean: 0.238468   1.000000
+     - su/sv std: 0.025316   1.028111
+     - global scale: 0.706386
+     - sample mse: 0.000587
+     - apply_out_scales: True
+     - regularized rms:  0.878540
+     - quant nmse: 0.000442
+ -- Quantized: model.layers.12.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000051  o.  g_sc: 0.706386
+     - input tensor rms: 0.022589
+     - input state skew: 0.113071
+     - out ch scales std/mean: 0.249312   1.000000
+     - su/sv std: 0.024758   1.030914
+     - global scale: 0.711976
+     - sample mse: 0.000561
+     - apply_out_scales: True
+     - regularized rms:  0.885492
+     - quant nmse: 0.000436
+ -- Quantized: model.layers.12.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000041  o.  g_sc: 0.711976
+     - input tensor rms: 0.025725
+     - input state skew: 0.113071
+     - out ch scales std/mean: 0.145707   1.000000
+     - su/sv std: 0.030901   1.010838
+     - global scale: 0.662481
+     - sample mse: 0.000620
+     - apply_out_scales: True
+     - regularized rms:  0.823934
+     - quant nmse: 0.000482
+ -- Quantized: model.layers.12.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000167  o.  g_sc: 0.662481
+     - H min/max: -0.573805   1.427563
+     - H mean/std: 0.000013   0.004775
+     - H diag min/max: 0.002868   1.427563 
+     - input tensor rms: 0.022709
+     - input state skew: 0.065469
+     - out ch scales std/mean: 0.108878   1.000000
+     - su/sv std: 0.027928   1.006046
+     - global scale: 0.649981
+     - sample mse: 0.000674
+     - apply_out_scales: True
+     - regularized rms:  0.808388
+     - quant nmse: 0.000543
+ -- Quantized: model.layers.12.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000123  o.  g_sc: 0.649981
+     - H min/max: -6.406108   15.832328
+     - H mean/std: 0.000054   0.026326
+     - H diag min/max: 0.003732   15.832328 
+     - input tensor rms: 0.023193
+     - input state skew: 0.057867
+     - out ch scales std/mean: 0.070972   1.000000
+     - su/sv std: 0.033847   1.002550
+     - global scale: 0.549670
+     - sample mse: 0.000887
+     - apply_out_scales: True
+     - regularized rms:  0.683631
+     - quant nmse: 0.000568
+ -- Quantized: model.layers.12.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000215  o.  g_sc: 0.549670
+     - input tensor rms: 0.025029
+     - input state skew: 0.057867
+     - out ch scales std/mean: 0.140111   1.000000
+     - su/sv std: 0.030667   1.009817
+     - global scale: 0.649981
+     - sample mse: 0.000643
+     - apply_out_scales: True
+     - regularized rms:  0.808388
+     - quant nmse: 0.000469
+ -- Quantized: model.layers.12.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000089  o.  g_sc: 0.649981
+     - H min/max: -0.884733   2.063243
+     - H mean/std: 0.000002   0.000911
+     - H diag min/max: 0.002769   2.063243 
+     - input tensor rms: 0.022739
+     - input state skew: 0.047149
+     - out ch scales std/mean: 0.111780   1.000000
+     - su/sv std: 0.025724   1.006410
+     - global scale: 0.706386
+     - sample mse: 0.000594
+     - apply_out_scales: True
+     - regularized rms:  0.878540
+     - quant nmse: 0.000479
+ -- Quantized: model.layers.12.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000169  o.  g_sc: 0.706386
+ -- Quantized: model.layers.12                                          bpw:  6.01  rfn: 0.004058  cos: 0.000049  sqnr: 40.208819  [47.74 s]
+ -- Estimated remaining time: warming up (1/3 timed blocks)
+ -- Loading unquantized module: model.layers.13
+ -- Captured: model.layers.13
+     - H min/max: -7.106150   29.813894
+     - H mean/std: 0.000027   0.023551
+     - H diag min/max: 0.009356   29.813894 
+     - input tensor rms: 0.022755
+     - input state skew: 0.111080
+     - out ch scales std/mean: 0.278750   1.000000
+     - su/sv std: 0.023109   1.037989
+     - global scale: 0.762791
+     - sample mse: 0.000533
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000442
+ -- Quantized: model.layers.13.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000048  o.  g_sc: 0.762791
+     - input tensor rms: 0.022452
+     - input state skew: 0.111080
+     - out ch scales std/mean: 0.312294   1.000000
+     - su/sv std: 0.021218   1.048095
+     - global scale: 0.812287
+     - sample mse: 0.000509
+     - apply_out_scales: True
+     - regularized rms:  1.010250
+     - quant nmse: 0.000441
+ -- Quantized: model.layers.13.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000046  o.  g_sc: 0.812287
+     - input tensor rms: 0.025177
+     - input state skew: 0.111080
+     - out ch scales std/mean: 0.131216   1.000000
+     - su/sv std: 0.024885   1.009042
+     - global scale: 0.806696
+     - sample mse: 0.000491
+     - apply_out_scales: True
+     - regularized rms:  1.003297
+     - quant nmse: 0.000437
+ -- Quantized: model.layers.13.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000116  o.  g_sc: 0.806696
+     - H min/max: -0.409399   0.679415
+     - H mean/std: 0.000023   0.003286
+     - H diag min/max: 0.000508   0.679415 
+     - input tensor rms: 0.022193
+     - input state skew: 0.074397
+     - out ch scales std/mean: 0.121427   1.000000
+     - su/sv std: 0.023055   1.007144
+     - global scale: 0.768381
+     - sample mse: 0.000508
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000473
+ -- Quantized: model.layers.13.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000085  o.  g_sc: 0.768381
+     - H min/max: -9.867223   15.981631
+     - H mean/std: 0.000055   0.028952
+     - H diag min/max: 0.003806   15.981631 
+     - input tensor rms: 0.023501
+     - input state skew: 0.062009
+     - out ch scales std/mean: 0.091784   1.000000
+     - su/sv std: 0.032313   1.004233
+     - global scale: 0.582395
+     - sample mse: 0.000810
+     - apply_out_scales: True
+     - regularized rms:  0.724331
+     - quant nmse: 0.000524
+ -- Quantized: model.layers.13.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000188  o.  g_sc: 0.582395
+     - input tensor rms: 0.024176
+     - input state skew: 0.062009
+     - out ch scales std/mean: 0.150346   1.000000
+     - su/sv std: 0.029836   1.011246
+     - global scale: 0.644391
+     - sample mse: 0.000653
+     - apply_out_scales: True
+     - regularized rms:  0.801436
+     - quant nmse: 0.000470
+ -- Quantized: model.layers.13.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000093  o.  g_sc: 0.644391
+     - H min/max: -0.141042   0.458586
+     - H mean/std: 0.000002   0.000788
+     - H diag min/max: 0.004882   0.458586 
+     - input tensor rms: 0.022869
+     - input state skew: 0.047759
+     - out ch scales std/mean: 0.096901   1.000000
+     - su/sv std: 0.026808   1.004479
+     - global scale: 0.682706
+     - sample mse: 0.000608
+     - apply_out_scales: True
+     - regularized rms:  0.849089
+     - quant nmse: 0.000490
+ -- Quantized: model.layers.13.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000182  o.  g_sc: 0.682706
+ -- Quantized: model.layers.13                                          bpw:  6.01  rfn: 0.004091  cos: 0.000049  sqnr: 40.213117  [45.28 s]
+ -- Estimated remaining time: warming up (2/3 timed blocks)
+ -- Loading unquantized module: model.layers.14
+ -- Captured: model.layers.14
+     - H min/max: -21.777960   56.212280
+     - H mean/std: 0.000064   0.057540
+     - H diag min/max: 0.016075   56.212280 
+     - input tensor rms: 0.022764
+     - input state skew: 0.122700
+     - out ch scales std/mean: 0.227715   1.000000
+     - su/sv std: 0.022959   1.025718
+     - global scale: 0.777426
+     - sample mse: 0.000518
+     - apply_out_scales: True
+     - regularized rms:  0.966893
+     - quant nmse: 0.000434
+ -- Quantized: model.layers.14.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000027  o.  g_sc: 0.777426
+     - input tensor rms: 0.022641
+     - input state skew: 0.122700
+     - out ch scales std/mean: 0.217341   1.000000
+     - su/sv std: 0.022209   1.023062
+     - global scale: 0.801106
+     - sample mse: 0.000495
+     - apply_out_scales: True
+     - regularized rms:  0.996345
+     - quant nmse: 0.000437
+ -- Quantized: model.layers.14.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000033  o.  g_sc: 0.801106
+     - input tensor rms: 0.024508
+     - input state skew: 0.122700
+     - out ch scales std/mean: 0.079847   1.000000
+     - su/sv std: 0.024354   1.002357
+     - global scale: 0.806696
+     - sample mse: 0.000488
+     - apply_out_scales: True
+     - regularized rms:  1.003297
+     - quant nmse: 0.000429
+ -- Quantized: model.layers.14.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000114  o.  g_sc: 0.806696
+     - H min/max: -0.627994   0.975446
+     - H mean/std: 0.000027   0.005369
+     - H diag min/max: 0.004937   0.975446 
+     - input tensor rms: 0.021889
+     - input state skew: 0.064824
+     - out ch scales std/mean: 0.133842   1.000000
+     - su/sv std: 0.023252   1.009068
+     - global scale: 0.750291
+     - sample mse: 0.000569
+     - apply_out_scales: True
+     - regularized rms:  0.933145
+     - quant nmse: 0.000530
+ -- Quantized: model.layers.14.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000135  o.  g_sc: 0.750291
+     - H min/max: -14.597821   21.026127
+     - H mean/std: 0.000052   0.033232
+     - H diag min/max: 0.003872   21.026127 
+     - input tensor rms: 0.023169
+     - input state skew: 0.065220
+     - out ch scales std/mean: 0.095438   1.000000
+     - su/sv std: 0.028535   1.004594
+     - global scale: 0.649981
+     - sample mse: 0.000672
+     - apply_out_scales: True
+     - regularized rms:  0.808388
+     - quant nmse: 0.000463
+ -- Quantized: model.layers.14.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000158  o.  g_sc: 0.649981
+     - input tensor rms: 0.023838
+     - input state skew: 0.065220
+     - out ch scales std/mean: 0.164766   1.000000
+     - su/sv std: 0.026990   1.013522
+     - global scale: 0.700796
+     - sample mse: 0.000597
+     - apply_out_scales: True
+     - regularized rms:  0.871587
+     - quant nmse: 0.000434
+ -- Quantized: model.layers.14.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000079  o.  g_sc: 0.700796
+     - H min/max: -0.987242   1.817577
+     - H mean/std: 0.000002   0.000742
+     - H diag min/max: 0.002326   1.817577 
+     - input tensor rms: 0.022608
+     - input state skew: 0.045269
+     - out ch scales std/mean: 0.103658   1.000000
+     - su/sv std: 0.023533   1.005515
+     - global scale: 0.768381
+     - sample mse: 0.000531
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000451
+ -- Quantized: model.layers.14.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000169  o.  g_sc: 0.768381
+ -- Quantized: model.layers.14                                          bpw:  6.01  rfn: 0.003730  cos: 0.000039  sqnr: 41.129912  [46.02 s]
+ -- Estimated remaining time: 17 minutes (avg over last 3 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.15
+ -- Captured: model.layers.15
+     - H min/max: -22.979097   50.431538
+     - H mean/std: 0.000061   0.052755
+     - H diag min/max: 0.011718   50.431538 
+     - input tensor rms: 0.023025
+     - input state skew: 0.132238
+     - out ch scales std/mean: 0.322668   1.000000
+     - su/sv std: 0.022934   1.050851
+     - global scale: 0.768381
+     - sample mse: 0.000517
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000445
+ -- Quantized: model.layers.15.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000044  o.  g_sc: 0.768381
+     - input tensor rms: 0.022530
+     - input state skew: 0.132238
+     - out ch scales std/mean: 0.302903   1.000000
+     - su/sv std: 0.023113   1.044938
+     - global scale: 0.750291
+     - sample mse: 0.000545
+     - apply_out_scales: True
+     - regularized rms:  0.933145
+     - quant nmse: 0.000459
+ -- Quantized: model.layers.15.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000036  o.  g_sc: 0.750291
+     - input tensor rms: 0.024272
+     - input state skew: 0.132238
+     - out ch scales std/mean: 0.058527   1.000000
+     - su/sv std: 0.024155   1.002065
+     - global scale: 0.806696
+     - sample mse: 0.000515
+     - apply_out_scales: True
+     - regularized rms:  1.003297
+     - quant nmse: 0.000425
+ -- Quantized: model.layers.15.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000110  o.  g_sc: 0.806696
+     - H min/max: -0.687422   1.240449
+     - H mean/std: 0.000030   0.007173
+     - H diag min/max: 0.005253   1.240449 
+     - input tensor rms: 0.021255
+     - input state skew: 0.073171
+     - out ch scales std/mean: 0.165822   1.000000
+     - su/sv std: 0.021686   1.013448
+     - global scale: 0.777426
+     - sample mse: 0.000517
+     - apply_out_scales: True
+     - regularized rms:  0.966893
+     - quant nmse: 0.000519
+ -- Quantized: model.layers.15.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000117  o.  g_sc: 0.777426
+     - H min/max: -14.305861   19.447622
+     - H mean/std: 0.000055   0.032113
+     - H diag min/max: 0.003796   19.447622 
+     - input tensor rms: 0.022906
+     - input state skew: 0.066728
+     - out ch scales std/mean: 0.093302   1.000000
+     - su/sv std: 0.030263   1.004392
+     - global scale: 0.606075
+     - sample mse: 0.000702
+     - apply_out_scales: True
+     - regularized rms:  0.753782
+     - quant nmse: 0.000501
+ -- Quantized: model.layers.15.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000160  o.  g_sc: 0.606075
+     - input tensor rms: 0.023016
+     - input state skew: 0.066728
+     - out ch scales std/mean: 0.165903   1.000000
+     - su/sv std: 0.028741   1.013589
+     - global scale: 0.635346
+     - sample mse: 0.000732
+     - apply_out_scales: True
+     - regularized rms:  0.790186
+     - quant nmse: 0.000482
+ -- Quantized: model.layers.15.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000097  o.  g_sc: 0.635346
+     - H min/max: -0.800408   3.510345
+     - H mean/std: 0.000001   0.000888
+     - H diag min/max: 0.003373   3.510345 
+     - input tensor rms: 0.022417
+     - input state skew: 0.048337
+     - out ch scales std/mean: 0.106489   1.000000
+     - su/sv std: 0.026467   1.005549
+     - global scale: 0.677116
+     - sample mse: 0.000619
+     - apply_out_scales: True
+     - regularized rms:  0.842136
+     - quant nmse: 0.000475
+ -- Quantized: model.layers.15.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000193  o.  g_sc: 0.677116
+ -- Quantized: model.layers.15                                          bpw:  6.01  rfn: 0.003652  cos: 0.000038  sqnr: 41.328326  [44.66 s]
+ -- Estimated remaining time: 16 minutes (avg over last 4 blocks)
+ -- Loading unquantized module: model.layers.16
+ -- Captured: model.layers.16
+     - H min/max: -23.603720   49.315609
+     - H mean/std: 0.000087   0.072129
+     - H diag min/max: 0.013792   49.315609 
+     - input tensor rms: 0.022354
+     - input state skew: 0.117959
+     - out ch scales std/mean: 0.296368   1.000000
+     - su/sv std: 0.022012   1.043110
+     - global scale: 0.783016
+     - sample mse: 0.000519
+     - apply_out_scales: True
+     - regularized rms:  0.973846
+     - quant nmse: 0.000451
+ -- Quantized: model.layers.16.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000033  o.  g_sc: 0.783016
+     - input tensor rms: 0.021821
+     - input state skew: 0.117959
+     - out ch scales std/mean: 0.264426   1.000000
+     - su/sv std: 0.021572   1.034832
+     - global scale: 0.786471
+     - sample mse: 0.000501
+     - apply_out_scales: True
+     - regularized rms:  0.978143
+     - quant nmse: 0.000460
+ -- Quantized: model.layers.16.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000042  o.  g_sc: 0.786471
+     - input tensor rms: 0.024302
+     - input state skew: 0.117959
+     - out ch scales std/mean: 0.140732   1.000000
+     - su/sv std: 0.024607   1.010338
+     - global scale: 0.786471
+     - sample mse: 0.000517
+     - apply_out_scales: True
+     - regularized rms:  0.978143
+     - quant nmse: 0.000422
+ -- Quantized: model.layers.16.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000094  o.  g_sc: 0.786471
+     - H min/max: -0.452003   1.113489
+     - H mean/std: 0.000031   0.005942
+     - H diag min/max: 0.005964   1.113489 
+     - input tensor rms: 0.021865
+     - input state skew: 0.063776
+     - out ch scales std/mean: 0.158381   1.000000
+     - su/sv std: 0.022081   1.012650
+     - global scale: 0.786471
+     - sample mse: 0.000509
+     - apply_out_scales: True
+     - regularized rms:  0.978143
+     - quant nmse: 0.000515
+ -- Quantized: model.layers.16.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000145  o.  g_sc: 0.786471
+     - H min/max: -16.984013   24.636366
+     - H mean/std: 0.000059   0.036636
+     - H diag min/max: 0.004016   24.636366 
+     - input tensor rms: 0.022754
+     - input state skew: 0.067873
+     - out ch scales std/mean: 0.115207   1.000000
+     - su/sv std: 0.030272   1.006665
+     - global scale: 0.600485
+     - sample mse: 0.000731
+     - apply_out_scales: True
+     - regularized rms:  0.746830
+     - quant nmse: 0.000509
+ -- Quantized: model.layers.16.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000167  o.  g_sc: 0.600485
+     - input tensor rms: 0.023594
+     - input state skew: 0.067873
+     - out ch scales std/mean: 0.190516   1.000000
+     - su/sv std: 0.027526   1.018010
+     - global scale: 0.677116
+     - sample mse: 0.000631
+     - apply_out_scales: True
+     - regularized rms:  0.842136
+     - quant nmse: 0.000453
+ -- Quantized: model.layers.16.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000081  o.  g_sc: 0.677116
+     - H min/max: -57.739964   5343.421387
+     - H mean/std: 0.000079   0.555235
+     - H diag min/max: 0.016124   5343.421387 
+     - input tensor rms: 0.022054
+     - input state skew: 0.085770
+     - out ch scales std/mean: 0.118732   1.000000
+     - su/sv std: 0.026582   1.007192
+     - global scale: 0.662481
+     - sample mse: 0.000643
+     - apply_out_scales: True
+     - regularized rms:  0.823934
+     - quant nmse: 0.000394
+ -- Quantized: model.layers.16.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000094  o.  g_sc: 0.662481
+ -- Quantized: model.layers.16                                          bpw:  6.01  rfn: 0.006121  cos: 0.000033  sqnr: 41.959022  [44.54 s]
+ -- Estimated remaining time: 15 minutes (avg over last 5 blocks)
+ -- Loading unquantized module: model.layers.17
+ -- Captured: model.layers.17
+     - H min/max: -18.776577   37.921410
+     - H mean/std: 0.000068   0.059010
+     - H diag min/max: 0.013487   37.921410 
+     - input tensor rms: 0.022936
+     - input state skew: 0.124751
+     - out ch scales std/mean: 0.348099   1.000000
+     - su/sv std: 0.022671   1.058962
+     - global scale: 0.768381
+     - sample mse: 0.000522
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000441
+ -- Quantized: model.layers.17.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000039  o.  g_sc: 0.768381
+     - input tensor rms: 0.021221
+     - input state skew: 0.124751
+     - out ch scales std/mean: 0.285473   1.000000
+     - su/sv std: 0.021514   1.040382
+     - global scale: 0.762791
+     - sample mse: 0.000511
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000448
+ -- Quantized: model.layers.17.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000056  o.  g_sc: 0.762791
+     - input tensor rms: 0.023710
+     - input state skew: 0.124751
+     - out ch scales std/mean: 0.079107   1.000000
+     - su/sv std: 0.024919   1.003587
+     - global scale: 0.762791
+     - sample mse: 0.000527
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000422
+ -- Quantized: model.layers.17.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000092  o.  g_sc: 0.762791
+     - H min/max: -0.740135   1.179434
+     - H mean/std: 0.000029   0.009374
+     - H diag min/max: 0.004781   1.179434 
+     - input tensor rms: 0.021497
+     - input state skew: 0.076902
+     - out ch scales std/mean: 0.139647   1.000000
+     - su/sv std: 0.021461   1.009820
+     - global scale: 0.797651
+     - sample mse: 0.000492
+     - apply_out_scales: True
+     - regularized rms:  0.992048
+     - quant nmse: 0.000516
+ -- Quantized: model.layers.17.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000106  o.  g_sc: 0.797651
+     - H min/max: -14.288919   21.078882
+     - H mean/std: 0.000048   0.034901
+     - H diag min/max: 0.003820   21.078882 
+     - input tensor rms: 0.022838
+     - input state skew: 0.069917
+     - out ch scales std/mean: 0.092672   1.000000
+     - su/sv std: 0.031102   1.004241
+     - global scale: 0.587985
+     - sample mse: 0.000740
+     - apply_out_scales: True
+     - regularized rms:  0.731284
+     - quant nmse: 0.000522
+ -- Quantized: model.layers.17.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000155  o.  g_sc: 0.587985
+     - input tensor rms: 0.023265
+     - input state skew: 0.069917
+     - out ch scales std/mean: 0.192326   1.000000
+     - su/sv std: 0.029175   1.018366
+     - global scale: 0.629755
+     - sample mse: 0.000693
+     - apply_out_scales: True
+     - regularized rms:  0.783234
+     - quant nmse: 0.000486
+ -- Quantized: model.layers.17.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000086  o.  g_sc: 0.629755
+     - H min/max: -0.145804   0.907331
+     - H mean/std: 0.000001   0.000887
+     - H diag min/max: 0.003175   0.907331 
+     - input tensor rms: 0.022126
+     - input state skew: 0.049413
+     - out ch scales std/mean: 0.107126   1.000000
+     - su/sv std: 0.025912   1.005771
+     - global scale: 0.682706
+     - sample mse: 0.000618
+     - apply_out_scales: True
+     - regularized rms:  0.849089
+     - quant nmse: 0.000478
+ -- Quantized: model.layers.17.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000195  o.  g_sc: 0.682706
+ -- Quantized: model.layers.17                                          bpw:  6.01  rfn: 0.002420  cos: 0.000029  sqnr: 42.448876  [44.44 s]
+ -- Estimated remaining time: 15 minutes (avg over last 6 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.18
+ -- Captured: model.layers.18
+     - H min/max: -27.071009   63.420975
+     - H mean/std: 0.000077   0.086936
+     - H diag min/max: 0.013351   63.420975 
+     - input tensor rms: 0.022164
+     - input state skew: 0.135855
+     - out ch scales std/mean: 0.284946   1.000000
+     - su/sv std: 0.022473   1.039782
+     - global scale: 0.762791
+     - sample mse: 0.000531
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000443
+ -- Quantized: model.layers.18.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000029  o.  g_sc: 0.762791
+     - input tensor rms: 0.021461
+     - input state skew: 0.135855
+     - out ch scales std/mean: 0.266157   1.000000
+     - su/sv std: 0.021301   1.034957
+     - global scale: 0.783016
+     - sample mse: 0.000508
+     - apply_out_scales: True
+     - regularized rms:  0.973846
+     - quant nmse: 0.000459
+ -- Quantized: model.layers.18.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000043  o.  g_sc: 0.783016
+     - input tensor rms: 0.024141
+     - input state skew: 0.135855
+     - out ch scales std/mean: 0.103716   1.000000
+     - su/sv std: 0.026654   1.005593
+     - global scale: 0.724476
+     - sample mse: 0.000581
+     - apply_out_scales: True
+     - regularized rms:  0.901039
+     - quant nmse: 0.000449
+ -- Quantized: model.layers.18.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000080  o.  g_sc: 0.724476
+     - H min/max: -0.946960   1.454475
+     - H mean/std: 0.000036   0.010127
+     - H diag min/max: 0.007057   1.454475 
+     - input tensor rms: 0.021498
+     - input state skew: 0.071921
+     - out ch scales std/mean: 0.173652   1.000000
+     - su/sv std: 0.023622   1.014944
+     - global scale: 0.721021
+     - sample mse: 0.000578
+     - apply_out_scales: True
+     - regularized rms:  0.896742
+     - quant nmse: 0.000518
+ -- Quantized: model.layers.18.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000108  o.  g_sc: 0.721021
+     - H min/max: -14.368289   18.870840
+     - H mean/std: 0.000051   0.038077
+     - H diag min/max: 0.004197   18.870840 
+     - input tensor rms: 0.022821
+     - input state skew: 0.070820
+     - out ch scales std/mean: 0.091690   1.000000
+     - su/sv std: 0.031380   1.004192
+     - global scale: 0.582395
+     - sample mse: 0.000747
+     - apply_out_scales: True
+     - regularized rms:  0.724331
+     - quant nmse: 0.000525
+ -- Quantized: model.layers.18.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000159  o.  g_sc: 0.582395
+     - input tensor rms: 0.022995
+     - input state skew: 0.070820
+     - out ch scales std/mean: 0.181000   1.000000
+     - su/sv std: 0.031738   1.016274
+     - global scale: 0.573350
+     - sample mse: 0.000768
+     - apply_out_scales: True
+     - regularized rms:  0.713082
+     - quant nmse: 0.000542
+ -- Quantized: model.layers.18.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000102  o.  g_sc: 0.573350
+     - H min/max: -0.267860   2.854692
+     - H mean/std: 0.000002   0.001101
+     - H diag min/max: 0.003191   2.854692 
+     - input tensor rms: 0.022106
+     - input state skew: 0.060683
+     - out ch scales std/mean: 0.103613   1.000000
+     - su/sv std: 0.025897   1.005404
+     - global scale: 0.682706
+     - sample mse: 0.000603
+     - apply_out_scales: True
+     - regularized rms:  0.849089
+     - quant nmse: 0.000467
+ -- Quantized: model.layers.18.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000206  o.  g_sc: 0.682706
+ -- Quantized: model.layers.18                                          bpw:  6.01  rfn: 0.002775  cos: 0.000035  sqnr: 41.683272  [44.86 s]
+ -- Estimated remaining time: 14 minutes (avg over last 7 blocks)
+ -- Loading unquantized module: model.layers.19
+ -- Captured: model.layers.19
+     - H min/max: -63.400116   99.467125
+     - H mean/std: 0.000148   0.171966
+     - H diag min/max: 0.053479   99.467125 
+     - input tensor rms: 0.022535
+     - input state skew: 0.139565
+     - out ch scales std/mean: 0.336237   1.000000
+     - su/sv std: 0.023709   1.055072
+     - global scale: 0.724476
+     - sample mse: 0.000551
+     - apply_out_scales: True
+     - regularized rms:  0.901039
+     - quant nmse: 0.000501
+ -- Quantized: model.layers.19.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000040  o.  g_sc: 0.724476
+     - input tensor rms: 0.020749
+     - input state skew: 0.139565
+     - out ch scales std/mean: 0.290982   1.000000
+     - su/sv std: 0.020371   1.041716
+     - global scale: 0.786471
+     - sample mse: 0.000492
+     - apply_out_scales: True
+     - regularized rms:  0.978143
+     - quant nmse: 0.000670
+ -- Quantized: model.layers.19.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000073  o.  g_sc: 0.786471
+     - input tensor rms: 0.023625
+     - input state skew: 0.139565
+     - out ch scales std/mean: 0.109647   1.000000
+     - su/sv std: 0.023574   1.005924
+     - global scale: 0.801106
+     - sample mse: 0.000475
+     - apply_out_scales: True
+     - regularized rms:  0.996345
+     - quant nmse: 0.000529
+ -- Quantized: model.layers.19.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000235  o.  g_sc: 0.801106
+     - H min/max: -0.813942   2.607465
+     - H mean/std: 0.000034   0.012253
+     - H diag min/max: 0.007374   2.607465 
+     - input tensor rms: 0.021682
+     - input state skew: 0.071427
+     - out ch scales std/mean: 0.135319   1.000000
+     - su/sv std: 0.024777   1.009140
+     - global scale: 0.697341
+     - sample mse: 0.000589
+     - apply_out_scales: True
+     - regularized rms:  0.867290
+     - quant nmse: 0.000578
+ -- Quantized: model.layers.19.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000104  o.  g_sc: 0.697341
+     - H min/max: -22.195143   34.318535
+     - H mean/std: 0.000077   0.048467
+     - H diag min/max: 0.004959   34.318535 
+     - input tensor rms: 0.022885
+     - input state skew: 0.077425
+     - out ch scales std/mean: 0.102678   1.000000
+     - su/sv std: 0.032565   1.005194
+     - global scale: 0.562170
+     - sample mse: 0.000854
+     - apply_out_scales: True
+     - regularized rms:  0.699177
+     - quant nmse: 0.000553
+ -- Quantized: model.layers.19.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000157  o.  g_sc: 0.562170
+     - input tensor rms: 0.022840
+     - input state skew: 0.077425
+     - out ch scales std/mean: 0.195193   1.000000
+     - su/sv std: 0.030953   1.018813
+     - global scale: 0.582395
+     - sample mse: 0.000746
+     - apply_out_scales: True
+     - regularized rms:  0.724331
+     - quant nmse: 0.000531
+ -- Quantized: model.layers.19.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000097  o.  g_sc: 0.582395
+     - H min/max: -0.864388   1.569815
+     - H mean/std: 0.000002   0.001593
+     - H diag min/max: 0.003387   1.569815 
+     - input tensor rms: 0.022098
+     - input state skew: 0.061019
+     - out ch scales std/mean: 0.082538   1.000000
+     - su/sv std: 0.030402   1.003465
+     - global scale: 0.582395
+     - sample mse: 0.000759
+     - apply_out_scales: True
+     - regularized rms:  0.724331
+     - quant nmse: 0.000557
+ -- Quantized: model.layers.19.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000270  o.  g_sc: 0.582395
+ -- Quantized: model.layers.19                                          bpw:  6.01  rfn: 0.004477  cos: 0.000072  sqnr: 38.921010  [45.14 s]
+ -- Estimated remaining time: 13 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.20
+ -- Captured: model.layers.20
+     - H min/max: -49.190308   92.442917
+     - H mean/std: 0.000132   0.141261
+     - H diag min/max: 0.043997   92.442917 
+     - input tensor rms: 0.023325
+     - input state skew: 0.153078
+     - out ch scales std/mean: 0.389755   1.000000
+     - su/sv std: 0.023008   1.073286
+     - global scale: 0.759336
+     - sample mse: 0.000540
+     - apply_out_scales: True
+     - regularized rms:  0.944395
+     - quant nmse: 0.000439
+ -- Quantized: model.layers.20.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000037  o.  g_sc: 0.759336
+     - input tensor rms: 0.020561
+     - input state skew: 0.153078
+     - out ch scales std/mean: 0.335102   1.000000
+     - su/sv std: 0.021047   1.055008
+     - global scale: 0.744701
+     - sample mse: 0.000563
+     - apply_out_scales: True
+     - regularized rms:  0.926193
+     - quant nmse: 0.000441
+ -- Quantized: model.layers.20.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000046  o.  g_sc: 0.744701
+     - input tensor rms: 0.023571
+     - input state skew: 0.153078
+     - out ch scales std/mean: 0.048969   1.000000
+     - su/sv std: 0.027142   1.001522
+     - global scale: 0.697341
+     - sample mse: 0.000589
+     - apply_out_scales: True
+     - regularized rms:  0.867290
+     - quant nmse: 0.000456
+ -- Quantized: model.layers.20.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000084  o.  g_sc: 0.697341
+     - H min/max: -0.737064   1.356161
+     - H mean/std: 0.000050   0.011655
+     - H diag min/max: 0.003585   1.356161 
+     - input tensor rms: 0.021170
+     - input state skew: 0.070939
+     - out ch scales std/mean: 0.119669   1.000000
+     - su/sv std: 0.021830   1.007323
+     - global scale: 0.773971
+     - sample mse: 0.000514
+     - apply_out_scales: True
+     - regularized rms:  0.962597
+     - quant nmse: 0.000544
+ -- Quantized: model.layers.20.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000113  o.  g_sc: 0.773971
+     - H min/max: -25.936396   51.450836
+     - H mean/std: 0.000082   0.054208
+     - H diag min/max: 0.005417   51.450836 
+     - input tensor rms: 0.022929
+     - input state skew: 0.075278
+     - out ch scales std/mean: 0.106510   1.000000
+     - su/sv std: 0.031173   1.005701
+     - global scale: 0.587985
+     - sample mse: 0.000759
+     - apply_out_scales: True
+     - regularized rms:  0.731284
+     - quant nmse: 0.000516
+ -- Quantized: model.layers.20.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000157  o.  g_sc: 0.587985
+     - input tensor rms: 0.022628
+     - input state skew: 0.075278
+     - out ch scales std/mean: 0.185187   1.000000
+     - su/sv std: 0.028403   1.016943
+     - global scale: 0.629755
+     - sample mse: 0.000679
+     - apply_out_scales: True
+     - regularized rms:  0.783234
+     - quant nmse: 0.000484
+ -- Quantized: model.layers.20.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000090  o.  g_sc: 0.629755
+     - H min/max: -0.489633   1.172686
+     - H mean/std: 0.000003   0.001531
+     - H diag min/max: 0.003954   1.172686 
+     - input tensor rms: 0.022265
+     - input state skew: 0.056715
+     - out ch scales std/mean: 0.088069   1.000000
+     - su/sv std: 0.024616   1.004047
+     - global scale: 0.724476
+     - sample mse: 0.000557
+     - apply_out_scales: True
+     - regularized rms:  0.901039
+     - quant nmse: 0.000438
+ -- Quantized: model.layers.20.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000203  o.  g_sc: 0.724476
+ -- Quantized: model.layers.20                                          bpw:  6.01  rfn: 0.003092  cos: 0.000030  sqnr: 42.365970  [45.06 s]
+ -- Estimated remaining time: 12 minutes (avg over last 8 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.21
+ -- Captured: model.layers.21
+     - H min/max: -94.277084   144.014450
+     - H mean/std: 0.000189   0.231037
+     - H diag min/max: 0.067906   144.014450 
+     - input tensor rms: 0.022809
+     - input state skew: 0.160124
+     - out ch scales std/mean: 0.346137   1.000000
+     - su/sv std: 0.024039   1.058168
+     - global scale: 0.721021
+     - sample mse: 0.000587
+     - apply_out_scales: True
+     - regularized rms:  0.896742
+     - quant nmse: 0.000434
+ -- Quantized: model.layers.21.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000030  o.  g_sc: 0.721021
+     - input tensor rms: 0.020489
+     - input state skew: 0.160124
+     - out ch scales std/mean: 0.243609   1.000000
+     - su/sv std: 0.021238   1.029706
+     - global scale: 0.753746
+     - sample mse: 0.000552
+     - apply_out_scales: True
+     - regularized rms:  0.937442
+     - quant nmse: 0.000436
+ -- Quantized: model.layers.21.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000041  o.  g_sc: 0.753746
+     - input tensor rms: 0.023184
+     - input state skew: 0.160124
+     - out ch scales std/mean: 0.112748   1.000000
+     - su/sv std: 0.031805   1.006820
+     - global scale: 0.582395
+     - sample mse: 0.000788
+     - apply_out_scales: True
+     - regularized rms:  0.724331
+     - quant nmse: 0.000544
+ -- Quantized: model.layers.21.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000099  o.  g_sc: 0.582395
+     - H min/max: -1.280858   2.239758
+     - H mean/std: 0.000048   0.014288
+     - H diag min/max: 0.006557   2.239758 
+     - input tensor rms: 0.020850
+     - input state skew: 0.071103
+     - out ch scales std/mean: 0.114977   1.000000
+     - su/sv std: 0.021426   1.006196
+     - global scale: 0.777426
+     - sample mse: 0.000515
+     - apply_out_scales: True
+     - regularized rms:  0.966893
+     - quant nmse: 0.000798
+ -- Quantized: model.layers.21.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000226  o.  g_sc: 0.777426
+     - H min/max: -30.536907   66.310379
+     - H mean/std: 0.000095   0.065324
+     - H diag min/max: 0.006628   66.310379 
+     - input tensor rms: 0.022864
+     - input state skew: 0.077122
+     - out ch scales std/mean: 0.118997   1.000000
+     - su/sv std: 0.033005   1.007036
+     - global scale: 0.553125
+     - sample mse: 0.000827
+     - apply_out_scales: True
+     - regularized rms:  0.687928
+     - quant nmse: 0.000554
+ -- Quantized: model.layers.21.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000175  o.  g_sc: 0.553125
+     - input tensor rms: 0.022252
+     - input state skew: 0.077122
+     - out ch scales std/mean: 0.183900   1.000000
+     - su/sv std: 0.028771   1.016819
+     - global scale: 0.611665
+     - sample mse: 0.000733
+     - apply_out_scales: True
+     - regularized rms:  0.760735
+     - quant nmse: 0.000505
+ -- Quantized: model.layers.21.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000104  o.  g_sc: 0.611665
+     - H min/max: -0.504619   2.148352
+     - H mean/std: 0.000003   0.001831
+     - H diag min/max: 0.006092   2.148352 
+     - input tensor rms: 0.022427
+     - input state skew: 0.060425
+     - out ch scales std/mean: 0.078728   1.000000
+     - su/sv std: 0.025250   1.002662
+     - global scale: 0.711976
+     - sample mse: 0.000576
+     - apply_out_scales: True
+     - regularized rms:  0.885492
+     - quant nmse: 0.000445
+ -- Quantized: model.layers.21.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000213  o.  g_sc: 0.711976
+ -- Quantized: model.layers.21                                          bpw:  6.01  rfn: 0.003744  cos: 0.000040  sqnr: 41.139119  [44.41 s]
+ -- Estimated remaining time: 11 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.22
+ -- Captured: model.layers.22
+     - H min/max: -169.935684   197.894257
+     - H mean/std: 0.000375   0.407692
+     - H diag min/max: 0.190834   197.894257 
+     - input tensor rms: 0.022507
+     - input state skew: 0.152653
+     - out ch scales std/mean: 0.367517   1.000000
+     - su/sv std: 0.022808   1.065158
+     - global scale: 0.744701
+     - sample mse: 0.000539
+     - apply_out_scales: True
+     - regularized rms:  0.926193
+     - quant nmse: 0.000412
+ -- Quantized: model.layers.22.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000033  o.  g_sc: 0.744701
+     - input tensor rms: 0.019743
+     - input state skew: 0.152653
+     - out ch scales std/mean: 0.325288   1.000000
+     - su/sv std: 0.019194   1.049751
+     - global scale: 0.786471
+     - sample mse: 0.000501
+     - apply_out_scales: True
+     - regularized rms:  0.978143
+     - quant nmse: 0.000404
+ -- Quantized: model.layers.22.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000043  o.  g_sc: 0.786471
+     - input tensor rms: 0.023154
+     - input state skew: 0.152653
+     - out ch scales std/mean: 0.093086   1.000000
+     - su/sv std: 0.024124   1.003705
+     - global scale: 0.768381
+     - sample mse: 0.000514
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000608
+ -- Quantized: model.layers.22.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000265  o.  g_sc: 0.768381
+     - H min/max: -0.901629   2.289760
+     - H mean/std: 0.000111   0.021764
+     - H diag min/max: 0.009437   2.289760 
+     - input tensor rms: 0.021296
+     - input state skew: 0.059403
+     - out ch scales std/mean: 0.115346   1.000000
+     - su/sv std: 0.023300   1.006535
+     - global scale: 0.730066
+     - sample mse: 0.000566
+     - apply_out_scales: True
+     - regularized rms:  0.907991
+     - quant nmse: 0.000539
+ -- Quantized: model.layers.22.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000139  o.  g_sc: 0.730066
+     - H min/max: -43.364952   92.480858
+     - H mean/std: 0.000128   0.088536
+     - H diag min/max: 0.008002   92.480858 
+     - input tensor rms: 0.023393
+     - input state skew: 0.087081
+     - out ch scales std/mean: 0.127775   1.000000
+     - su/sv std: 0.034870   1.007972
+     - global scale: 0.535035
+     - sample mse: 0.000880
+     - apply_out_scales: True
+     - regularized rms:  0.665429
+     - quant nmse: 0.000581
+ -- Quantized: model.layers.22.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000137  o.  g_sc: 0.535035
+     - input tensor rms: 0.023014
+     - input state skew: 0.087081
+     - out ch scales std/mean: 0.201998   1.000000
+     - su/sv std: 0.032265   1.020247
+     - global scale: 0.562170
+     - sample mse: 0.000857
+     - apply_out_scales: True
+     - regularized rms:  0.699177
+     - quant nmse: 0.000556
+ -- Quantized: model.layers.22.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000090  o.  g_sc: 0.562170
+     - H min/max: -0.434984   2.405641
+     - H mean/std: 0.000006   0.003550
+     - H diag min/max: 0.006899   2.405641 
+     - input tensor rms: 0.022536
+     - input state skew: 0.069123
+     - out ch scales std/mean: 0.059434   1.000000
+     - su/sv std: 0.027076   1.001626
+     - global scale: 0.668071
+     - sample mse: 0.000626
+     - apply_out_scales: True
+     - regularized rms:  0.830887
+     - quant nmse: 0.000481
+ -- Quantized: model.layers.22.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000232  o.  g_sc: 0.668071
+ -- Quantized: model.layers.22                                          bpw:  6.01  rfn: 0.004802  cos: 0.000051  sqnr: 40.152360  [45.11 s]
+ -- Estimated remaining time: 11 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.23
+ -- Captured: model.layers.23
+     - H min/max: -120.097153   159.086731
+     - H mean/std: 0.000320   0.315932
+     - H diag min/max: 0.167645   159.086731 
+     - input tensor rms: 0.023963
+     - input state skew: 0.147107
+     - out ch scales std/mean: 0.353622   1.000000
+     - su/sv std: 0.022932   1.060532
+     - global scale: 0.792061
+     - sample mse: 0.000501
+     - apply_out_scales: True
+     - regularized rms:  0.985095
+     - quant nmse: 0.000396
+ -- Quantized: model.layers.23.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000044  o.  g_sc: 0.792061
+     - input tensor rms: 0.020875
+     - input state skew: 0.147107
+     - out ch scales std/mean: 0.215449   1.000000
+     - su/sv std: 0.021104   1.021409
+     - global scale: 0.777426
+     - sample mse: 0.000513
+     - apply_out_scales: True
+     - regularized rms:  0.966893
+     - quant nmse: 0.000411
+ -- Quantized: model.layers.23.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000050  o.  g_sc: 0.777426
+     - input tensor rms: 0.023576
+     - input state skew: 0.147107
+     - out ch scales std/mean: 0.113932   1.000000
+     - su/sv std: 0.031543   1.005158
+     - global scale: 0.597030
+     - sample mse: 0.000738
+     - apply_out_scales: True
+     - regularized rms:  0.742533
+     - quant nmse: 0.000526
+ -- Quantized: model.layers.23.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000118  o.  g_sc: 0.597030
+     - H min/max: -2.638356   6.483789
+     - H mean/std: 0.000089   0.023039
+     - H diag min/max: 0.022787   6.483789 
+     - input tensor rms: 0.022065
+     - input state skew: 0.062155
+     - out ch scales std/mean: 0.107447   1.000000
+     - su/sv std: 0.021716   1.005440
+     - global scale: 0.812287
+     - sample mse: 0.000475
+     - apply_out_scales: True
+     - regularized rms:  1.010250
+     - quant nmse: 0.000751
+ -- Quantized: model.layers.23.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000165  o.  g_sc: 0.812287
+     - H min/max: -63.380768   148.527405
+     - H mean/std: 0.000131   0.115362
+     - H diag min/max: 0.009715   148.527405 
+     - input tensor rms: 0.023466
+     - input state skew: 0.086465
+     - out ch scales std/mean: 0.115709   1.000000
+     - su/sv std: 0.031209   1.006721
+     - global scale: 0.600485
+     - sample mse: 0.000715
+     - apply_out_scales: True
+     - regularized rms:  0.746830
+     - quant nmse: 0.000503
+ -- Quantized: model.layers.23.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000133  o.  g_sc: 0.600485
+     - input tensor rms: 0.023845
+     - input state skew: 0.086465
+     - out ch scales std/mean: 0.199445   1.000000
+     - su/sv std: 0.027536   1.019734
+     - global scale: 0.682706
+     - sample mse: 0.000640
+     - apply_out_scales: True
+     - regularized rms:  0.849089
+     - quant nmse: 0.000443
+ -- Quantized: model.layers.23.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000074  o.  g_sc: 0.682706
+     - H min/max: -1.437810   3.255734
+     - H mean/std: 0.000007   0.004941
+     - H diag min/max: 0.009977   3.255734 
+     - input tensor rms: 0.022673
+     - input state skew: 0.063461
+     - out ch scales std/mean: 0.075839   1.000000
+     - su/sv std: 0.029994   1.002563
+     - global scale: 0.606075
+     - sample mse: 0.000744
+     - apply_out_scales: True
+     - regularized rms:  0.753782
+     - quant nmse: 0.000538
+ -- Quantized: model.layers.23.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000215  o.  g_sc: 0.606075
+ -- Quantized: model.layers.23                                          bpw:  6.01  rfn: 0.005000  cos: 0.000042  sqnr: 40.974045  [45.18 s]
+ -- Estimated remaining time: 10 minutes (avg over last 8 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.24
+ -- Captured: model.layers.24
+     - H min/max: -173.927475   228.173203
+     - H mean/std: 0.000512   0.496851
+     - H diag min/max: 0.240027   228.173203 
+     - input tensor rms: 0.024152
+     - input state skew: 0.148848
+     - out ch scales std/mean: 0.348114   1.000000
+     - su/sv std: 0.025319   1.058972
+     - global scale: 0.724476
+     - sample mse: 0.000571
+     - apply_out_scales: True
+     - regularized rms:  0.901039
+     - quant nmse: 0.000406
+ -- Quantized: model.layers.24.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000047  o.  g_sc: 0.724476
+     - input tensor rms: 0.020844
+     - input state skew: 0.148848
+     - out ch scales std/mean: 0.267376   1.000000
+     - su/sv std: 0.021230   1.035578
+     - global scale: 0.762791
+     - sample mse: 0.000527
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000410
+ -- Quantized: model.layers.24.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000068  o.  g_sc: 0.762791
+     - input tensor rms: 0.023305
+     - input state skew: 0.148848
+     - out ch scales std/mean: 0.130413   1.000000
+     - su/sv std: 0.024770   1.008941
+     - global scale: 0.750291
+     - sample mse: 0.000528
+     - apply_out_scales: True
+     - regularized rms:  0.933145
+     - quant nmse: 0.000454
+ -- Quantized: model.layers.24.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000140  o.  g_sc: 0.750291
+     - H min/max: -3.152020   11.508008
+     - H mean/std: 0.000100   0.024799
+     - H diag min/max: 0.008977   11.508008 
+     - input tensor rms: 0.022432
+     - input state skew: 0.060152
+     - out ch scales std/mean: 0.106984   1.000000
+     - su/sv std: 0.036108   1.005845
+     - global scale: 0.496720
+     - sample mse: 0.001024
+     - apply_out_scales: True
+     - regularized rms:  0.617776
+     - quant nmse: 0.000906
+ -- Quantized: model.layers.24.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000201  o.  g_sc: 0.496720
+     - H min/max: -85.943230   184.353775
+     - H mean/std: 0.000153   0.135961
+     - H diag min/max: 0.011168   184.353775 
+     - input tensor rms: 0.023548
+     - input state skew: 0.086711
+     - out ch scales std/mean: 0.098133   1.000000
+     - su/sv std: 0.032053   1.004646
+     - global scale: 0.587985
+     - sample mse: 0.000774
+     - apply_out_scales: True
+     - regularized rms:  0.731284
+     - quant nmse: 0.000520
+ -- Quantized: model.layers.24.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000134  o.  g_sc: 0.587985
+     - input tensor rms: 0.024312
+     - input state skew: 0.086711
+     - out ch scales std/mean: 0.167196   1.000000
+     - su/sv std: 0.028865   1.013926
+     - global scale: 0.668071
+     - sample mse: 0.000638
+     - apply_out_scales: True
+     - regularized rms:  0.830887
+     - quant nmse: 0.000454
+ -- Quantized: model.layers.24.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000078  o.  g_sc: 0.668071
+     - H min/max: -1.012424   5.291758
+     - H mean/std: 0.000009   0.005388
+     - H diag min/max: 0.016645   5.291758 
+     - input tensor rms: 0.022872
+     - input state skew: 0.063695
+     - out ch scales std/mean: 0.078454   1.000000
+     - su/sv std: 0.032293   1.003227
+     - global scale: 0.567760
+     - sample mse: 0.000784
+     - apply_out_scales: True
+     - regularized rms:  0.706129
+     - quant nmse: 0.000610
+ -- Quantized: model.layers.24.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000235  o.  g_sc: 0.567760
+ -- Quantized: model.layers.24                                          bpw:  6.01  rfn: 0.005677  cos: 0.000039  sqnr: 41.354073  [44.95 s]
+ -- Estimated remaining time: 9 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.25
+ -- Captured: model.layers.25
+     - H min/max: -267.649170   360.784027
+     - H mean/std: 0.000361   0.484601
+     - H diag min/max: 0.207390   360.784027 
+     - input tensor rms: 0.022782
+     - input state skew: 0.144844
+     - out ch scales std/mean: 0.262720   1.000000
+     - su/sv std: 0.022531   1.033908
+     - global scale: 0.786471
+     - sample mse: 0.000510
+     - apply_out_scales: True
+     - regularized rms:  0.978143
+     - quant nmse: 0.000445
+ -- Quantized: model.layers.25.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000054  o.  g_sc: 0.786471
+     - input tensor rms: 0.021544
+     - input state skew: 0.144844
+     - out ch scales std/mean: 0.199149   1.000000
+     - su/sv std: 0.022275   1.019998
+     - global scale: 0.762791
+     - sample mse: 0.000518
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000409
+ -- Quantized: model.layers.25.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000058  o.  g_sc: 0.762791
+     - input tensor rms: 0.024362
+     - input state skew: 0.144844
+     - out ch scales std/mean: 0.089555   1.000000
+     - su/sv std: 0.024463   1.004251
+     - global scale: 0.797651
+     - sample mse: 0.000494
+     - apply_out_scales: True
+     - regularized rms:  0.992048
+     - quant nmse: 0.000507
+ -- Quantized: model.layers.25.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000297  o.  g_sc: 0.797651
+     - H min/max: -1.841189   4.069486
+     - H mean/std: 0.000059   0.012707
+     - H diag min/max: 0.007284   4.069486 
+     - input tensor rms: 0.022129
+     - input state skew: 0.064071
+     - out ch scales std/mean: 0.067182   1.000000
+     - su/sv std: 0.022259   1.002142
+     - global scale: 0.797651
+     - sample mse: 0.000500
+     - apply_out_scales: True
+     - regularized rms:  0.992048
+     - quant nmse: 0.000495
+ -- Quantized: model.layers.25.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000114  o.  g_sc: 0.797651
+     - H min/max: -93.046822   222.372650
+     - H mean/std: 0.000164   0.151245
+     - H diag min/max: 0.012502   222.372650 
+     - input tensor rms: 0.023564
+     - input state skew: 0.083230
+     - out ch scales std/mean: 0.086329   1.000000
+     - su/sv std: 0.031921   1.003700
+     - global scale: 0.591440
+     - sample mse: 0.000767
+     - apply_out_scales: True
+     - regularized rms:  0.735581
+     - quant nmse: 0.000512
+ -- Quantized: model.layers.25.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000153  o.  g_sc: 0.591440
+     - input tensor rms: 0.024584
+     - input state skew: 0.083230
+     - out ch scales std/mean: 0.155765   1.000000
+     - su/sv std: 0.030314   1.011835
+     - global scale: 0.644391
+     - sample mse: 0.000669
+     - apply_out_scales: True
+     - regularized rms:  0.801436
+     - quant nmse: 0.000466
+ -- Quantized: model.layers.25.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000084  o.  g_sc: 0.644391
+     - H min/max: -1.818431   5.861743
+     - H mean/std: 0.000012   0.005734
+     - H diag min/max: 0.015737   5.861743 
+     - input tensor rms: 0.022975
+     - input state skew: 0.060807
+     - out ch scales std/mean: 0.082014   1.000000
+     - su/sv std: 0.032944   1.003290
+     - global scale: 0.558715
+     - sample mse: 0.000794
+     - apply_out_scales: True
+     - regularized rms:  0.694880
+     - quant nmse: 0.000619
+ -- Quantized: model.layers.25.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000251  o.  g_sc: 0.558715
+ -- Quantized: model.layers.25                                          bpw:  6.01  rfn: 0.005547  cos: 0.000033  sqnr: 42.132382  [45.23 s]
+ -- Estimated remaining time: 9 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.26
+ -- Captured: model.layers.26
+     - H min/max: -296.342651   411.157440
+     - H mean/std: 0.000499   0.583006
+     - H diag min/max: 0.154711   411.157440 
+     - input tensor rms: 0.023223
+     - input state skew: 0.132839
+     - out ch scales std/mean: 0.304107   1.000000
+     - su/sv std: 0.022816   1.045182
+     - global scale: 0.783016
+     - sample mse: 0.000516
+     - apply_out_scales: True
+     - regularized rms:  0.973846
+     - quant nmse: 0.000398
+ -- Quantized: model.layers.26.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000067  o.  g_sc: 0.783016
+     - input tensor rms: 0.021237
+     - input state skew: 0.132839
+     - out ch scales std/mean: 0.220698   1.000000
+     - su/sv std: 0.021544   1.024476
+     - global scale: 0.773971
+     - sample mse: 0.000522
+     - apply_out_scales: True
+     - regularized rms:  0.962597
+     - quant nmse: 0.000406
+ -- Quantized: model.layers.26.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000069  o.  g_sc: 0.773971
+     - input tensor rms: 0.024173
+     - input state skew: 0.132839
+     - out ch scales std/mean: 0.099635   1.000000
+     - su/sv std: 0.026290   1.005405
+     - global scale: 0.735656
+     - sample mse: 0.000565
+     - apply_out_scales: True
+     - regularized rms:  0.914944
+     - quant nmse: 0.000402
+ -- Quantized: model.layers.26.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000122  o.  g_sc: 0.735656
+     - H min/max: -1.716931   2.920851
+     - H mean/std: 0.000043   0.014130
+     - H diag min/max: 0.007136   2.920851 
+     - input tensor rms: 0.022627
+     - input state skew: 0.058337
+     - out ch scales std/mean: 0.072721   1.000000
+     - su/sv std: 0.026580   1.002605
+     - global scale: 0.682706
+     - sample mse: 0.000626
+     - apply_out_scales: True
+     - regularized rms:  0.849089
+     - quant nmse: 0.000515
+ -- Quantized: model.layers.26.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000108  o.  g_sc: 0.682706
+     - H min/max: -115.958275   256.229828
+     - H mean/std: 0.000189   0.176664
+     - H diag min/max: 0.014613   256.229828 
+     - input tensor rms: 0.023834
+     - input state skew: 0.081746
+     - out ch scales std/mean: 0.078686   1.000000
+     - su/sv std: 0.033649   1.002949
+     - global scale: 0.567760
+     - sample mse: 0.000852
+     - apply_out_scales: True
+     - regularized rms:  0.706129
+     - quant nmse: 0.000541
+ -- Quantized: model.layers.26.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000202  o.  g_sc: 0.567760
+     - input tensor rms: 0.024623
+     - input state skew: 0.081746
+     - out ch scales std/mean: 0.135825   1.000000
+     - su/sv std: 0.030023   1.009227
+     - global scale: 0.653436
+     - sample mse: 0.000665
+     - apply_out_scales: True
+     - regularized rms:  0.812685
+     - quant nmse: 0.000460
+ -- Quantized: model.layers.26.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000081  o.  g_sc: 0.653436
+     - H min/max: -5.340759   12.789465
+     - H mean/std: 0.000013   0.007443
+     - H diag min/max: 0.021271   12.789465 
+     - input tensor rms: 0.023258
+     - input state skew: 0.063815
+     - out ch scales std/mean: 0.104555   1.000000
+     - su/sv std: 0.029275   1.005367
+     - global scale: 0.635346
+     - sample mse: 0.000675
+     - apply_out_scales: True
+     - regularized rms:  0.790186
+     - quant nmse: 0.000529
+ -- Quantized: model.layers.26.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000222  o.  g_sc: 0.635346
+ -- Quantized: model.layers.26                                          bpw:  6.01  rfn: 0.005159  cos: 0.000025  sqnr: 43.425638  [45.08 s]
+ -- Estimated remaining time: 8 minutes (avg over last 8 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.27
+ -- Captured: model.layers.27
+     - H min/max: -393.170013   728.336243
+     - H mean/std: 0.000671   0.862795
+     - H diag min/max: 0.227417   728.336243 
+     - input tensor rms: 0.022994
+     - input state skew: 0.141130
+     - out ch scales std/mean: 0.288901   1.000000
+     - su/sv std: 0.022424   1.040993
+     - global scale: 0.792061
+     - sample mse: 0.000518
+     - apply_out_scales: True
+     - regularized rms:  0.985095
+     - quant nmse: 0.000381
+ -- Quantized: model.layers.27.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000047  o.  g_sc: 0.792061
+     - input tensor rms: 0.020417
+     - input state skew: 0.141130
+     - out ch scales std/mean: 0.250915   1.000000
+     - su/sv std: 0.021542   1.029754
+     - global scale: 0.739111
+     - sample mse: 0.000548
+     - apply_out_scales: True
+     - regularized rms:  0.919240
+     - quant nmse: 0.000399
+ -- Quantized: model.layers.27.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000063  o.  g_sc: 0.739111
+     - input tensor rms: 0.023481
+     - input state skew: 0.141130
+     - out ch scales std/mean: 0.082092   1.000000
+     - su/sv std: 0.024779   1.001444
+     - global scale: 0.759336
+     - sample mse: 0.000515
+     - apply_out_scales: True
+     - regularized rms:  0.944395
+     - quant nmse: 0.000390
+ -- Quantized: model.layers.27.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000116  o.  g_sc: 0.759336
+     - H min/max: -2.071758   2.895499
+     - H mean/std: 0.000112   0.021808
+     - H diag min/max: 0.012755   2.895499 
+     - input tensor rms: 0.022110
+     - input state skew: 0.063855
+     - out ch scales std/mean: 0.066732   1.000000
+     - su/sv std: 0.024001   1.002390
+     - global scale: 0.739111
+     - sample mse: 0.000546
+     - apply_out_scales: True
+     - regularized rms:  0.919240
+     - quant nmse: 0.000510
+ -- Quantized: model.layers.27.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000102  o.  g_sc: 0.739111
+     - H min/max: -122.776039   252.433136
+     - H mean/std: 0.000214   0.184714
+     - H diag min/max: 0.016014   252.433136 
+     - input tensor rms: 0.024121
+     - input state skew: 0.081505
+     - out ch scales std/mean: 0.077568   1.000000
+     - su/sv std: 0.035177   1.003051
+     - global scale: 0.549670
+     - sample mse: 0.000826
+     - apply_out_scales: True
+     - regularized rms:  0.683631
+     - quant nmse: 0.000564
+ -- Quantized: model.layers.27.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000178  o.  g_sc: 0.549670
+     - input tensor rms: 0.024499
+     - input state skew: 0.081505
+     - out ch scales std/mean: 0.129655   1.000000
+     - su/sv std: 0.035900   1.008421
+     - global scale: 0.544080
+     - sample mse: 0.000854
+     - apply_out_scales: True
+     - regularized rms:  0.676678
+     - quant nmse: 0.000574
+ -- Quantized: model.layers.27.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000111  o.  g_sc: 0.544080
+     - H min/max: -3.703304   11.266378
+     - H mean/std: 0.000017   0.009559
+     - H diag min/max: 0.016896   11.266378 
+     - input tensor rms: 0.023527
+     - input state skew: 0.073610
+     - out ch scales std/mean: 0.111101   1.000000
+     - su/sv std: 0.033446   1.006310
+     - global scale: 0.562170
+     - sample mse: 0.000776
+     - apply_out_scales: True
+     - regularized rms:  0.699177
+     - quant nmse: 0.000607
+ -- Quantized: model.layers.27.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000265  o.  g_sc: 0.562170
+ -- Quantized: model.layers.27                                          bpw:  6.01  rfn: 0.006053  cos: 0.000031  sqnr: 42.497010  [45.37 s]
+ -- Estimated remaining time: 7 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.28
+ -- Captured: model.layers.28
+     - H min/max: -502.866180   616.126587
+     - H mean/std: 0.000735   1.045766
+     - H diag min/max: 0.277591   616.126587 
+     - input tensor rms: 0.023485
+     - input state skew: 0.160341
+     - out ch scales std/mean: 0.300606   1.000000
+     - su/sv std: 0.031348   1.044116
+     - global scale: 0.576805
+     - sample mse: 0.000765
+     - apply_out_scales: True
+     - regularized rms:  0.717379
+     - quant nmse: 0.000507
+ -- Quantized: model.layers.28.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000042  o.  g_sc: 0.576805
+     - input tensor rms: 0.021093
+     - input state skew: 0.160341
+     - out ch scales std/mean: 0.227501   1.000000
+     - su/sv std: 0.021268   1.024023
+     - global scale: 0.777426
+     - sample mse: 0.000513
+     - apply_out_scales: True
+     - regularized rms:  0.966893
+     - quant nmse: 0.000429
+ -- Quantized: model.layers.28.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000076  o.  g_sc: 0.777426
+     - input tensor rms: 0.024678
+     - input state skew: 0.160341
+     - out ch scales std/mean: 0.090194   1.000000
+     - su/sv std: 0.024664   1.002345
+     - global scale: 0.801106
+     - sample mse: 0.000488
+     - apply_out_scales: True
+     - regularized rms:  0.996345
+     - quant nmse: 0.000448
+ -- Quantized: model.layers.28.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000334  o.  g_sc: 0.801106
+     - H min/max: -3.017905   6.215828
+     - H mean/std: 0.000107   0.024966
+     - H diag min/max: 0.016645   6.215828 
+     - input tensor rms: 0.022026
+     - input state skew: 0.058678
+     - out ch scales std/mean: 0.079400   1.000000
+     - su/sv std: 0.029130   1.003173
+     - global scale: 0.606075
+     - sample mse: 0.000715
+     - apply_out_scales: True
+     - regularized rms:  0.753782
+     - quant nmse: 0.000743
+ -- Quantized: model.layers.28.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000210  o.  g_sc: 0.606075
+     - H min/max: -126.497513   239.904327
+     - H mean/std: 0.000248   0.186805
+     - H diag min/max: 0.017590   239.904327 
+     - input tensor rms: 0.024377
+     - input state skew: 0.079766
+     - out ch scales std/mean: 0.082530   1.000000
+     - su/sv std: 0.032715   1.003313
+     - global scale: 0.597030
+     - sample mse: 0.000762
+     - apply_out_scales: True
+     - regularized rms:  0.742533
+     - quant nmse: 0.000513
+ -- Quantized: model.layers.28.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000131  o.  g_sc: 0.597030
+     - input tensor rms: 0.024238
+     - input state skew: 0.079766
+     - out ch scales std/mean: 0.128757   1.000000
+     - su/sv std: 0.035523   1.008253
+     - global scale: 0.544080
+     - sample mse: 0.000831
+     - apply_out_scales: True
+     - regularized rms:  0.676678
+     - quant nmse: 0.000583
+ -- Quantized: model.layers.28.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000096  o.  g_sc: 0.544080
+     - H min/max: -2.840967   14.266102
+     - H mean/std: 0.000023   0.013000
+     - H diag min/max: 0.031613   14.266102 
+     - input tensor rms: 0.023803
+     - input state skew: 0.076479
+     - out ch scales std/mean: 0.128479   1.000000
+     - su/sv std: 0.034319   1.008269
+     - global scale: 0.553125
+     - sample mse: 0.000861
+     - apply_out_scales: True
+     - regularized rms:  0.687928
+     - quant nmse: 0.000609
+ -- Quantized: model.layers.28.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000312  o.  g_sc: 0.553125
+ -- Quantized: model.layers.28                                          bpw:  6.01  rfn: 0.006693  cos: 0.000034  sqnr: 41.983687  [44.86 s]
+ -- Estimated remaining time: 6 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.29
+ -- Captured: model.layers.29
+     - H min/max: -472.781067   842.618286
+     - H mean/std: 0.001355   1.293332
+     - H diag min/max: 0.205134   842.618286 
+     - input tensor rms: 0.024610
+     - input state skew: 0.138396
+     - out ch scales std/mean: 0.336994   1.000000
+     - su/sv std: 0.023411   1.054914
+     - global scale: 0.801106
+     - sample mse: 0.000490
+     - apply_out_scales: True
+     - regularized rms:  0.996345
+     - quant nmse: 0.000404
+ -- Quantized: model.layers.29.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000064  o.  g_sc: 0.801106
+     - input tensor rms: 0.020597
+     - input state skew: 0.138396
+     - out ch scales std/mean: 0.277192   1.000000
+     - su/sv std: 0.020154   1.037756
+     - global scale: 0.792061
+     - sample mse: 0.000511
+     - apply_out_scales: True
+     - regularized rms:  0.985095
+     - quant nmse: 0.000418
+ -- Quantized: model.layers.29.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000098  o.  g_sc: 0.792061
+     - input tensor rms: 0.023582
+     - input state skew: 0.138396
+     - out ch scales std/mean: 0.187927   1.000000
+     - su/sv std: 0.024082   1.017930
+     - global scale: 0.773971
+     - sample mse: 0.000519
+     - apply_out_scales: True
+     - regularized rms:  0.962597
+     - quant nmse: 0.000386
+ -- Quantized: model.layers.29.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000119  o.  g_sc: 0.773971
+     - H min/max: -3.176336   5.182100
+     - H mean/std: 0.000069   0.023159
+     - H diag min/max: 0.007503   5.182100 
+     - input tensor rms: 0.022877
+     - input state skew: 0.060669
+     - out ch scales std/mean: 0.090538   1.000000
+     - su/sv std: 0.023672   1.003661
+     - global scale: 0.773971
+     - sample mse: 0.000509
+     - apply_out_scales: True
+     - regularized rms:  0.962597
+     - quant nmse: 0.000462
+ -- Quantized: model.layers.29.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000095  o.  g_sc: 0.773971
+     - H min/max: -140.825531   267.297729
+     - H mean/std: 0.000265   0.205152
+     - H diag min/max: 0.020052   267.297729 
+     - input tensor rms: 0.024756
+     - input state skew: 0.076887
+     - out ch scales std/mean: 0.078123   1.000000
+     - su/sv std: 0.033756   1.003057
+     - global scale: 0.587985
+     - sample mse: 0.000794
+     - apply_out_scales: True
+     - regularized rms:  0.731284
+     - quant nmse: 0.000525
+ -- Quantized: model.layers.29.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000133  o.  g_sc: 0.587985
+     - input tensor rms: 0.024251
+     - input state skew: 0.076887
+     - out ch scales std/mean: 0.105436   1.000000
+     - su/sv std: 0.029839   1.005572
+     - global scale: 0.649981
+     - sample mse: 0.000649
+     - apply_out_scales: True
+     - regularized rms:  0.808388
+     - quant nmse: 0.000468
+ -- Quantized: model.layers.29.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000075  o.  g_sc: 0.649981
+     - H min/max: -16.470150   49.547947
+     - H mean/std: 0.000025   0.021387
+     - H diag min/max: 0.036074   49.547947 
+     - input tensor rms: 0.024201
+     - input state skew: 0.074149
+     - out ch scales std/mean: 0.149745   1.000000
+     - su/sv std: 0.030290   1.010714
+     - global scale: 0.635346
+     - sample mse: 0.000673
+     - apply_out_scales: True
+     - regularized rms:  0.790186
+     - quant nmse: 0.000511
+ -- Quantized: model.layers.29.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000198  o.  g_sc: 0.635346
+ -- Quantized: model.layers.29                                          bpw:  6.01  rfn: 0.005594  cos: 0.000022  sqnr: 44.096397  [44.13 s]
+ -- Estimated remaining time: 6 minutes (avg over last 8 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.30
+ -- Captured: model.layers.30
+     - H min/max: -991.937927   1765.256836
+     - H mean/std: 0.001623   2.113591
+     - H diag min/max: 0.817013   1765.256836 
+     - input tensor rms: 0.022589
+     - input state skew: 0.129071
+     - out ch scales std/mean: 0.232056   1.000000
+     - su/sv std: 0.021306   1.026587
+     - global scale: 0.830377
+     - sample mse: 0.000473
+     - apply_out_scales: True
+     - regularized rms:  1.032748
+     - quant nmse: 0.000428
+ -- Quantized: model.layers.30.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000060  o.  g_sc: 0.830377
+     - input tensor rms: 0.021452
+     - input state skew: 0.129071
+     - out ch scales std/mean: 0.222013   1.000000
+     - su/sv std: 0.022073   1.024235
+     - global scale: 0.762791
+     - sample mse: 0.000519
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000438
+ -- Quantized: model.layers.30.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000078  o.  g_sc: 0.762791
+     - input tensor rms: 0.024971
+     - input state skew: 0.129071
+     - out ch scales std/mean: 0.125562   1.000000
+     - su/sv std: 0.027975   1.007246
+     - global scale: 0.711976
+     - sample mse: 0.000589
+     - apply_out_scales: True
+     - regularized rms:  0.885492
+     - quant nmse: 0.000439
+ -- Quantized: model.layers.30.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000147  o.  g_sc: 0.711976
+     - H min/max: -16.748766   27.885487
+     - H mean/std: 0.000115   0.060058
+     - H diag min/max: 0.022685   27.885487 
+     - input tensor rms: 0.022675
+     - input state skew: 0.068871
+     - out ch scales std/mean: 0.085535   1.000000
+     - su/sv std: 0.028192   1.003832
+     - global scale: 0.644391
+     - sample mse: 0.000640
+     - apply_out_scales: True
+     - regularized rms:  0.801436
+     - quant nmse: 0.000585
+ -- Quantized: model.layers.30.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000124  o.  g_sc: 0.644391
+     - H min/max: -119.509659   236.013489
+     - H mean/std: 0.000271   0.194669
+     - H diag min/max: 0.021018   236.013489 
+     - input tensor rms: 0.025047
+     - input state skew: 0.075246
+     - out ch scales std/mean: 0.078920   1.000000
+     - su/sv std: 0.033626   1.003161
+     - global scale: 0.597030
+     - sample mse: 0.000779
+     - apply_out_scales: True
+     - regularized rms:  0.742533
+     - quant nmse: 0.000516
+ -- Quantized: model.layers.30.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000129  o.  g_sc: 0.597030
+     - input tensor rms: 0.024107
+     - input state skew: 0.075246
+     - out ch scales std/mean: 0.103337   1.000000
+     - su/sv std: 0.030614   1.005375
+     - global scale: 0.629755
+     - sample mse: 0.000674
+     - apply_out_scales: True
+     - regularized rms:  0.783234
+     - quant nmse: 0.000486
+ -- Quantized: model.layers.30.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000084  o.  g_sc: 0.629755
+     - H min/max: -26.019892   150.311996
+     - H mean/std: 0.000034   0.034856
+     - H diag min/max: 0.048721   150.311996 
+     - input tensor rms: 0.024515
+     - input state skew: 0.074121
+     - out ch scales std/mean: 0.160856   1.000000
+     - su/sv std: 0.029531   1.013015
+     - global scale: 0.659026
+     - sample mse: 0.000642
+     - apply_out_scales: True
+     - regularized rms:  0.819637
+     - quant nmse: 0.000485
+ -- Quantized: model.layers.30.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000184  o.  g_sc: 0.659026
+ -- Quantized: model.layers.30                                          bpw:  6.01  rfn: 0.005629  cos: 0.000021  sqnr: 44.332788  [44.23 s]
+ -- Estimated remaining time: 5 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.31
+ -- Captured: model.layers.31
+     - H min/max: -961.855713   1353.720703
+     - H mean/std: 0.002078   2.483585
+     - H diag min/max: 0.665067   1353.720703 
+     - input tensor rms: 0.023064
+     - input state skew: 0.139977
+     - out ch scales std/mean: 0.273469   1.000000
+     - su/sv std: 0.021931   1.036767
+     - global scale: 0.815741
+     - sample mse: 0.000482
+     - apply_out_scales: True
+     - regularized rms:  1.014546
+     - quant nmse: 0.000399
+ -- Quantized: model.layers.31.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000055  o.  g_sc: 0.815741
+     - input tensor rms: 0.020606
+     - input state skew: 0.139977
+     - out ch scales std/mean: 0.273519   1.000000
+     - su/sv std: 0.021303   1.037127
+     - global scale: 0.750291
+     - sample mse: 0.000543
+     - apply_out_scales: True
+     - regularized rms:  0.933145
+     - quant nmse: 0.000416
+ -- Quantized: model.layers.31.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000085  o.  g_sc: 0.750291
+     - input tensor rms: 0.025925
+     - input state skew: 0.139977
+     - out ch scales std/mean: 0.124224   1.000000
+     - su/sv std: 0.028339   1.008061
+     - global scale: 0.730066
+     - sample mse: 0.000539
+     - apply_out_scales: True
+     - regularized rms:  0.907991
+     - quant nmse: 0.000422
+ -- Quantized: model.layers.31.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000323  o.  g_sc: 0.730066
+     - H min/max: -7.144086   13.131883
+     - H mean/std: 0.000133   0.054608
+     - H diag min/max: 0.032583   13.131883 
+     - input tensor rms: 0.023344
+     - input state skew: 0.057684
+     - out ch scales std/mean: 0.117113   1.000000
+     - su/sv std: 0.022699   1.007005
+     - global scale: 0.821332
+     - sample mse: 0.000482
+     - apply_out_scales: True
+     - regularized rms:  1.021499
+     - quant nmse: 0.000556
+ -- Quantized: model.layers.31.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000123  o.  g_sc: 0.821332
+     - H min/max: -85.478485   184.109329
+     - H mean/std: 0.000271   0.168208
+     - H diag min/max: 0.020786   184.109329 
+     - input tensor rms: 0.025341
+     - input state skew: 0.073222
+     - out ch scales std/mean: 0.078053   1.000000
+     - su/sv std: 0.033521   1.003093
+     - global scale: 0.606075
+     - sample mse: 0.000763
+     - apply_out_scales: True
+     - regularized rms:  0.753782
+     - quant nmse: 0.000508
+ -- Quantized: model.layers.31.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000141  o.  g_sc: 0.606075
+     - input tensor rms: 0.023853
+     - input state skew: 0.073222
+     - out ch scales std/mean: 0.099508   1.000000
+     - su/sv std: 0.028963   1.004795
+     - global scale: 0.659026
+     - sample mse: 0.000673
+     - apply_out_scales: True
+     - regularized rms:  0.819637
+     - quant nmse: 0.000461
+ -- Quantized: model.layers.31.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000088  o.  g_sc: 0.659026
+     - H min/max: -28.671658   531.716003
+     - H mean/std: 0.000042   0.069301
+     - H diag min/max: 0.040917   531.716003 
+     - input tensor rms: 0.024994
+     - input state skew: 0.070939
+     - out ch scales std/mean: 0.172169   1.000000
+     - su/sv std: 0.029641   1.014877
+     - global scale: 0.668071
+     - sample mse: 0.000631
+     - apply_out_scales: True
+     - regularized rms:  0.830887
+     - quant nmse: 0.000470
+ -- Quantized: model.layers.31.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000189  o.  g_sc: 0.668071
+ -- Quantized: model.layers.31                                          bpw:  6.01  rfn: 0.005555  cos: 0.000020  sqnr: 44.739851  [44.30 s]
+ -- Estimated remaining time: 4 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.32
+ -- Captured: model.layers.32
+     - H min/max: -1855.648315   3303.102783
+     - H mean/std: 0.002933   3.944545
+     - H diag min/max: 0.968739   3303.102783 
+     - input tensor rms: 0.022657
+     - input state skew: 0.134882
+     - out ch scales std/mean: 0.279013   1.000000
+     - su/sv std: 0.022839   1.038154
+     - global scale: 0.768381
+     - sample mse: 0.000534
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000494
+ -- Quantized: model.layers.32.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000111  o.  g_sc: 0.768381
+     - input tensor rms: 0.020719
+     - input state skew: 0.134882
+     - out ch scales std/mean: 0.276422   1.000000
+     - su/sv std: 0.023332   1.037793
+     - global scale: 0.688296
+     - sample mse: 0.000612
+     - apply_out_scales: True
+     - regularized rms:  0.856041
+     - quant nmse: 0.000437
+ -- Quantized: model.layers.32.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000076  o.  g_sc: 0.688296
+     - input tensor rms: 0.025847
+     - input state skew: 0.134882
+     - out ch scales std/mean: 0.091791   1.000000
+     - su/sv std: 0.028929   1.004273
+     - global scale: 0.715431
+     - sample mse: 0.000568
+     - apply_out_scales: True
+     - regularized rms:  0.889789
+     - quant nmse: 0.000395
+ -- Quantized: model.layers.32.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000130  o.  g_sc: 0.715431
+     - H min/max: -5.671404   10.265020
+     - H mean/std: 0.000238   0.086113
+     - H diag min/max: 0.061824   10.265020 
+     - input tensor rms: 0.023296
+     - input state skew: 0.059876
+     - out ch scales std/mean: 0.108706   1.000000
+     - su/sv std: 0.022920   1.005881
+     - global scale: 0.812287
+     - sample mse: 0.000479
+     - apply_out_scales: True
+     - regularized rms:  1.010250
+     - quant nmse: 0.000512
+ -- Quantized: model.layers.32.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000105  o.  g_sc: 0.812287
+     - H min/max: -72.607918   188.667526
+     - H mean/std: 0.000305   0.173773
+     - H diag min/max: 0.022260   188.667526 
+     - input tensor rms: 0.025415
+     - input state skew: 0.075029
+     - out ch scales std/mean: 0.077528   1.000000
+     - su/sv std: 0.031896   1.003034
+     - global scale: 0.638800
+     - sample mse: 0.000666
+     - apply_out_scales: True
+     - regularized rms:  0.794483
+     - quant nmse: 0.000473
+ -- Quantized: model.layers.32.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000129  o.  g_sc: 0.638800
+     - input tensor rms: 0.023503
+     - input state skew: 0.075029
+     - out ch scales std/mean: 0.104058   1.000000
+     - su/sv std: 0.028138   1.005307
+     - global scale: 0.668071
+     - sample mse: 0.000628
+     - apply_out_scales: True
+     - regularized rms:  0.830887
+     - quant nmse: 0.000451
+ -- Quantized: model.layers.32.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000094  o.  g_sc: 0.668071
+     - H min/max: -10.043424   72.966339
+     - H mean/std: 0.000056   0.030136
+     - H diag min/max: 0.068720   72.966339 
+     - input tensor rms: 0.025026
+     - input state skew: 0.068438
+     - out ch scales std/mean: 0.162325   1.000000
+     - su/sv std: 0.031537   1.013060
+     - global scale: 0.629755
+     - sample mse: 0.000677
+     - apply_out_scales: True
+     - regularized rms:  0.783234
+     - quant nmse: 0.000496
+ -- Quantized: model.layers.32.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000220  o.  g_sc: 0.629755
+ -- Quantized: model.layers.32                                          bpw:  6.01  rfn: 0.006080  cos: 0.000023  sqnr: 44.219569  [44.46 s]
+ -- Estimated remaining time: 3 minutes (avg over last 8 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.layers.33
+ -- Captured: model.layers.33
+     - H min/max: -1818.267578   3872.650635
+     - H mean/std: 0.005533   5.462106
+     - H diag min/max: 0.647007   3872.650635 
+     - input tensor rms: 0.022800
+     - input state skew: 0.140353
+     - out ch scales std/mean: 0.352290   1.000000
+     - su/sv std: 0.021436   1.060204
+     - global scale: 0.806696
+     - sample mse: 0.000471
+     - apply_out_scales: True
+     - regularized rms:  1.003297
+     - quant nmse: 0.000411
+ -- Quantized: model.layers.33.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000068  o.  g_sc: 0.806696
+     - input tensor rms: 0.018609
+     - input state skew: 0.140353
+     - out ch scales std/mean: 0.354878   1.000000
+     - su/sv std: 0.017805   1.061563
+     - global scale: 0.792061
+     - sample mse: 0.000497
+     - apply_out_scales: True
+     - regularized rms:  0.985095
+     - quant nmse: 0.000427
+ -- Quantized: model.layers.33.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000106  o.  g_sc: 0.792061
+     - input tensor rms: 0.027633
+     - input state skew: 0.140353
+     - out ch scales std/mean: 0.135393   1.000000
+     - su/sv std: 0.028864   1.009573
+     - global scale: 0.762791
+     - sample mse: 0.000528
+     - apply_out_scales: True
+     - regularized rms:  0.948692
+     - quant nmse: 0.000378
+ -- Quantized: model.layers.33.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000138  o.  g_sc: 0.762791
+     - H min/max: -21.691813   37.744633
+     - H mean/std: 0.000516   0.174154
+     - H diag min/max: 0.064136   37.744633 
+     - input tensor rms: 0.024267
+     - input state skew: 0.063418
+     - out ch scales std/mean: 0.111127   1.000000
+     - su/sv std: 0.026358   1.006335
+     - global scale: 0.735656
+     - sample mse: 0.000570
+     - apply_out_scales: True
+     - regularized rms:  0.914943
+     - quant nmse: 0.000494
+ -- Quantized: model.layers.33.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000100  o.  g_sc: 0.735656
+     - H min/max: -90.673904   216.236954
+     - H mean/std: 0.000364   0.216599
+     - H diag min/max: 0.025517   216.236954 
+     - input tensor rms: 0.025509
+     - input state skew: 0.081692
+     - out ch scales std/mean: 0.086587   1.000000
+     - su/sv std: 0.033220   1.003786
+     - global scale: 0.615120
+     - sample mse: 0.000723
+     - apply_out_scales: True
+     - regularized rms:  0.765032
+     - quant nmse: 0.000487
+ -- Quantized: model.layers.33.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000114  o.  g_sc: 0.615120
+     - input tensor rms: 0.023256
+     - input state skew: 0.081692
+     - out ch scales std/mean: 0.119707   1.000000
+     - su/sv std: 0.030635   1.007188
+     - global scale: 0.606075
+     - sample mse: 0.000763
+     - apply_out_scales: True
+     - regularized rms:  0.753782
+     - quant nmse: 0.000497
+ -- Quantized: model.layers.33.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000099  o.  g_sc: 0.606075
+     - H min/max: -74.583435   859.435242
+     - H mean/std: 0.000091   0.129021
+     - H diag min/max: 0.064709   859.435242 
+     - input tensor rms: 0.024747
+     - input state skew: 0.071266
+     - out ch scales std/mean: 0.115754   1.000000
+     - su/sv std: 0.032316   1.006857
+     - global scale: 0.611665
+     - sample mse: 0.000707
+     - apply_out_scales: True
+     - regularized rms:  0.760735
+     - quant nmse: 0.000512
+ -- Quantized: model.layers.33.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000198  o.  g_sc: 0.611665
+ -- Quantized: model.layers.33                                          bpw:  6.01  rfn: 0.006300  cos: 0.000024  sqnr: 44.063552  [44.51 s]
+ -- Estimated remaining time: 2 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.34
+ -- Captured: model.layers.34
+     - H min/max: -3548.824219   9555.000000
+     - H mean/std: 0.005730   7.996130
+     - H diag min/max: 0.662980   9555.000000 
+     - input tensor rms: 0.021994
+     - input state skew: 0.130892
+     - out ch scales std/mean: 0.321235   1.000000
+     - su/sv std: 0.023645   1.050412
+     - global scale: 0.711976
+     - sample mse: 0.000575
+     - apply_out_scales: True
+     - regularized rms:  0.885492
+     - quant nmse: 0.000416
+ -- Quantized: model.layers.34.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000044  o.  g_sc: 0.711976
+     - input tensor rms: 0.020040
+     - input state skew: 0.130892
+     - out ch scales std/mean: 0.332803   1.000000
+     - su/sv std: 0.022392   1.054012
+     - global scale: 0.682706
+     - sample mse: 0.000599
+     - apply_out_scales: True
+     - regularized rms:  0.849089
+     - quant nmse: 0.000436
+ -- Quantized: model.layers.34.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000072  o.  g_sc: 0.682706
+     - input tensor rms: 0.027604
+     - input state skew: 0.130892
+     - out ch scales std/mean: 0.084843   1.000000
+     - su/sv std: 0.035426   1.003675
+     - global scale: 0.624165
+     - sample mse: 0.000660
+     - apply_out_scales: True
+     - regularized rms:  0.776281
+     - quant nmse: 0.000464
+ -- Quantized: model.layers.34.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000134  o.  g_sc: 0.624165
+     - H min/max: -121.148712   361.485168
+     - H mean/std: 0.000533   0.436228
+     - H diag min/max: 0.050154   361.485168 
+     - input tensor rms: 0.023692
+     - input state skew: 0.076556
+     - out ch scales std/mean: 0.122341   1.000000
+     - su/sv std: 0.023871   1.007440
+     - global scale: 0.792061
+     - sample mse: 0.000517
+     - apply_out_scales: True
+     - regularized rms:  0.985095
+     - quant nmse: 0.000505
+ -- Quantized: model.layers.34.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000053  o.  g_sc: 0.792061
+     - H min/max: -225.976196   369.545197
+     - H mean/std: 0.000462   0.418571
+     - H diag min/max: 0.036473   369.545197 
+     - input tensor rms: 0.025161
+     - input state skew: 0.100452
+     - out ch scales std/mean: 0.111051   1.000000
+     - su/sv std: 0.029209   1.006146
+     - global scale: 0.688296
+     - sample mse: 0.000610
+     - apply_out_scales: True
+     - regularized rms:  0.856041
+     - quant nmse: 0.000427
+ -- Quantized: model.layers.34.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000047  o.  g_sc: 0.688296
+     - input tensor rms: 0.023691
+     - input state skew: 0.100452
+     - out ch scales std/mean: 0.157300   1.000000
+     - su/sv std: 0.027336   1.012135
+     - global scale: 0.688296
+     - sample mse: 0.000625
+     - apply_out_scales: True
+     - regularized rms:  0.856041
+     - quant nmse: 0.000427
+ -- Quantized: model.layers.34.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000058  o.  g_sc: 0.688296
+     - H min/max: -613.264648   905.388000
+     - H mean/std: 0.000166   0.301449
+     - H diag min/max: 0.072865   905.388000 
+     - input tensor rms: 0.023393
+     - input state skew: 0.089749
+     - out ch scales std/mean: 0.101743   1.000000
+     - su/sv std: 0.029035   1.005128
+     - global scale: 0.644391
+     - sample mse: 0.000677
+     - apply_out_scales: True
+     - regularized rms:  0.801436
+     - quant nmse: 0.000490
+ -- Quantized: model.layers.34.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000117  o.  g_sc: 0.644391
+ -- Quantized: model.layers.34                                          bpw:  6.01  rfn: 0.005730  cos: 0.000018  sqnr: 45.254998  [44.12 s]
+ -- Estimated remaining time: 2 minutes (avg over last 8 blocks)
+ -- Loading unquantized module: model.layers.35
+ -- Captured: model.layers.35
+     - H min/max: -2403.917480   3867.854980
+     - H mean/std: 0.003104   4.103661
+     - H diag min/max: 2.710446   3867.854980 
+     - input tensor rms: 0.022268
+     - input state skew: 0.114010
+     - out ch scales std/mean: 0.226931   1.000000
+     - su/sv std: 0.021391   1.025542
+     - global scale: 0.815741
+     - sample mse: 0.000492
+     - apply_out_scales: True
+     - regularized rms:  1.014546
+     - quant nmse: 0.000394
+ -- Quantized: model.layers.35.self_attn.q_proj                         bpw:  6.00  proxy_err: 0.000044  o.  g_sc: 0.815741
+     - input tensor rms: 0.021360
+     - input state skew: 0.114010
+     - out ch scales std/mean: 0.190342   1.000000
+     - su/sv std: 0.020171   1.018129
+     - global scale: 0.835967
+     - sample mse: 0.000489
+     - apply_out_scales: True
+     - regularized rms:  1.039701
+     - quant nmse: 0.000395
+ -- Quantized: model.layers.35.self_attn.k_proj                         bpw:  6.00  proxy_err: 0.000040  o.  g_sc: 0.835967
+     - input tensor rms: 0.026000
+     - input state skew: 0.114010
+     - out ch scales std/mean: 0.125718   1.000000
+     - su/sv std: 0.029581   1.007824
+     - global scale: 0.700796
+     - sample mse: 0.000577
+     - apply_out_scales: True
+     - regularized rms:  0.871587
+     - quant nmse: 0.000409
+ -- Quantized: model.layers.35.self_attn.v_proj                         bpw:  6.00  proxy_err: 0.000134  o.  g_sc: 0.700796
+     - H min/max: -40.475590   70.278709
+     - H mean/std: 0.000764   0.419946
+     - H diag min/max: 0.066982   70.278709 
+     - input tensor rms: 0.022935
+     - input state skew: 0.072485
+     - out ch scales std/mean: 0.138565   1.000000
+     - su/sv std: 0.027706   1.009722
+     - global scale: 0.659026
+     - sample mse: 0.000623
+     - apply_out_scales: True
+     - regularized rms:  0.819637
+     - quant nmse: 0.000718
+ -- Quantized: model.layers.35.self_attn.o_proj                         bpw:  6.00  proxy_err: 0.000122  o.  g_sc: 0.659026
+     - H min/max: -774.287476   1094.430664
+     - H mean/std: 0.000884   1.099531
+     - H diag min/max: 0.077084   1094.430664 
+     - input tensor rms: 0.025533
+     - input state skew: 0.130524
+     - out ch scales std/mean: 0.135313   1.000000
+     - su/sv std: 0.026460   1.009032
+     - global scale: 0.768381
+     - sample mse: 0.000535
+     - apply_out_scales: True
+     - regularized rms:  0.955644
+     - quant nmse: 0.000396
+ -- Quantized: model.layers.35.mlp.up_proj                              bpw:  6.00  proxy_err: 0.000033  o.  g_sc: 0.768381
+     - input tensor rms: 0.024924
+     - input state skew: 0.130524
+     - out ch scales std/mean: 0.203548   1.000000
+     - su/sv std: 0.026037   1.020506
+     - global scale: 0.753746
+     - sample mse: 0.000536
+     - apply_out_scales: True
+     - regularized rms:  0.937442
+     - quant nmse: 0.000398
+ -- Quantized: model.layers.35.mlp.gate_proj                            bpw:  6.00  proxy_err: 0.000033  o.  g_sc: 0.753746
+     - H min/max: -6509.493652   18762.470703
+     - H mean/std: 0.000569   4.675949
+     - H diag min/max: 0.284310   18762.470703 
+     - input tensor rms: 0.022341
+     - input state skew: 0.206561
+     - out ch scales std/mean: 0.065591   1.000000
+     - su/sv std: 0.026609   1.002313
+     - global scale: 0.673661
+     - sample mse: 0.000628
+     - apply_out_scales: True
+     - regularized rms:  0.837839
+     - quant nmse: 0.000442
+ -- Quantized: model.layers.35.mlp.down_proj                            bpw:  6.00  proxy_err: 0.000022  o.  g_sc: 0.673661
+ -- Quantized: model.layers.35                                          bpw:  6.01  rfn: 0.006845  cos: 0.000019  sqnr: 45.529477  [44.08 s]
+ -- Estimated remaining time: 1 minute (avg over last 8 blocks)
+ -- Saving checkpoint
+ -- Loading unquantized module: model.norm
+ -- Quantized: model.norm                                               bpw: 16.00  rfn: 0.000000  cos: 0.000000  sqnr: 0.000000  [4.99 s]
+ -- Estimated remaining time: < 1 minute (avg over last 8 blocks)
+ -- Loading unquantized module: lm_head
+     - Cloned lm_head from model.embed_tokens
+ -- Captured: lm_head
+     - H min/max: -1382.586670   6401.873535
+     - H mean/std: 0.010345   4.786615
+     - H diag min/max: 0.260004   6401.873535 
+     - input tensor rms: 0.021745
+     - input state skew: 0.133760
+     - out ch scales std/mean: 0.154648   1.000000
+     - su/sv std: 0.037685   1.011889
+     - global scale: 0.458405
+     - sample mse: 0.000082
+     - apply_out_scales: True
+     - regularized rms:  0.570123
+ -- Quantizing (parallel): 0/1 (  0.0%) elapsed 30s eta ?
+ -- Quantizing (parallel): 0/1 (  0.0%) elapsed 1m00s eta ?
+     - quant nmse: 0.000055
+ -- Quantized: lm_head                                                  bpw:  8.00  proxy_err: 0.000030  o.  g_sc: 0.458405
+ -- Quantizing (parallel): 0/1 (  0.0%) elapsed 1m16s eta ?
+ -- Quantized: lm_head                                                  bpw:  8.01  rfn: 0.004680  cos: 0.000018  sqnr: 46.273680  [102.93 s]
+ -- Estimated remaining time: < 1 minute (avg over last 8 blocks)
+ -- Writing into models/Huihui-Qwen3-4B-exl3-6bpw
+ -- Writing model.safetensors
+ -- Copying non-tensor files from /home/op/models/Huihui-Qwen3-4B-Instruct-2507-abliterated
+     - generation_config.json
+     - chat_template.jinja
+     - tokenizer.json
+     - README.md
+     - added_tokens.json
+     - special_tokens_map.json
+     - vocab.json
+     - LICENSE
+     - tokenizer_config.json
+     - merges.txt
+     - .gitattributes
+ -- Writing config.json
+ -- Creating quantization_config.json
+ -- Finished compiling model to models/Huihui-Qwen3-4B-exl3-6bpw
+ -- All done

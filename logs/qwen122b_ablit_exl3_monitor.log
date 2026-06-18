@@ -1,0 +1,74 @@
+[2026-03-30T09:40:12Z] Heartbeat
+0, NVIDIA GeForce RTX 3090, 2 MiB, 0 %
+1, NVIDIA GeForce RTX 3090, 2 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 2 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 53 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 2 MiB, 0 %
+-- compute apps --
+
+[2026-03-30T10:10:12Z] Heartbeat
+[2026-03-30T09:40:12Z] phase=quantize bits=6 mode=resume work_dir=/home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+0, NVIDIA GeForce RTX 3090, 8534 MiB, 100 %
+1, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 4 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 1665 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+-- compute apps --
+GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47, 2204409, python, 8526 MiB
+GPU-cbfc8a5f-0df1-ca71-f704-0d09a707d2ac, 2260320, /home/op/miniconda3/envs/whisperlivekit-translate/bin/python3.13, 1606 MiB
+
+[2026-03-30T10:40:13Z] Heartbeat
+[2026-03-30T09:40:12Z] phase=quantize bits=6 mode=resume work_dir=/home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+0, NVIDIA GeForce RTX 3090, 8534 MiB, 100 %
+1, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 4 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 1683 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+-- compute apps --
+GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47, 2204409, python, 8526 MiB
+GPU-cbfc8a5f-0df1-ca71-f704-0d09a707d2ac, 2301393, /home/op/miniconda3/envs/whisperlivekit-translate/bin/python3.13, 1624 MiB
+
+[2026-03-30T11:10:13Z] Heartbeat
+[2026-03-30T09:40:12Z] phase=quantize bits=6 mode=resume work_dir=/home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+0, NVIDIA GeForce RTX 3090, 8534 MiB, 100 %
+1, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 4 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 1683 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+-- compute apps --
+GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47, 2204409, python, 8526 MiB
+GPU-cbfc8a5f-0df1-ca71-f704-0d09a707d2ac, 2301393, /home/op/miniconda3/envs/whisperlivekit-translate/bin/python3.13, 1624 MiB
+
+[2026-03-30T11:40:13Z] Heartbeat
+[2026-03-30T09:40:12Z] phase=quantize bits=6 mode=resume work_dir=/home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+0, NVIDIA GeForce RTX 3090, 8534 MiB, 100 %
+1, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 4 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 1683 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+-- compute apps --
+GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47, 2204409, python, 8526 MiB
+GPU-cbfc8a5f-0df1-ca71-f704-0d09a707d2ac, 2301393, /home/op/miniconda3/envs/whisperlivekit-translate/bin/python3.13, 1624 MiB
+
+[2026-03-30T12:10:13Z] Heartbeat
+[2026-03-30T09:40:12Z] phase=quantize bits=6 mode=resume work_dir=/home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+0, NVIDIA GeForce RTX 3090, 8534 MiB, 100 %
+1, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 4 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 1683 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+-- compute apps --
+GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47, 2204409, python, 8526 MiB
+GPU-cbfc8a5f-0df1-ca71-f704-0d09a707d2ac, 2301393, /home/op/miniconda3/envs/whisperlivekit-translate/bin/python3.13, 1624 MiB
+
+[2026-03-30T12:40:13Z] Heartbeat
+[2026-03-30T09:40:12Z] phase=quantize bits=6 mode=resume work_dir=/home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+0, NVIDIA GeForce RTX 3090, 8534 MiB, 100 %
+1, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+2, NVIDIA GeForce RTX 3060, 4 MiB, 0 %
+3, NVIDIA GeForce RTX 3060, 1683 MiB, 0 %
+4, NVIDIA GeForce RTX 3090, 4 MiB, 0 %
+-- compute apps --
+GPU-828df6fd-3fd0-ed25-0b2b-2b6d9d8dca47, 2204409, python, 8526 MiB
+GPU-cbfc8a5f-0df1-ca71-f704-0d09a707d2ac, 2301393, /home/op/miniconda3/envs/whisperlivekit-translate/bin/python3.13, 1624 MiB
+

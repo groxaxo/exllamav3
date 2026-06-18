@@ -100,6 +100,7 @@ __device__ inline void ptx_mma_m16n8k16
 
 // Global barrier
 
+// B6: Added __nanosleep backoff to reduce L2 coherent load thrashing on Ampere
 __device__ inline void barrier_acquire
 (
     int* lock,
@@ -112,6 +113,7 @@ __device__ inline void barrier_acquire
         do
         {
             asm volatile ("ld.global.acquire.gpu.b32 %0, [%1];\n" : "=r"(state) : "l"(lock));
+            if (state != stage) __nanosleep(32);
         }
         while (state != stage);
     }

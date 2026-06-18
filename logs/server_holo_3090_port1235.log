@@ -1,0 +1,73 @@
+/home/op/exllamav3_ampere/server_holo_3090.py:373: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1551247]
+INFO:     Waiting for application startup.
+
+============================================================
+  Holo3-35B-A3B-exl3 - dual 3090 server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Holo3-35B-A3B-exl3-6bpw
+  GPU split    : [22.0, 22.0]
+  Cache tokens : 80,000
+  KV cache     : quantized 8-bit
+  Max tokens   : 16000
+  Think budget : 6000
+  Endpoint     : http://0.0.0.0:1235/v1
+
+  CUDA_VISIBLE_DEVICES : 1,4
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB, 23.3 GB free)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB, 23.0 GB free)
+
+Loading model config...
+Creating 8-bit KV cache (80,128 tokens)...
+Loading weights (layer-split across GPUs)...
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1235 (Press CTRL+C to quit)
+  GPU 0: alloc=21.75GB  reserved=21.77GB
+  GPU 1: alloc=4.20GB  reserved=4.25GB
+
+Loading tokenizer...
+Stop tokens   : [248044, 248046]
+Creating Generator...
+
+Running startup warmup...
+  Warmup response: Four.
+
+  Server ready at http://0.0.0.0:1235/v1
+
+INFO:     127.0.0.1:51366 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51378 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38706 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:37998 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38420 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38426 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:52016 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:36166 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:34320 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:58674 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38830 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38832 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38838 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:33134 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:58974 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:58982 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:32802 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:60702 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:60718 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:36434 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:50440 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:37290 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:41986 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:50966 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:37494 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:40758 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33596 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1551247]

@@ -1,0 +1,39 @@
+{
+  "tp_size": 4,
+  "mode": "layer-split-4GPU",
+  "gpu_split": [
+    22.8,
+    22.8,
+    22.8,
+    10.6
+  ],
+  "gpu_names": [
+    "NVIDIA GeForce RTX 3090",
+    "NVIDIA GeForce RTX 3090",
+    "NVIDIA GeForce RTX 3090",
+    "NVIDIA GeForce RTX 3060"
+  ],
+  "layer_split": true,
+  "cache_tokens": 150016,
+  "cache_quant": [
+    8,
+    8
+  ],
+  "max_new_tokens": 64,
+  "tp_backend": "n/a",
+  "nccl_algo": null,
+  "prompt_tokens": 74,
+  "avg_decode_tps": 45.87,
+  "avg_prefill_tps": 269.14,
+  "runs": [
+    {
+      "run": 1,
+      "gen_tokens": 63,
+      "total_time": 1.648,
+      "prefill_time": 0.275,
+      "decode_time": 1.373,
+      "decode_tps": 45.87,
+      "prefill_tps": 269.14
+    }
+  ]
+}

@@ -2,7 +2,9 @@ import argparse
 import torch
 import time
 import sys
-from .. import Config, Model, Tokenizer
+from ..model.config import Config
+from ..model.model import Model
+from ..tokenizer import Tokenizer
 from ..modules import Linear
 from ..modules.quant import LinearFP16, LinearEXL3
 from ..util.progress import ProgressBar
@@ -21,38 +23,115 @@ from collections import deque
 col_default = "\u001b[0m"
 col_red = "\u001b[31;1m"
 
-torch.set_printoptions(precision = 5, sci_mode = False, linewidth = 200)
+torch.set_printoptions(precision=5, sci_mode=False, linewidth=200)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-i", "--in_dir", type = str, default = None, help = "Input (model) directory")
-parser.add_argument("-w", "--work_dir", type = str, default = None, help = "Working directory")
-parser.add_argument("-o", "--out_dir", type = str, default = None, help = "Output directory")
-parser.add_argument("-ss", "--shard_size", type = int, help = "Max shard size in MB, default: 8192")
-parser.add_argument("-b", "--bits", type = float, help = "Bits per weight")
-parser.add_argument("-hb", "--head_bits", type = int, default = None, help = "Bits per weight, output (head) layer, default: 6")
-parser.add_argument("-resume", "--resume", action = "store_true", help = "Resume interrupted job from working directory")
-parser.add_argument("-cr", "--cal_rows", type = int, help = "Calibration data size, rows, default: 250")
-parser.add_argument("-cc", "--cal_cols", type = int, help = "Calibration data size, columns, default: 2048")
-parser.add_argument("-cpi", "--checkpoint_interval", type = int, default = 120, help = "Minimum checkpoint interval, in seconds")
-parser.add_argument("-lcpi", "--last_checkpoint_index", type = int, default = None, help = "Last module index to checkpoint (for debug purposes)")
-parser.add_argument("-v", "--verbose", action = "store_true", help = "Verbose mode")
-parser.add_argument("-d", "--devices", type = str, default = "0", help = "List of devices to use for quantization, e.g. --devices 0,1,2")
-parser.add_argument("-dr", "--device_ratios", type = str, default = "", help = "Split ratio for devices, e.g. --device_ratio 2,2,4")
-parser.add_argument("-img", "--image_dump", action = "store_true", help = "Save model tensors as images (saved to working directory)")
-parser.add_argument("-cb", "--codebook", type = str, default = "mcg", help = "Codebook: mcg (default), mul1 or 3inst")
-parser.add_argument("-strat", "--strategy", type = str, default = None, help = "Modifiers for quantization strategy - EXPERIMENTAL")
-parser.add_argument("-pm", "--parallel_mode", action = "store_true", help = "When possible, use new parallel mode for small tensors (MoE layers especially)")
+parser.add_argument(
+    "-i", "--in_dir", type=str, default=None, help="Input (model) directory"
+)
+parser.add_argument(
+    "-w", "--work_dir", type=str, default=None, help="Working directory"
+)
+parser.add_argument("-o", "--out_dir", type=str, default=None, help="Output directory")
+parser.add_argument(
+    "-ss", "--shard_size", type=int, help="Max shard size in MB, default: 8192"
+)
+parser.add_argument("-b", "--bits", type=float, help="Bits per weight")
+parser.add_argument(
+    "-hb",
+    "--head_bits",
+    type=int,
+    default=None,
+    help="Bits per weight, output (head) layer, default: 6",
+)
+parser.add_argument(
+    "-resume",
+    "--resume",
+    action="store_true",
+    help="Resume interrupted job from working directory",
+)
+parser.add_argument(
+    "-cr", "--cal_rows", type=int, help="Calibration data size, rows, default: 250"
+)
+parser.add_argument(
+    "-cc", "--cal_cols", type=int, help="Calibration data size, columns, default: 2048"
+)
+parser.add_argument(
+    "-cpi",
+    "--checkpoint_interval",
+    type=int,
+    default=120,
+    help="Minimum checkpoint interval, in seconds",
+)
+parser.add_argument(
+    "-lcpi",
+    "--last_checkpoint_index",
+    type=int,
+    default=None,
+    help="Last module index to checkpoint (for debug purposes)",
+)
+parser.add_argument("-v", "--verbose", action="store_true", help="Verbose mode")
+parser.add_argument(
+    "-d",
+    "--devices",
+    type=str,
+    default="0",
+    help="List of devices to use for quantization, e.g. --devices 0,1,2",
+)
+parser.add_argument(
+    "-dr",
+    "--device_ratios",
+    type=str,
+    default="",
+    help="Split ratio for devices, e.g. --device_ratio 2,2,4",
+)
+parser.add_argument(
+    "-img",
+    "--image_dump",
+    action="store_true",
+    help="Save model tensors as images (saved to working directory)",
+)
+parser.add_argument(
+    "-cb",
+    "--codebook",
+    type=str,
+    default="mcg",
+    help="Codebook: mcg (default), mul1 or 3inst",
+)
+parser.add_argument(
+    "-strat",
+    "--strategy",
+    type=str,
+    default=None,
+    help="Modifiers for quantization strategy - EXPERIMENTAL",
+)
+parser.add_argument(
+    "-pm",
+    "--parallel_mode",
+    action="store_true",
+    help="When possible, use new parallel mode for small tensors (MoE layers especially)",
+)
 
 group = parser.add_mutually_exclusive_group()
-group.add_argument("--out_scales", type = str, default = "always", help = "Enable out channel scales (always/never/auto, default: always)")
+group.add_argument(
+    "--out_scales",
+    type=str,
+    default="always",
+    help="Enable out channel scales (always/never/auto, default: always)",
+)
 
-parser.add_argument("--override_anyway", action = "store_true", help = "Allow resuming even when overriding settings that will break the existing job.")
+parser.add_argument(
+    "--override_anyway",
+    action="store_true",
+    help="Allow resuming even when overriding settings that will break the existing job.",
+)
 
 num_ref_states = 5
 
 progress_lock = threading.Lock()
 curr_progress = 0
 max_progress = 0
+
 
 def check_system():
     if os.environ.get("TORCH_ALLOW_TF32_CUBLAS_OVERRIDE") is not None:
@@ -67,19 +146,19 @@ def check_system():
 
 def save_dict(filename, dict_, args):
     path = os.path.join(args["work_dir"], filename)
-    with open(path, "w", encoding = "utf8") as f:
-        f.write(json.dumps(dict_, indent = 4))
+    with open(path, "w", encoding="utf8") as f:
+        f.write(json.dumps(dict_, indent=4))
 
 
 def load_dict(filename, args):
     path = os.path.join(args["work_dir"], filename)
-    with open(path, "r", encoding = "utf8") as f:
+    with open(path, "r", encoding="utf8") as f:
         return json.load(f)
 
 
 def load_tensor(filename, args):
     path = os.path.join(args["work_dir"], filename)
-    with safe_open(path, framework = "pt", device = "cpu") as f:
+    with safe_open(path, framework="pt", device="cpu") as f:
         if "tensor" in f.keys():
             return f.get_tensor("tensor")
         else:
@@ -94,27 +173,21 @@ def load_tensor(filename, args):
 def save_tensor(tensor, filename: str, args):
     path = os.path.join(args["work_dir"], filename)
     if isinstance(tensor, dict):
-        save_file({
-            k: v for k, v in tensor.items()
-        }, path)
+        save_file({k: v for k, v in tensor.items()}, path)
     elif isinstance(tensor, list):
-        save_file({
-            f"tensor.{i}": t for i, t in enumerate(tensor)
-        }, path)
+        save_file({f"tensor.{i}": t for i, t in enumerate(tensor)}, path)
     else:
-        save_file({
-            f"tensor": tensor
-        }, path)
+        save_file({f"tensor": tensor}, path)
 
 
 def prepare_env(args):
     qtensors_dir = os.path.join(args["work_dir"], "qtensors")
     ckpt_dir = os.path.join(args["work_dir"], "ckpt")
     images_dir = os.path.join(args["work_dir"], "images")
-    os.makedirs(args["work_dir"], exist_ok = True)
-    os.makedirs(qtensors_dir, exist_ok = True)
-    os.makedirs(ckpt_dir, exist_ok = True)
-    os.makedirs(images_dir, exist_ok = True)
+    os.makedirs(args["work_dir"], exist_ok=True)
+    os.makedirs(qtensors_dir, exist_ok=True)
+    os.makedirs(ckpt_dir, exist_ok=True)
+    os.makedirs(images_dir, exist_ok=True)
 
 
 def prepare(args) -> (dict, dict, bool, str):
@@ -123,17 +196,26 @@ def prepare(args) -> (dict, dict, bool, str):
     if not args.work_dir:
         return None, None, False, "Must specify --work_dir"
     if not args.in_dir and not args.resume:
-        return None, None, False, "Specify either --in_dir to start a new job or --resume to resume an interrupted job"
+        return (
+            None,
+            None,
+            False,
+            "Specify either --in_dir to start a new job or --resume to resume an interrupted job",
+        )
     if not args.out_dir and not args.resume:
         return None, None, False, "Must specify --out_dir or --resume"
     if args.codebook not in ["mcg", "mul1", "3inst"]:
         return None, None, False, "Codebook must be 'mcg', 'mul1' or '3inst'"
     if args.bits is not None and (args.bits > 8 or args.bits < 1):
         return None, None, False, "--bits must be between 1 and 8"
-    if args.head_bits is not None and (args.head_bits > 8 or args.head_bits < 1) and args.head_bits != 16:
+    if (
+        args.head_bits is not None
+        and (args.head_bits > 8 or args.head_bits < 1)
+        and args.head_bits != 16
+    ):
         return None, None, False, "--head_bits must be between 1 and 8, or 16"
 
-    in_args = { "work_dir": args.work_dir }
+    in_args = {"work_dir": args.work_dir}
     if args.resume:
         in_args = load_dict("args.json", in_args)
         in_args["work_dir"] = args.work_dir
@@ -182,7 +264,9 @@ def prepare(args) -> (dict, dict, bool, str):
     # Momentary args
     in_args["image_dump"] = args.image_dump
     in_args["verbose"] = args.verbose
-    in_args["apply_out_scales"] = {"always": True, "never": False, "auto": None}[args.out_scales]
+    in_args["apply_out_scales"] = {"always": True, "never": False, "auto": None}[
+        args.out_scales
+    ]
 
     if args.resume:
         job_state = load_dict("ckpt/job.json", in_args)
@@ -200,9 +284,16 @@ def prepare(args) -> (dict, dict, bool, str):
     print(f"    Input directory: {in_args['in_dir']}")
     print(f"    Output directory: {in_args['out_dir']}")
     print(f"    Working directory: {in_args['work_dir']}")
-    print(f"    Calibration size: {in_args['cal_rows']} rows, {in_args['cal_cols']} columns")
-    print(f"    Target bitrate: {in_args['bits']} (decoder), {in_args['head_bits']} (head)")
-    print(f"    Output scales: " + {True: "always", False: "never", None: "auto"}[in_args["apply_out_scales"]])
+    print(
+        f"    Calibration size: {in_args['cal_rows']} rows, {in_args['cal_cols']} columns"
+    )
+    print(
+        f"    Target bitrate: {in_args['bits']} (decoder), {in_args['head_bits']} (head)"
+    )
+    print(
+        f"    Output scales: "
+        + {True: "always", False: "never", None: "auto"}[in_args["apply_out_scales"]]
+    )
     print(f"    Codebook: {in_args['codebook']}")
 
     if warn_experimental:
@@ -244,12 +335,12 @@ def prepare_state(args, job_state, config, model, tokenizer):
 
 
 def get_state_error(x, ref):
-     x = x.view(-1, x.shape[-1]).float()
-     ref = ref.view(-1, ref.shape[-1]).float()
-     err = torch.linalg.norm(x - ref, 'fro') / torch.linalg.norm(ref, 'fro')
-     sq = sqnr(x, ref)
-     cos = cosine_error(x, ref)
-     return err.item(), cos, sq
+    x = x.view(-1, x.shape[-1]).float()
+    ref = ref.view(-1, ref.shape[-1]).float()
+    err = torch.linalg.norm(x - ref, "fro") / torch.linalg.norm(ref, "fro")
+    sq = sqnr(x, ref)
+    cos = cosine_error(x, ref)
+    return err.item(), cos, sq
 
 
 def mod_strategy(args, module, strategy, idx):
@@ -281,7 +372,7 @@ def mod_strategy(args, module, strategy, idx):
 def main(args, job_state):
     global max_progress, curr_progress
 
-    torch.set_printoptions(precision = 5, sci_mode = False, linewidth = 200)
+    torch.set_printoptions(precision=5, sci_mode=False, linewidth=200)
 
     torch.set_grad_enabled(False)
 
@@ -289,14 +380,16 @@ def main(args, job_state):
     device = torch.device(devices[0])
     if args.get("device_ratios"):
         device_ratios = [int(d) for d in args["device_ratios"].split(",")]
-        assert len(devices) == len(device_ratios), "--devices and --device_ratios must be same length"
+        assert len(devices) == len(device_ratios), (
+            "--devices and --device_ratios must be same length"
+        )
     else:
         device_ratios = None
 
     last_checkpoint_time = time.time()
     start_time = time.time()
     timed_blocks = 0
-    eta_window = deque(maxlen = 8)
+    eta_window = deque(maxlen=8)
 
     # Get model
     config, model, tokenizer = get_base_model(args)
@@ -306,7 +399,6 @@ def main(args, job_state):
 
     # Iterate over modules
     for idx, module in enumerate(model.modules):
-
         start_module_time = time.time()
         if idx == model.first_block_idx:
             start_time = time.time()
@@ -333,13 +425,14 @@ def main(args, job_state):
         # Slice module if necessary
         slicing = module.num_slices > 1
         for current_slice in range(module.num_slices):
-
             # Load current module
-            slice_str = f" (slice {current_slice + 1}/{module.num_slices})" if slicing else ""
+            slice_str = (
+                f" (slice {current_slice + 1}/{module.num_slices})" if slicing else ""
+            )
             print(f" -- Loading unquantized module: {module.key}" + slice_str)
             module.load(
                 torch.device("cpu") if module.caps.get("prefer_cpu") else device,
-                load_slice = current_slice if slicing else None
+                load_slice=current_slice if slicing else None,
             )
             for m in module:
                 if m.used_alt_key and not slicing:
@@ -349,28 +442,29 @@ def main(args, job_state):
             # Skip modules without quant targets
             qmaps = module.get_qmaps()
             if len(qmaps) > 0:
-
                 # Capture calibration input states during forward pass. For block-sparse models, all expert layers
                 # are activated to ensure all down projections capture at least some calibration data. When the
                 # state is advanced later, only selected experts will be used.
-                with ProgressBar(f" -- Capturing: {module.key}" + slice_str, len(state)) as progress:
+                with ProgressBar(
+                    f" -- Capturing: {module.key}" + slice_str, len(state)
+                ) as progress:
                     capture_H = {}
                     ref_states = []
                     for i in range(len(state)):
                         progress.update(i)
                         params = {
-                            "attn_mode": "flash_attn_nc",
+                            "attn_mode": "sdpa_nc",
                             "capture": capture_H,
                             "activate_all_experts": model.calibration_all_experts,
                         }
                         if slicing:
-                             params["q_mlp_slice"] = current_slice
+                            params["q_mlp_slice"] = current_slice
                         rs = module.prepare_for_device(state[i], params)
                         rs = module.forward(rs, params)
                         if i < num_ref_states:
                             if model.calibration_all_experts:
                                 # Do not activate all experts for reference state, for error measurement
-                                params = { "attn_mode": "flash_attn_nc" }
+                                params = {"attn_mode": "sdpa_nc"}
                                 if slicing:
                                     params["q_mlp_slice"] = current_slice
                                 rs = module.prepare_for_device(state[i], params)
@@ -385,7 +479,9 @@ def main(args, job_state):
                     infs, nans = v["inf_nan"][0].item(), v["inf_nan"][1].item()
                     if infs or nans:
                         numel = v["num_total"]
-                        print(f" !! Warning: {k} state has {infs:,} inf values and {nans:,} NaN values (out of {numel:,})")
+                        print(
+                            f" !! Warning: {k} state has {infs:,} inf values and {nans:,} NaN values (out of {numel:,})"
+                        )
 
                 # Swap captured H to system RAM
                 for k, v in capture_H.items():
@@ -393,10 +489,15 @@ def main(args, job_state):
                     v["H"] = v["H"].cpu()
 
             # Get submodules to quantize
-            linears = [m for m in module if isinstance(m, Linear) and m.qmap and m.device is not None]
+            linears = [
+                m
+                for m in module
+                if isinstance(m, Linear) and m.qmap and m.device is not None
+            ]
             for linear in linears:
-                assert linear.key in strategy, \
+                assert linear.key in strategy, (
                     f" ## Logic error, no quantization strategy for module {linear.key}"
+                )
             assert all(isinstance(linear.inner, LinearFP16) for linear in linears)
 
             # Write images
@@ -415,12 +516,18 @@ def main(args, job_state):
             # Decide mode
             # TODO: Might be useful to compare no. h-tiles per tensor, no. layers and no. SMs across GPUs
             use_parallel_mode = False
-            if args["parallel_mode"] and len(linears) >= len(devices) and all(b <= 8 for _, b in strategy.items()):
+            if (
+                args["parallel_mode"]
+                and len(linears) >= len(devices)
+                and all(b <= 8 for _, b in strategy.items())
+            ):
                 use_parallel_mode = True
 
             # Quantize module, layer parallel
             if use_parallel_mode:
-                assert not args["image_dump"], "Parallel mode is incompatible with --image_dump"
+                assert not args["image_dump"], (
+                    "Parallel mode is incompatible with --image_dump"
+                )
 
                 # Split workload
                 all_dev_linears = [[] for _ in devices]
@@ -430,12 +537,15 @@ def main(args, job_state):
                     dev_numel = [tot_numel // len(devices) for _ in devices]
                 else:
                     tot_split = sum(device_ratios)
-                    dev_numel = [tot_numel * r // tot_split for _, r in zip(devices, device_ratios)]
+                    dev_numel = [
+                        tot_numel * r // tot_split
+                        for _, r in zip(devices, device_ratios)
+                    ]
 
                 for linear in linears:
                     l_numel = linear.weights_numel()
                     fit = [d_numel - l_numel for d_numel in dev_numel]
-                    bestfit = max(range(len(fit)), key = lambda x: fit[x])
+                    bestfit = max(range(len(fit)), key=lambda x: fit[x])
                     dev_numel[bestfit] -= l_numel
                     all_dev_linears[bestfit].append(linear)
 
@@ -454,26 +564,33 @@ def main(args, job_state):
                             "devices": [device_idx],
                             "apply_out_scales": args["apply_out_scales"],
                         }
-                        if args["codebook"] == "mcg": quant_args_local.update({ "mcg": True })
-                        elif args["codebook"] == "mul1": quant_args_local.update({ "mul1": True })
+                        if args["codebook"] == "mcg":
+                            quant_args_local.update({"mcg": True})
+                        elif args["codebook"] == "mul1":
+                            quant_args_local.update({"mul1": True})
 
                         proxy_err = linear.convert_exl3(
                             capture_H[linear.qmap],
-                            quant_args = quant_args_local,
-                            verbose = args["verbose"],
-                            save_reg = False,
-                            override_swap_device = device_idx
+                            quant_args=quant_args_local,
+                            verbose=args["verbose"],
+                            save_reg=False,
+                            override_swap_device=device_idx,
                         )
                         assert isinstance(linear.inner, LinearEXL3)
                         linear.inner.swap_cpu()
 
-                        flags_local = "o" if quant_args_local["apply_out_scales"] else "."
+                        flags_local = (
+                            "o" if quant_args_local["apply_out_scales"] else "."
+                        )
                         flags_local += "f" if quant_args_local["q_fallback"] else "."
                         proxy_err_str_local = (
-                            "(zero)  " if quant_args_local["zeros"] else
-                            "(big)   " if proxy_err >= 9.9 else
-                            f"{proxy_err:8.6f}" if proxy_err >= 0.0 else
-                            "(OoM)   "
+                            "(zero)  "
+                            if quant_args_local["zeros"]
+                            else "(big)   "
+                            if proxy_err >= 9.9
+                            else f"{proxy_err:8.6f}"
+                            if proxy_err >= 0.0
+                            else "(OoM)   "
                         )
                         print(
                             f" -- Quantized: {linear.key:{config.stc.max_key_len() + 8}}"
@@ -489,20 +606,25 @@ def main(args, job_state):
                 threads = []
                 for i, device_idx in enumerate(devices):
                     if len(all_dev_linears[i]):
-                        t = threading.Thread(target = work_thread, args = (device_idx, all_dev_linears[i]))
+                        t = threading.Thread(
+                            target=work_thread, args=(device_idx, all_dev_linears[i])
+                        )
                         t.daemon = True
                         threads.append(t)
                 for t in threads:
                     t.start()
 
                 try:
-                    with ProgressBar(" -- Quantizing (parallel)", max_progress, transient = True) as progress:
+                    with ProgressBar(
+                        " -- Quantizing (parallel)", max_progress, transient=True
+                    ) as progress:
                         while any(t.is_alive() for t in threads):
                             progress.update(curr_progress)
                             time.sleep(0.1)
                 except KeyboardInterrupt as e:
                     # TODO: This is too hacky
                     from signal import pthread_kill, SIGTSTP, SIGKILL
+
                     for t in threads:
                         pthread_kill(t.ident, SIGTSTP)
                         pthread_kill(t.ident, SIGKILL)
@@ -510,7 +632,7 @@ def main(args, job_state):
                     sys.exit()
 
                 for t in threads:
-                    t.join(timeout = 0.1)
+                    t.join(timeout=0.1)
 
             # Quantize module, single GPU or tensor split
             else:
@@ -529,28 +651,38 @@ def main(args, job_state):
                             "device_ratios": device_ratios,
                             "apply_out_scales": args["apply_out_scales"],
                         }
-                        if args["codebook"] == "mcg": quant_args.update({ "mcg": True })
-                        elif args["codebook"] == "mul1": quant_args.update({ "mul1": True })
+                        if args["codebook"] == "mcg":
+                            quant_args.update({"mcg": True})
+                        elif args["codebook"] == "mul1":
+                            quant_args.update({"mul1": True})
 
                         with Timer() as t:
-                            sr = os.path.join(args["work_dir"], f"images/{linear.key}.reg.jpg") \
-                                if args["image_dump"] else None
+                            sr = (
+                                os.path.join(
+                                    args["work_dir"], f"images/{linear.key}.reg.jpg"
+                                )
+                                if args["image_dump"]
+                                else None
+                            )
                             proxy_err = linear.convert_exl3(
                                 capture_H[linear.qmap],
-                                quant_args = quant_args,
-                                progress_str = f" -- <step>: {linear.key}",
-                                verbose = args["verbose"],
-                                save_reg = sr,
+                                quant_args=quant_args,
+                                progress_str=f" -- <step>: {linear.key}",
+                                verbose=args["verbose"],
+                                save_reg=sr,
                             )
                             assert isinstance(linear.inner, LinearEXL3)
                             linear.inner.swap_cpu()
                         flags = "o" if quant_args["apply_out_scales"] else "."
                         flags += "f" if quant_args["q_fallback"] else "."
                         proxy_err_str = (
-                            "(zero)  " if quant_args["zeros"] else
-                            "(big)   " if proxy_err >= 9.9 else
-                            f"{proxy_err:8.6f}" if proxy_err >= 0.0 else
-                            "(OoM)   "
+                            "(zero)  "
+                            if quant_args["zeros"]
+                            else "(big)   "
+                            if proxy_err >= 9.9
+                            else f"{proxy_err:8.6f}"
+                            if proxy_err >= 0.0
+                            else "(OoM)   "
                         )
                         print(
                             f" -- Quantized: {linear.key:{config.stc.max_key_len() + 8}}"
@@ -576,13 +708,15 @@ def main(args, job_state):
         # Output final bpw for layer
         num_bytes = dsize(q_tensors)
         num_bits = num_bytes * 8
-        final_bpw = num_bits / module.weights_numel() if module.weights_numel() else None
+        final_bpw = (
+            num_bits / module.weights_numel() if module.weights_numel() else None
+        )
 
         # Reload module from memory
         config.stc.set_new_tensors(q_tensors)
         module.load(
             torch.device("cpu") if module.caps.get("prefer_cpu") else device,
-            source = q_tensors
+            source=q_tensors,
         )
         config.stc.set_new_tensors(None)
         del q_tensors
@@ -595,7 +729,7 @@ def main(args, job_state):
             for i in range(len(state)):
                 progress.update(i)
                 params = {
-                    "attn_mode": "flash_attn_nc",
+                    "attn_mode": "sdpa_nc",
                 }
                 state[i] = module.prepare_for_device(state[i], params)
                 if i < num_ref_states or idx < len(model.modules) - 1:
@@ -614,10 +748,14 @@ def main(args, job_state):
         # Feedback after module
         module_time = time.time() - start_module_time
         print(
-            f" -- Quantized: {module.key:{config.stc.max_key_len() + 8}}" +
-            (f"  bpw: {final_bpw:5.2f}" if final_bpw else f"  no_weights") +
-            (f"  rfn: {error:.6f}" if module.num_slices == 1 else "        rfn: N/A     ") +
-            f"  cos: {cos_error:.6f}"
+            f" -- Quantized: {module.key:{config.stc.max_key_len() + 8}}"
+            + (f"  bpw: {final_bpw:5.2f}" if final_bpw else f"  no_weights")
+            + (
+                f"  rfn: {error:.6f}"
+                if module.num_slices == 1
+                else "        rfn: N/A     "
+            )
+            + f"  cos: {cos_error:.6f}"
             f"  sqnr: {sqnr_:.6f}"
             f"  [{module_time:.2f} s]"
         )
@@ -645,13 +783,15 @@ def main(args, job_state):
 
         # Checkpoint
         job_state["next_module_idx"] = idx + 1
-        if time.time() > last_checkpoint_time + args["checkpoint_interval"] and \
-            (args.get("last_checkpoint_index", -1) < 0 or idx <= args["last_checkpoint_index"]):
+        if time.time() > last_checkpoint_time + args["checkpoint_interval"] and (
+            args.get("last_checkpoint_index", -1) < 0
+            or idx <= args["last_checkpoint_index"]
+        ):
             print(f" -- Saving checkpoint")
             ckpt_dir = os.path.join(args["work_dir"], "ckpt")
             ckpt_dir_old = os.path.join(args["work_dir"], "ckpt_old")
             ckpt_dir_new = os.path.join(args["work_dir"], "ckpt_new")
-            os.makedirs(ckpt_dir_new, exist_ok = True)
+            os.makedirs(ckpt_dir_new, exist_ok=True)
             save_dict("ckpt_new/job.json", job_state, args)
             save_tensor(state, "ckpt_new/state.safetensors", args)
             if os.path.exists(ckpt_dir_old):

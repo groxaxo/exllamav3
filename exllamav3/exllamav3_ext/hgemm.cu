@@ -79,6 +79,7 @@ void hgemm_gr
         float beta_ = 0.0f;
 
         float* c_ptr = (float*) c.data_ptr();
+        cublasSetMathMode(cublas_handle, CUBLAS_TENSOR_OP_MATH);
         auto r = cublasGemmEx
         (
             cublas_handle,

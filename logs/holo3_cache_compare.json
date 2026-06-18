@@ -1,0 +1,45 @@
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:33155
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:33155
+ -- NCCL warmup, device 0, please wait...
+ -- NCCL warmup, device 1, please wait...
+ -- Finished NCCL warmup, device 0
+ -- Finished NCCL warmup, device 1
+----------------------------------------
+ ## Exception in child process
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 83, in mp_model_worker
+    result = func(local_context, *args)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_fn.py", line 137, in mp_model_append
+    module = cls.tp_import(local_context, exported, plan[device])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 181, in tp_import
+    mlp = _import("mlp"),
+          ^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 171, in _import
+    return exported[name]["cls"].tp_import(local_context, exported[name], plan) \
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/block_sparse_mlp.py", line 1064, in tp_import
+    gates = [_import_i("gates", i) for i in range(first, last)]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/block_sparse_mlp.py", line 1064, in <listcomp>
+    gates = [_import_i("gates", i) for i in range(first, last)]
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/block_sparse_mlp.py", line 1041, in _import_i
+    return exported[name][i]["cls"].tp_import(local_context, exported[name][i], plan) \
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/linear.py", line 504, in tp_import
+    return Linear.tp_import_split(local_context, exported, plan, split)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/linear.py", line 493, in tp_import_split
+    module.inner = exported["inner"]["cls"].tp_import_split(local_context, exported["inner"], plan, split)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/quant/exl3.py", line 232, in tp_import_split
+    trellis = consumer.recv(id_trellis, cuda = True, slice_dim = 1, first = first // 16, last = last // 16)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_tp_shared.py", line 225, in recv
+    tensor = tensor.to(
+             ^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 MiB. GPU 1 has a total capacity of 23.57 GiB of which 1.62 MiB is free. Process 260507 has 17.54 GiB memory in use. Including non-PyTorch memory, this process has 6.01 GiB memory in use. Of the allocated memory 4.32 GiB is allocated by PyTorch, and 1.29 GiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
+
+----------------------------------------

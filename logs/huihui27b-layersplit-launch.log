@@ -1,0 +1,141 @@
+[2026-04-05T20:42:02Z] Starting huihui27b_layersplit
+Model:                 /home/op/exllamav3_ampere/models/Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated-exl3-6bpw
+Model ID:              Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated-exl3-6bpw
+Host:Port:             0.0.0.0:1234
+CUDA_VISIBLE_DEVICES:  0,1
+GPU split:             23.0,23.0
+Cache tokens:          130048
+OMP_NUM_THREADS:       1
+EXLLAMA_EMBED_PREFER_CPU: 0
+Conda env:             exl3-dev
+
+/home/op/exllamav3_ampere/server_27b_layer.py:500: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2683330]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 2-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated-exl3-6bpw
+  GPU split    : [23.0, 23.0]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 130,048
+  Model limit  : 262,144
+  KV cache     : fp16
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Embed device : GPU (EXLLAMA_EMBED_PREFER_CPU=0)
+  OMP threads  : 1
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (130,048 tokens)...
+Loading weights (layer-split across GPUs)...
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+  GPU 0: alloc=21.93GB  reserved=21.97GB
+  GPU 1: alloc=6.63GB  reserved=6.69GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.516s
+
+Server ready.  Cache = 130,048 tokens.
+
+INFO:     172.20.0.2:48290 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58292 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58302 - "GET /v1/models HTTP/1.1" 200 OK
+The tokenizer you are loading from '/home/op/exllamav3_ampere/models/Huihui-Qwen3.5-27B-Claude-4.6-Opus-abliterated-exl3-6bpw' with an incorrect regex pattern: https://huggingface.co/mistralai/Mistral-Small-3.1-24B-Instruct-2503/discussions/84#69121093e8b480e709447d5e. This will lead to incorrect tokenization. You should set the `fix_mistral_regex=True` flag when loading this tokenizer to fix this issue.
+INFO:     172.20.0.2:37046 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 43 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 397 thinking tokens
+INFO:     172.20.0.2:53198 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 320 thinking tokens
+INFO:     172.20.0.2:48260 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:48072 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 51 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 232 thinking tokens
+INFO:     172.20.0.2:36426 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 461 thinking tokens
+INFO:     172.20.0.2:52866 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:49150 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 305 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 471 thinking tokens
+INFO:     172.20.0.2:58256 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 262 thinking tokens
+INFO:     172.20.0.2:37076 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 263 thinking tokens
+INFO:     172.20.0.2:35516 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:43180 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 315 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 462 thinking tokens
+INFO:     172.20.0.2:39130 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:56434 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:56448 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 57 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 558 thinking tokens
+INFO:     172.20.0.2:50810 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 480 thinking tokens
+INFO:     172.20.0.2:54548 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38314 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:41126 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:58998 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:59010 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:55894 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 62 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 335 thinking tokens
+INFO:     172.20.0.2:36008 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:36016 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:57910 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:58452 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:47322 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:47324 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:47336 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:38056 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:54180 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:54190 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:33808 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 50 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 295 thinking tokens
+INFO:     172.20.0.2:33820 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 400 thinking tokens
+INFO:     172.20.0.2:50280 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:45568 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 201 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 306 thinking tokens
+INFO:     172.20.0.2:45574 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 288 thinking tokens
+INFO:     172.20.0.2:54556 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.20.0.2:54560 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:40174 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:53404 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:53164 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:55278 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:33064 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 120 thinking tokens
+INFO:     100.85.200.50:38890 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:33910 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38046 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38050 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     100.85.200.50:50844 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:60900 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.20.0.2:51048 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:41696 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:41704 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.50:50098 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2683330]

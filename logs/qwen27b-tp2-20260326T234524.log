@@ -1,0 +1,146 @@
+nohup: ignoring input
+/home/op/exllamav3_ampere/server_27b_tp2.py:354: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1151639]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - TP 2-GPU server (cached)
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-27B-exl3
+  GPU split    : [22.0, 22.0]
+  TP backend   : nccl
+  Cache tokens : 131,072
+  Model limit  : 262,144
+  KV cache     : fp16 (no quantization)
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (131,072 tokens)...
+Loading weights (tensor parallel)...
+ -- NCCL init: world_size 2, rank 1, device 0, init_method tcp://127.0.0.1:59835
+ -- NCCL init: world_size 2, rank 0, device 1, init_method tcp://127.0.0.1:59835
+ -- NCCL warmup, device 0, please wait...
+ -- NCCL warmup, device 1, please wait...
+ -- Finished NCCL warmup, device 1
+ -- Finished NCCL warmup, device 0
+
+  GPU 0: alloc=13.08GB  reserved=13.18GB
+  GPU 1: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+[rank1]:[W326 23:46:09.749468844 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+[rank0]:[W326 23:46:09.749520321 ProcessGroupNCCL.cpp:4068] Warning: An unbatched P2P op (send/recv) was called on this ProcessGroup with size 2.  In lazy initialization mode, this will result in a new 2-rank NCCL communicator to be created. (function operator())
+  Warmup complete in 1.189s
+
+Server ready.  Cache = 131,072 tokens.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58876 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58892 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34626 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36420 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 256 tokens exhausted — injecting </think> after 255 thinking tokens
+INFO:     127.0.0.1:36434 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52640 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52642 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36790 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 512 tokens exhausted — injecting </think> after 511 thinking tokens
+INFO:     127.0.0.1:37646 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39258 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:53642 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:53650 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:41732 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 530 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:50448 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:48496 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 630 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:57512 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 441 thinking tokens
+INFO:     172.19.0.2:38018 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:40596 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:52768 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:52776 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:50132 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:57536 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 463 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:39616 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:50462 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:41658 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:40410 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:53054 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:43854 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:43728 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:51980 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:49836 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:44556 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:57982 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:50196 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:45146 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:45156 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:51104 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:51112 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:42292 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:42308 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:48950 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:58696 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:58704 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:51782 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:51786 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 689 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:50562 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:46826 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 799 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:39492 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 555 thinking tokens
+INFO:     172.19.0.2:57612 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:59786 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:45416 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 135 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 277 thinking tokens
+INFO:     172.19.0.2:33448 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:35040 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 148 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 170 thinking tokens
+INFO:     172.19.0.2:39140 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32966 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:32980 - "GET /health HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 107 thinking tokens
+INFO:     127.0.0.1:32988 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 107 thinking tokens
+INFO:     127.0.0.1:34514 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1151639]
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/multiprocessing/resource_tracker.py:254: UserWarning: resource_tracker: There appear to be 5 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
+Terminated

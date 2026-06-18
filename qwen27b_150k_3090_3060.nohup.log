@@ -1,0 +1,25 @@
+/home/op/exllamav3_ampere/server_qwen27b_150k_mixed.py:96: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1763357]
+INFO:     Waiting for application startup.
+Current Triton version 3.1.0 is below the recommended 3.2.0 version. Errors may occur and these issues will not be fixed. Please consider upgrading Triton.
+Loading model on logical GPU 0 (3090) + logical GPU 1 (3060)...
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
+Model loaded!
+
+=== Testing Maximum Context Length ===
+Logical GPU 0 free memory: 1.92 GB
+Logical GPU 1 free memory: 23.06 GB
+  65536 tokens: OK
+  98304 tokens: OK
+  131072 tokens: OK
+  150016 tokens: OK
+INFO:     127.0.0.1:43294 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39534 - "GET /v1/models HTTP/1.1" 200 OK

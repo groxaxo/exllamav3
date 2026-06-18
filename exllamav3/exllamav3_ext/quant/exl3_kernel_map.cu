@@ -35,15 +35,33 @@ int select_gemm_shape(int cc, int size_m, int size_k, int size_n, int K, bool mu
     {
         case CC_OLD:
         case CC_AMPERE:
+        {
+            // B3: Dynamically account for SM count. The heuristic thresholds scale with
+            // the number of SMs available: 3090 has 82, 3060 has 28, A100 has 108.
+            int device;
+            cudaGetDevice(&device);
+            int num_sms = DevCtx::instance().get_num_sms(device);
+
+            // B3: Enable Shape 1 (M=16,K=16,N=128,SH_STAGES=6,FRAG_STAGES=5) for small-N
+            // decode on Ampere. Shape 1 has deeper pipeline stages that hide dequantization
+            // latency better for small output dimensions.
+            if (!multi && (K == 2 || K == 4) && size_k <= 2048 && size_n <= 512)
+                return 1;
+
+            // Scale thresholds based on SM count relative to baseline (82 SMs = 3090)
+            int scale_n = (num_sms >= 82) ? 2048 : (num_sms >= 28 ? 1024 : 512);
+            int scale_k = (num_sms >= 82) ? 2048 : (num_sms >= 28 ? 1024 : 512);
+
             if (mod_256 && K <= 4)
             {
-                if (size_n <= 2048 || size_k <= 2048) return 2;
+                if (size_n <= scale_n || size_k <= scale_k) return 2;
                 return 3;
             }
             if (mod_256 && size_n < 4096) return size_k > 8192 ? 3 : 2;
             if (mod_512 && (size_n * size_k) > (4096 * 4096) && K <= 6) return 4;
             if (mod_256) return 3;
             return 2;
+        }
 
         case CC_ADA:
             if (mod_256 && K <= 3)

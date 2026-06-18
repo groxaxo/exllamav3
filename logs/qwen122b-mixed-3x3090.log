@@ -1,0 +1,44 @@
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1007: UserWarning: Can't initialize NVML
+  raw_cnt = _raw_device_count_nvml()
+/home/op/exllamav3_ampere/server_mixed.py:121: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2497011]
+INFO:     Waiting for application startup.
+2026-04-04 18:27:38,900 INFO Loading model from /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw...
+2026-04-04 18:27:38,900 INFO Using split [22.8, 22.8, 22.8] across visible GPUs
+ERROR:    Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 228, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4562, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 139, in load_model
+    model.load(use_per_device=GPU_SPLIT, progressbar=True)
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 345, in load
+    for _ in f: pass
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 281, in load_gen
+    yield from self._load_autosplit(
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 97, in _load_autosplit
+    set_memory_fraction_use(use_per_device[i], i)
+  File "/home/op/exllamav3_ampere/exllamav3/util/memory.py", line 43, in set_memory_fraction_use
+    touch_device(device)
+  File "/home/op/exllamav3_ampere/exllamav3/util/memory.py", line 14, in touch_device
+    d = torch.empty((32, 32), device = device, dtype = torch.float)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.AcceleratorError: CUDA error: invalid device ordinal
+GPU device may be out of range, do you have enough GPUs?
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+
+
+ERROR:    Application startup failed. Exiting.

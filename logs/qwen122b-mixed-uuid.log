@@ -1,0 +1,74 @@
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1000: UserWarning: Can't initialize NVML
+  uuids = _raw_device_uuid_nvml()
+/home/op/exllamav3_ampere/server_mixed.py:121: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2504177]
+INFO:     Waiting for application startup.
+2026-04-04 18:29:40,237 INFO Loading model from /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw...
+2026-04-04 18:29:40,237 INFO Using split [22.8, 22.8, 11.5, 22.8] across visible GPUs
+Loading (LS): 41/51 ( 80.4%) elapsed 31s eta 7s
+2026-04-04 18:30:28,414 INFO Model loaded!
+2026-04-04 18:30:28,417 INFO === Testing Maximum Context Length ===
+2026-04-04 18:30:28,417 INFO Logical GPU 0 free memory: 1.52 GB
+2026-04-04 18:30:28,418 INFO Logical GPU 1 free memory: 1.52 GB
+2026-04-04 18:30:28,418 INFO Logical GPU 2 free memory: 0.62 GB
+2026-04-04 18:30:28,418 INFO Logical GPU 3 free memory: 18.86 GB
+2026-04-04 18:30:28,418 INFO   65536 tokens: OK
+2026-04-04 18:30:28,418 INFO   98304 tokens: OK
+2026-04-04 18:30:28,418 INFO   131072 tokens: OK
+2026-04-04 18:30:28,418 INFO   32000 tokens: OK
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     127.0.0.1:53028 - "GET /v1/models HTTP/1.1" 200 OK
+2026-04-04 18:31:59,077 WARNING hf_chat_template_failed_falling_back_to_manual
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 211, in _encode_messages
+    return tokenizer.hf_chat_template(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/tokenizer/tokenizer.py", line 693, in hf_chat_template
+    ids = torch.tensor(ids, dtype = torch.long).unsqueeze(0)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'str' object cannot be interpreted as an integer
+
+2026-04-04 18:31:59,077 INFO request_id=chatcmpl-ae239fcc stream=False prompt_tokens=13 max_tokens=50 temperature=0.7 top_p=0.9 messages=1
+2026-04-04 18:31:59,146 ERROR request_id=chatcmpl-ae239fcc generation_failed
+Traceback (most recent call last):
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 329, in chat_completions
+    for r in gen.iterate():
+             ^^^^^^^^^^^^^
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/generator/generator.py", line 298, in iterate
+    job.prefill(results)
+  File "/home/op/exllamav3_ampere/exllamav3/generator/job.py", line 1009, in prefill
+    self.generator.model.prefill(
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model.py", line 104, in prefill
+    return self.prefill_ls(x, params, self.last_kv_module_idx, self.modules)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/model_ls.py", line 191, in prefill_ls
+    x = module.forward(x, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/transformer.py", line 67, in forward
+    y = self.attn.forward(y, params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 428, in forward
+    _assert_paged_flash_attn()
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 63, in _assert_paged_flash_attn
+    assert _has_flash_attn_with_paged, "Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache."
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Paged FlashAttention requires flash-attn >= 2.5.7 with flash_attn_with_kvcache.
+
+INFO:     127.0.0.1:53032 - "POST /v1/chat/completions HTTP/1.1" 500 Internal Server Error
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2504177]

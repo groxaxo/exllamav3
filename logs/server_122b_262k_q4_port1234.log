@@ -1,0 +1,77 @@
+/home/op/exllamav3_ampere/server_27b_layer.py:425: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1348264]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 4-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw
+  GPU split    : [22.8, 22.8, 22.8, 10.6]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 262,144
+  Model limit  : 262,144
+  KV cache     : quantized 4-bit
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Embed device : GPU (EXLLAMA_EMBED_PREFER_CPU=0)
+  OMP threads  : 1
+  Endpoint     : http://0.0.0.0:1234/v1
+
+  CUDA_VISIBLE_DEVICES : 0,1,4,3
+  GPU 0: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 2: NVIDIA GeForce RTX 3090  (23.6 GB)
+  GPU 3: NVIDIA GeForce RTX 3060  (11.6 GB)
+
+Loading model config...
+Creating quantized 4-bit KV cache (262,144 tokens)...
+Loading weights (layer-split across GPUs)...
+  GPU 0: alloc=21.18GB  reserved=21.20GB
+  GPU 1: alloc=22.15GB  reserved=22.17GB
+  GPU 2: alloc=18.08GB  reserved=18.09GB
+  GPU 3: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.278s
+
+Server ready.  Cache = 262,144 tokens.
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     127.0.0.1:42596 - "GET /health HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 569 thinking tokens
+INFO:     127.0.0.1:35134 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 869 thinking tokens
+INFO:     127.0.0.1:35148 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:46774 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58866 - "GET /stats HTTP/1.1" 404 Not Found
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 723 thinking tokens
+INFO:     127.0.0.1:47846 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     127.0.0.1:57338 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     127.0.0.1:60532 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49704 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49716 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 611 thinking tokens
+INFO:     127.0.0.1:49702 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     127.0.0.1:55954 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55970 - "GET /health HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 162 thinking tokens
+INFO:     127.0.0.1:43146 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     127.0.0.1:38826 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1348264]

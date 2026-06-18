@@ -4,7 +4,11 @@
 
 // Constants
 #define EXL3_GEMM_BASE_THREADS 256
-#define SMEM_MAX (90 * 1024)  // max shared memory on compute capability 8.6
+
+// Runtime-configurable shared memory cap, queried via cudaDevAttrMaxSharedMemoryPerBlockOptin.
+// Defaults to 90KB (SM 8.6 / consumer Ampere). A100 (SM 8.0) can use up to 163KB.
+extern int g_smem_max;
+#define SMEM_MAX (g_smem_max ? g_smem_max : (90 * 1024))
 
 #include "exl3_dq.cuh"
 
@@ -38,15 +42,17 @@ void exl3_gemm_kernel_inner
     static_assert(TILESIZE_N % 128 == 0, "Invalid kernel params");
     static_assert
     (
-        SMEM_MAX >= SH_STAGES * (2 * sh_a_stage_size + 2 * sh_b_stage_size) + 4 * sh_c_size,
+        164 * 1024 >= SH_STAGES * (2 * sh_a_stage_size + 2 * sh_b_stage_size) + 4 * sh_c_size,
         "Invalid kernel params (insufficient shared memory for shape)"
     );
 
     // Shared memory
-    extern __shared__ half shared[];
-    half* sh_a = shared;
+    __align__(16) extern __shared__ uint8_t shared_mem[];
+    half* sh_a = (half*) shared_mem;
     uint16_t* sh_b = (uint16_t*) (sh_a + SH_STAGES * sh_a_stage_size);
-    float* sh_c = (float*) (sh_b + sh_b_stage_size * SH_STAGES);
+    size_t sh_c_offset_bytes = (SH_STAGES * sh_a_stage_size * sizeof(half)) + (SH_STAGES * sh_b_stage_size * sizeof(uint16_t));
+    sh_c_offset_bytes = (sh_c_offset_bytes + 15) & ~15;
+    float* sh_c = (float*) (((char*)shared_mem) + sh_c_offset_bytes);
 
     // Thread index
     int t = threadIdx.x % EXL3_GEMM_BASE_THREADS;
@@ -112,7 +118,7 @@ void exl3_gemm_kernel_inner
     {
         int n = (i * EXL3_GEMM_BASE_THREADS + t) % (gl_b_stride_n / 8);
         int k = (i * EXL3_GEMM_BASE_THREADS + t) / (gl_b_stride_n / 8);
-        load_b_gl[i] = k * blocks_n * 256 / 16 * bits / 8 * k + n;
+        load_b_gl[i] = k * (blocks_n * 256 / 16 * bits / 8) + n;
         pred_b_gl[i] = i * EXL3_GEMM_BASE_THREADS + t < sh0_b_stride_k / 8;
     }
 
@@ -237,14 +243,18 @@ void exl3_gemm_kernel_inner
             }
 
             // Copy tile of 256-element blocks from quantized B matrix
+            // B9: Use cp_async_stream (L2::evict_first) on Ampere to reduce L2 cache pollution
             {
                 const int4* gl = (const int4*) gl_b_ptr;
                 int4* sh = (int4*) sh0_b_ptr;
                 #pragma unroll
                 for (int i = 0; i < load_b_iters; ++i)
                 {
-                    // cp_async_pred(sh + EXL3_GEMM_BASE_THREADS * i + t, gl + load_b_gl[i], pred_b_gl[i]);
+                    #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ == 800 || __CUDA_ARCH__ == 860)
+                    if (pred_b_gl[i]) cp_async_stream(sh + EXL3_GEMM_BASE_THREADS * i + t, gl + load_b_gl[i]);
+                    #else
                     if (pred_b_gl[i]) cp_async(sh + EXL3_GEMM_BASE_THREADS * i + t, gl + load_b_gl[i]);
+                    #endif
                 }
             }
             advance0();
@@ -635,6 +645,20 @@ void exl3_gemm_kernel_inner
             FSTAGE(3, 2);
             FSTAGE(4, 3);
             FSTAGE(0, 4);
+        }
+    }
+
+    // B2: FRAG_STAGES=6 for deeper pipelines on SM 8.0 (A100) with ~130KB+ SMEM
+    if constexpr (FRAG_STAGES == 6)
+    {
+        while (true)
+        {
+            FSTAGE(1, 0);
+            FSTAGE(2, 1);
+            FSTAGE(3, 2);
+            FSTAGE(4, 3);
+            FSTAGE(5, 4);
+            FSTAGE(0, 5);
         }
     }
 }

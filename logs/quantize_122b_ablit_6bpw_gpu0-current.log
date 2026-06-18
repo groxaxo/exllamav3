@@ -1,0 +1,151 @@
+ !! Warning: Overriding checkpoint_interval from existing job, was: 300, new value: 1800
+ !! Warning: Overriding devices from existing job, was: 0,1,2,3,4, new value: 0
+ -- Resuming existing job
+    Input directory: /home/op/models/Qwen3.5-122B-A10B-abliterated
+    Output directory: /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-6bpw
+    Working directory: /home/op/exllamav3_ampere/models/work_122b_ablit_6bpw
+    Calibration size: 250 rows, 2048 columns
+    Target bitrate: 6.0 (decoder), 8 (head)
+    Output scales: always
+    Codebook: mcg
+ -- Loaded model config
+    Architecture: Qwen3_5MoeForCausalLM
+ -- Created model instance:
+     - Qwen3_5MoeModel
+         - Embedding
+         - [12x]
+             - [3x] TransformerBlock
+                 - RMSNorm
+                 - GatedDeltaNet
+                     - [5x] Linear
+                     - GatedRMSNorm
+                 - RMSNorm
+                 - BlockSparseMLP
+                     - [770x] Linear
+                     - GatedMLP
+                         - [3x] Linear
+             - TransformerBlock
+                 - RMSNorm
+                 - Attention
+                     - [4x] Linear
+                     - [2x] RMSNorm
+                 - RMSNorm
+                 - BlockSparseMLP
+                     - [770x] Linear
+                     - GatedMLP
+                         - [3x] Linear
+         - RMSNorm
+         - Linear
+ -- Loaded tokenizer
+    Vocab size: 248077
+ -- RoPE settings
+    head_dim: 256
+    rope_scaling: {'mrope_interleaved': True, 'mrope_section': [11, 11, 10], 'partial_rotary_factor': 0.25, 'rope_theta': 10000000, 'rope_type': 'default'}
+    rope_theta: 10000000.0
+    rotary_dim: None
+    partial_rotary_factor: 0.25
+    max_position_embeddings: 262144
+    original_max_position_embeddings: None
+    rope_style: NEOX
+    llama_4_scaling_beta: 0.0
+ -- Resuming at: model.language_model.layers.27
+ -- Loading unquantized module: model.language_model.layers.27
+ -- Capturing: model.language_model.layers.27: 78/250 ( 31.2%) elapsed 30s eta 1m06s
+ -- Capturing: model.language_model.layers.27: 157/250 ( 62.8%) elapsed 1m00s eta 35s
+ -- Capturing: model.language_model.layers.27: 236/250 ( 94.4%) elapsed 1m30s eta 5s
+ -- Capturing: model.language_model.layers.27: 249/250 ( 99.6%) elapsed 1m35s eta 0s
+ -- Captured: model.language_model.layers.27
+ -- Quantized: model.language_model.layers.27.self_attn.q_proj                            bpw:  6.00  proxy_err: 0.000026  o.  g_sc: 0.706386  [10.25 s]
+ -- Quantized: model.language_model.layers.27.self_attn.k_proj                            bpw:  6.00  proxy_err: 0.000077  o.  g_sc: 0.792061  [0.87 s]
+ -- Quantized: model.language_model.layers.27.self_attn.v_proj                            bpw:  6.00  proxy_err: 0.000045  o.  g_sc: 0.797651  [0.87 s]
+ -- Quantized: model.language_model.layers.27.self_attn.o_proj                            bpw:  6.00  proxy_err: 0.000062  o.  g_sc: 0.812287  [6.24 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.0.up_proj                       bpw:  6.00  proxy_err: 0.000191  o.  g_sc: 0.824786  [1.02 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.0.gate_proj                     bpw:  6.00  proxy_err: 0.000155  o.  g_sc: 0.821332  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.0.down_proj                     bpw:  6.00  proxy_err: 0.000270  o.  g_sc: 0.806696  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.1.up_proj                       bpw:  6.00  proxy_err: 0.000193  o.  g_sc: 0.824786  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.1.gate_proj                     bpw:  6.00  proxy_err: 0.000188  o.  g_sc: 0.801106  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.1.down_proj                     bpw:  6.00  proxy_err: 0.000266  o.  g_sc: 0.797651  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.2.up_proj                       bpw:  6.00  proxy_err: 0.000201  o.  g_sc: 0.801106  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.2.gate_proj                     bpw:  6.00  proxy_err: 0.000141  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.2.down_proj                     bpw:  6.00  proxy_err: 0.000284  o.  g_sc: 0.762791  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.3.up_proj                       bpw:  6.00  proxy_err: 0.000190  o.  g_sc: 0.824786  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.3.gate_proj                     bpw:  6.00  proxy_err: 0.000141  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.3.down_proj                     bpw:  6.00  proxy_err: 0.000237  o.  g_sc: 0.824786  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.4.up_proj                       bpw:  6.00  proxy_err: 0.000207  o.  g_sc: 0.830377  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.4.gate_proj                     bpw:  6.00  proxy_err: 0.000168  o.  g_sc: 0.824786  [1.01 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.4.down_proj                     bpw:  6.00  proxy_err: 0.000295  o.  g_sc: 0.839422  [0.95 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.5.up_proj                       bpw:  6.00  proxy_err: 0.000197  o.  g_sc: 0.783016  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.5.gate_proj                     bpw:  6.00  proxy_err: 0.000141  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.5.down_proj                     bpw:  6.00  proxy_err: 0.000276  o.  g_sc: 0.815741  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.6.up_proj                       bpw:  6.00  proxy_err: 0.000193  o.  g_sc: 0.801106  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.6.gate_proj                     bpw:  6.00  proxy_err: 0.000145  o.  g_sc: 0.812287  [0.99 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.6.down_proj                     bpw:  6.00  proxy_err: 0.000267  o.  g_sc: 0.824786  [0.95 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.7.up_proj                       bpw:  6.00  proxy_err: 0.000206  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.7.gate_proj                     bpw:  6.00  proxy_err: 0.000170  o.  g_sc: 0.830377  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.7.down_proj                     bpw:  6.00  proxy_err: 0.000255  o.  g_sc: 0.812287  [0.95 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.8.up_proj                       bpw:  6.00  proxy_err: 0.000201  o.  g_sc: 0.812287  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.8.gate_proj                     bpw:  6.00  proxy_err: 0.000147  o.  g_sc: 0.830377  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.8.down_proj                     bpw:  6.00  proxy_err: 0.000259  o.  g_sc: 0.821332  [0.96 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.9.up_proj                       bpw:  6.00  proxy_err: 0.000203  o.  g_sc: 0.801106  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.9.gate_proj                     bpw:  6.00  proxy_err: 0.000168  o.  g_sc: 0.768381  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.9.down_proj                     bpw:  6.00  proxy_err: 0.000088  o.  g_sc: 1.102038  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.10.up_proj                      bpw:  6.00  proxy_err: 0.000225  o.  g_sc: 0.815741  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.10.gate_proj                    bpw:  6.00  proxy_err: 0.000190  o.  g_sc: 0.806696  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.10.down_proj                    bpw:  6.00  proxy_err: 0.000302  o.  g_sc: 0.801106  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.11.up_proj                      bpw:  6.00  proxy_err: 0.000203  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.11.gate_proj                    bpw:  6.00  proxy_err: 0.000174  o.  g_sc: 0.797651  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.11.down_proj                    bpw:  6.00  proxy_err: 0.000279  o.  g_sc: 0.821332  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.12.up_proj                      bpw:  6.00  proxy_err: 0.000220  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.12.gate_proj                    bpw:  6.00  proxy_err: 0.000177  o.  g_sc: 0.792061  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.12.down_proj                    bpw:  6.00  proxy_err: 0.000304  o.  g_sc: 0.821332  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.13.up_proj                      bpw:  6.00  proxy_err: 0.000213  o.  g_sc: 0.797651  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.13.gate_proj                    bpw:  6.00  proxy_err: 0.000176  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.13.down_proj                    bpw:  6.00  proxy_err: 0.000268  o.  g_sc: 0.839422  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.14.up_proj                      bpw:  6.00  proxy_err: 0.000183  o.  g_sc: 0.801106  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.14.gate_proj                    bpw:  6.00  proxy_err: 0.000139  o.  g_sc: 0.815741  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.14.down_proj                    bpw:  6.00  proxy_err: 0.000278  o.  g_sc: 0.801106  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.15.up_proj                      bpw:  6.00  proxy_err: 0.000185  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.15.gate_proj                    bpw:  6.00  proxy_err: 0.000128  o.  g_sc: 0.806696  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.15.down_proj                    bpw:  6.00  proxy_err: 0.000284  o.  g_sc: 0.797651  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.16.up_proj                      bpw:  6.00  proxy_err: 0.000214  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.16.gate_proj                    bpw:  6.00  proxy_err: 0.000189  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.16.down_proj                    bpw:  6.00  proxy_err: 0.000306  o.  g_sc: 0.777426  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.17.up_proj                      bpw:  6.00  proxy_err: 0.000211  o.  g_sc: 0.812287  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.17.gate_proj                    bpw:  6.00  proxy_err: 0.000182  o.  g_sc: 0.801106  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.17.down_proj                    bpw:  6.00  proxy_err: 0.000135  o.  g_sc: 0.950912  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.18.up_proj                      bpw:  6.00  proxy_err: 0.000221  o.  g_sc: 0.835967  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.18.gate_proj                    bpw:  6.00  proxy_err: 0.000182  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.18.down_proj                    bpw:  6.00  proxy_err: 0.000292  o.  g_sc: 0.812287  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.19.up_proj                      bpw:  6.00  proxy_err: 0.000193  o.  g_sc: 0.812287  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.19.gate_proj                    bpw:  6.00  proxy_err: 0.000163  o.  g_sc: 0.812287  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.19.down_proj                    bpw:  6.00  proxy_err: 0.000281  o.  g_sc: 0.830377  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.20.up_proj                      bpw:  6.00  proxy_err: 0.000208  o.  g_sc: 0.835967  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.20.gate_proj                    bpw:  6.00  proxy_err: 0.000157  o.  g_sc: 0.806696  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.20.down_proj                    bpw:  6.00  proxy_err: 0.000299  o.  g_sc: 0.850602  [0.95 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.21.up_proj                      bpw:  6.00  proxy_err: 0.000208  o.  g_sc: 0.815741  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.21.gate_proj                    bpw:  6.00  proxy_err: 0.000187  o.  g_sc: 0.830377  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.21.down_proj                    bpw:  6.00  proxy_err: 0.000283  o.  g_sc: 0.830377  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.22.up_proj                      bpw:  6.00  proxy_err: 0.000205  o.  g_sc: 0.824786  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.22.gate_proj                    bpw:  6.00  proxy_err: 0.000166  o.  g_sc: 0.797651  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.22.down_proj                    bpw:  6.00  proxy_err: 0.000295  o.  g_sc: 0.806696  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.23.up_proj                      bpw:  6.00  proxy_err: 0.000209  o.  g_sc: 0.824786  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.23.gate_proj                    bpw:  6.00  proxy_err: 0.000172  o.  g_sc: 0.801106  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.23.down_proj                    bpw:  6.00  proxy_err: 0.000298  o.  g_sc: 0.801106  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.24.up_proj                      bpw:  6.00  proxy_err: 0.000184  o.  g_sc: 0.786471  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.24.gate_proj                    bpw:  6.00  proxy_err: 0.000141  o.  g_sc: 0.806696  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.24.down_proj                    bpw:  6.00  proxy_err: 0.000012  o.  g_sc: 1.895478  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.25.up_proj                      bpw:  6.00  proxy_err: 0.000199  o.  g_sc: 0.801106  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.25.gate_proj                    bpw:  6.00  proxy_err: 0.000166  o.  g_sc: 0.835967  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.25.down_proj                    bpw:  6.00  proxy_err: 0.000257  o.  g_sc: 0.792061  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.26.up_proj                      bpw:  6.00  proxy_err: 0.000196  o.  g_sc: 0.768381  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.26.gate_proj                    bpw:  6.00  proxy_err: 0.000159  o.  g_sc: 0.815741  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.26.down_proj                    bpw:  6.00  proxy_err: 0.000047  o.  g_sc: 1.255299  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.27.up_proj                      bpw:  6.00  proxy_err: 0.000214  o.  g_sc: 0.821332  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.27.gate_proj                    bpw:  6.00  proxy_err: 0.000183  o.  g_sc: 0.806696  [0.98 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.27.down_proj                    bpw:  6.00  proxy_err: 0.000183  o.  g_sc: 0.883327  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.28.up_proj                      bpw:  6.00  proxy_err: 0.000214  o.  g_sc: 0.812287  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.28.gate_proj                    bpw:  6.00  proxy_err: 0.000162  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.28.down_proj                    bpw:  6.00  proxy_err: 0.000215  o.  g_sc: 0.883327  [0.94 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.29.up_proj                      bpw:  6.00  proxy_err: 0.000185  o.  g_sc: 0.824786  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.29.gate_proj                    bpw:  6.00  proxy_err: 0.000122  o.  g_sc: 0.806696  [0.97 s]
+ -- Quantized: model.language_model.layers.27.mlp.experts.29.down_proj                    bpw:  6.00  proxy_err: 0.000285  o.  g_sc: 0.786471  [0.94 s]

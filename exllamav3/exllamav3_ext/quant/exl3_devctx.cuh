@@ -19,12 +19,16 @@
 #define CC_HOPPER     4
 #define CC_BLACKWELL  4
 
+// B2: Runtime-configurable shared memory cap, defined in exl3_devctx.cu
+extern int g_smem_max;
+
 // Singleton to manage context for each device. Stores device attributes and a large-enough lock buffer per device
 class DevCtx
 {
 private:
     int num_sms[MAX_DEVICES] = {};
     int cc[MAX_DEVICES] = {};
+    int smem_max[MAX_DEVICES] = {};  // B2: per-device max shared memory (optin)
     void* locks[MAX_DEVICES] = {};
     void* ws[MAX_DEVICES] = {};
     std::mutex mtx;
@@ -33,6 +37,7 @@ public:
     static DevCtx& instance();
     int get_num_sms(int device);
     int get_cc(int device);
+    int get_smem_max(int device);  // B2: query cudaDevAttrMaxSharedMemoryPerBlockOptin
     void* get_ws(int device);
     int* get_locks(int device);
 

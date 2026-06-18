@@ -1,0 +1,99 @@
+[2026-03-26T02:22:33Z] Starting qwen9b_3060_pair
+Model:                 /home/op/exllamav3_ampere/models/Qwen3.5-9B-exl3
+Model ID:              Qwen3.5-9B-exl3-3060-dual
+Host:Port:             0.0.0.0:1235
+CUDA_VISIBLE_DEVICES:  2,3
+GPU split:             9.5,11.0
+Cache tokens:          262144
+EXLLAMA_EMBED_PREFER_CPU: 0
+Conda env:             exl3-dev
+
+/home/op/exllamav3_ampere/server_27b_layer.py:359: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [488602]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - layer-split 2-GPU server
+============================================================
+  Model dir    : /home/op/exllamav3_ampere/models/Qwen3.5-9B-exl3
+  GPU split    : [9.5, 11.0]
+  Mode         : layer-split (pipeline, no TP comms)
+  Cache tokens : 262,144
+  Model limit  : 262,144
+  KV cache     : fp16 (no quantization)
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 16000 (cap 16000)
+  Thinking     : True (preserve=True, budget=1024)
+  Endpoint     : http://0.0.0.0:1235/v1
+
+  CUDA_VISIBLE_DEVICES : 2,3
+  GPU 0: NVIDIA GeForce RTX 3060  (11.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3060  (11.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (262,144 tokens)...
+Loading weights (layer-split across GPUs)...
+
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1235 (Press CTRL+C to quit)
+  GPU 0: alloc=8.79GB  reserved=9.07GB
+  GPU 1: alloc=6.69GB  reserved=6.91GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.347s
+
+Server ready.  Cache = 262,144 tokens.
+
+INFO:     127.0.0.1:56942 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44498 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44510 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44516 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 193 thinking tokens
+INFO:     127.0.0.1:44526 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36966 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36980 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 193 thinking tokens
+INFO:     127.0.0.1:36996 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 794 thinking tokens
+INFO:     127.0.0.1:53320 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 256 tokens exhausted — injecting </think> after 255 thinking tokens
+INFO:     127.0.0.1:57456 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56018 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:40158 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:40160 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:49392 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:34904 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+WARNING:  Invalid HTTP request received.
+WARNING:  Invalid HTTP request received.
+INFO:     100.85.200.55:46870 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.55:48808 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     100.85.200.55:57932 - "GET / HTTP/1.1" 404 Not Found
+INFO:     100.85.200.55:32770 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:36230 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:51312 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:43912 - "GET /v1/models HTTP/1.1" 200 OK
+INFO:     172.19.0.2:43926 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     172.19.0.2:47594 - "GET /v1/models HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:57358 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:54550 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+  [ThinkBudget] budget of 1024 tokens exhausted — injecting </think> after 1023 thinking tokens
+INFO:     172.19.0.2:51472 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [488602]

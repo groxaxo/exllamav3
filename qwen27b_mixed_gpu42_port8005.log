@@ -1,0 +1,34 @@
+/home/op/exllamav3_ampere/server_mixed.py:99: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2012771]
+INFO:     Waiting for application startup.
+ERROR:    Traceback (most recent call last):
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/starlette/routing.py", line 694, in lifespan
+    async with self.lifespan_context(app) as maybe_state:
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 237, in __aenter__
+    await self._router._startup()
+  File "/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/fastapi/routing.py", line 4880, in _startup
+    await handler()
+  File "/home/op/exllamav3_ampere/server_mixed.py", line 106, in load_model
+    config = Config.from_directory(MODEL_DIR)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/op/exllamav3_ampere/exllamav3/model/config.py", line 130, in from_directory
+    from exllamav3.architecture.architectures import get_architectures
+  File "/home/op/exllamav3_ampere/exllamav3/architecture/architectures.py", line 1, in <module>
+    from .arcee import ArceeModel
+  File "/home/op/exllamav3_ampere/exllamav3/architecture/arcee.py", line 3, in <module>
+    from ..modules import RMSNorm, Embedding, TransformerBlock, Attention, MLP, Linear
+  File "/home/op/exllamav3_ampere/exllamav3/modules/__init__.py", line 8, in <module>
+    from .attn import Attention
+  File "/home/op/exllamav3_ampere/exllamav3/modules/attn.py", line 10, in <module>
+    from flash_attn import flash_attn_func, flash_attn_with_kvcache, flash_attn_varlen_func
+ModuleNotFoundError: No module named 'flash_attn'
+
+ERROR:    Application startup failed. Exiting.
+Loading model from /home/op/exllamav3_ampere/models/Qwen3.5-27B-exl3...
+Using split [22.0, 10.5] across visible GPUs

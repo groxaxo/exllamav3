@@ -1,0 +1,46 @@
+/home/op/exllamav3_ampere/server_27b_tp2.py:256: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [1037159]
+INFO:     Waiting for application startup.
+
+============================================================
+  Qwen3.5-27B-exl3 heretic - TP 2-GPU server (cached)
+============================================================
+  Model dir    : /home/op/quantized-models/llmfan46-qwen35-27b-heretic-v1/freed0m-exl3-b6
+  GPU split    : [11.0, 11.0]
+  TP backend   : native
+  Cache tokens : 3,840
+  Model limit  : 262,144
+  KV cache     : fp16 (no quantization)
+  Decode path  : Generator + paged flash_attn (cached)
+  Max tokens   : 2000 (cap 16000)
+  Thinking     : True (preserve=True)
+  Endpoint     : http://x86_64-conda-linux-gnu:1235/v1
+
+  CUDA_VISIBLE_DEVICES : 2,3
+  GPU 0: NVIDIA GeForce RTX 3060  (11.6 GB)
+  GPU 1: NVIDIA GeForce RTX 3060  (11.6 GB)
+
+Loading model config...
+Creating fp16 KV cache (3,840 tokens)...
+Loading weights (tensor parallel)...
+
+INFO:     Application startup complete.
+ERROR:    [Errno -2] Name or service not known
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+  GPU 0: alloc=9.22GB  reserved=9.31GB
+  GPU 1: alloc=0.00GB  reserved=0.00GB
+
+Loading tokenizer...
+Creating Generator...
+Running startup warmup...
+  Warmup complete in 0.899s
+
+Server ready.  Cache = 3,840 tokens.
+

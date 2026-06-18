@@ -1,0 +1,30 @@
+/home/op/miniconda3/envs/exl3-dev/lib/python3.11/site-packages/torch/cuda/__init__.py:1000: UserWarning: Can't initialize NVML
+  uuids = _raw_device_uuid_nvml()
+/home/op/exllamav3_ampere/server_mixed.py:121: DeprecationWarning: 
+        on_event is deprecated, use lifespan event handlers instead.
+
+        Read more about it in the
+        [FastAPI docs for Lifespan Events](https://fastapi.tiangolo.com/advanced/events/).
+        
+  @app.on_event("startup")
+INFO:     Started server process [2617102]
+INFO:     Waiting for application startup.
+2026-04-04 19:03:20,849 INFO Loading model from /home/op/exllamav3_ampere/models/Qwen3.5-122B-A10B-abliterated-exl3-4bpw...
+2026-04-04 19:03:20,849 INFO Using split [22.8, 22.8, 11.5, 22.8] across visible GPUs
+Loading (LS): 39/51 ( 76.5%) elapsed 30s eta 9s
+2026-04-04 19:04:11,286 INFO Model loaded!
+2026-04-04 19:04:11,287 INFO === Testing Maximum Context Length ===
+2026-04-04 19:04:11,287 INFO Logical GPU 0 free memory: 1.52 GB
+2026-04-04 19:04:11,287 INFO Logical GPU 1 free memory: 1.52 GB
+2026-04-04 19:04:11,287 INFO Logical GPU 2 free memory: 0.62 GB
+2026-04-04 19:04:11,287 INFO Logical GPU 3 free memory: 18.86 GB
+2026-04-04 19:04:11,288 INFO   65536 tokens: OK
+2026-04-04 19:04:11,288 INFO   98304 tokens: OK
+2026-04-04 19:04:11,288 INFO   131072 tokens: OK
+2026-04-04 19:04:11,288 INFO   32000 tokens: OK
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:1234 (Press CTRL+C to quit)
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [2617102]

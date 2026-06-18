@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 from typing_extensions import override
 import torch
 from torch import nn
@@ -8,8 +9,8 @@ from . import Module
 from ..tokenizer.mm_embedding import FIRST_MM_EMBEDDING_INDEX
 from ..model.model_tp_alloc import TPAllocation
 
-class Embedding(Module):
 
+class Embedding(Module):
     def __init__(
         self,
         config: Config | None,
@@ -19,7 +20,7 @@ class Embedding(Module):
         out_dtype: torch.dtype | None = torch.float,
         qmap: str | None = None,
         normalize: bool = False,
-        multiplier: float = 1.0
+        multiplier: float = 1.0,
     ):
         super().__init__(config, key, None)
         assert qmap is None, "No quant scheme for Embedding"
@@ -33,9 +34,16 @@ class Embedding(Module):
         self.normalize = normalize
         self.multiplier = multiplier
 
-        self.caps.update({
-            "prefer_cpu": True,
-        })
+        prefer_cpu = os.getenv("EXLLAMA_EMBED_PREFER_CPU", "1").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
+        self.caps.update(
+            {
+                "prefer_cpu": prefer_cpu,
+            }
+        )
 
     @override
     def optimizer_targets(self):
@@ -44,13 +52,11 @@ class Embedding(Module):
     @override
     def load(self, device: torch.device, **kwargs):
         self.device = device
-        weight = self.config.stc.get_tensor(self.key + ".weight", self.device, float2half = True)
-        self._numel = weight.numel()
-        self.embedding = nn.Embedding(
-            self.vocab_size,
-            self.hidden_size,
-            device = "meta"
+        weight = self.config.stc.get_tensor(
+            self.key + ".weight", self.device, float2half=True
         )
+        self._numel = weight.numel()
+        self.embedding = nn.Embedding(self.vocab_size, self.hidden_size, device="meta")
         self.embedding.weight = nn.Parameter(weight)
 
     @override
@@ -60,20 +66,15 @@ class Embedding(Module):
 
     @override
     def get_tensors(self):
-       return {
-            f"{self.key}.weight": self.embedding.weight.data.contiguous()
-        }
+        return {f"{self.key}.weight": self.embedding.weight.data.contiguous()}
 
     @override
     def weights_numel(self):
         return self._numel
-        
+
     @override
     def forward(
-        self,
-        x: torch.Tensor,
-        params: dict,
-        out_dtype: torch.dtype | None = None
+        self, x: torch.Tensor, params: dict, out_dtype: torch.dtype | None = None
     ) -> torch.Tensor:
 
         indexed_emb = params.get("indexed_embeddings")
@@ -84,7 +85,8 @@ class Embedding(Module):
         if indexed_emb:
             standard_mask = input_ids < FIRST_MM_EMBEDDING_INDEX
             indexed_masks = [
-                (input_ids >= e.first_index) & (input_ids < (e.first_index + e.mm_length))
+                (input_ids >= e.first_index)
+                & (input_ids < (e.first_index + e.mm_length))
                 for e in indexed_emb
             ]
             indexed_act = [im.any() for im in indexed_masks]
@@ -93,14 +95,24 @@ class Embedding(Module):
         # Mixed embeddings when needed
         if indexed_emb and use_indexed_emb:
             bsz, seq_len = input_ids.shape
-            combined_emb = torch.empty((bsz, seq_len, self.hidden_size), device = self.device, dtype = out_dtype)
+            combined_emb = torch.empty(
+                (bsz, seq_len, self.hidden_size), device=self.device, dtype=out_dtype
+            )
 
             # Prepare deepstack embedding tensors
-            if any(ie.deepstack_embeddings is not None for ie in indexed_emb) and indexed_act:
+            if (
+                any(ie.deepstack_embeddings is not None for ie in indexed_emb)
+                and indexed_act
+            ):
                 assert all(ie.deepstack_embeddings is not None for ie in indexed_emb)
                 num_layers = len(indexed_emb[0].deepstack_embeddings)
-                assert all(num_layers == len(ie.deepstack_embeddings) is not None for ie in indexed_emb)
-                deepstack_emb = [torch.zeros_like(combined_emb) for _ in range(num_layers)]
+                assert all(
+                    num_layers == len(ie.deepstack_embeddings) is not None
+                    for ie in indexed_emb
+                )
+                deepstack_emb = [
+                    torch.zeros_like(combined_emb) for _ in range(num_layers)
+                ]
             else:
                 deepstack_emb = None
 
@@ -121,18 +133,26 @@ class Embedding(Module):
                     continue
                 for i in range(bsz):
                     indexed_ids_row = input_ids[i][im[i]] - ie.first_index
-                    combined_emb[i][im[i]] = ie.embeddings[indexed_ids_row].to(out_dtype)
+                    combined_emb[i][im[i]] = ie.embeddings[indexed_ids_row].to(
+                        out_dtype
+                    )
 
                     # Prepare deepstack embeddings
                     if ie.deepstack_embeddings is not None:
                         for layer, de in enumerate(ie.deepstack_embeddings):
-                            deepstack_emb[layer][i][im[i]] = de[indexed_ids_row].to(out_dtype)
+                            deepstack_emb[layer][i][im[i]] = de[indexed_ids_row].to(
+                                out_dtype
+                            )
 
             # Save deepstack embeddings to params
             if deepstack_emb is not None:
                 params["deepstack_emb"] = deepstack_emb
 
-            return combined_emb if self.multiplier == 1.0 else combined_emb * self.multiplier
+            return (
+                combined_emb
+                if self.multiplier == 1.0
+                else combined_emb * self.multiplier
+            )
 
         # No indexed embeddings, or none in current batch
         else:
@@ -157,22 +177,20 @@ class Embedding(Module):
                 "normalize": self.normalize,
             },
             "embedding.weight": producer.send(self.embedding.weight),
-            "device": self.device
+            "device": self.device,
         }
 
     @staticmethod
     def tp_import(local_context, exported, plan):
         consumer = local_context["consumer"]
         module = Embedding(
-            config = None,
+            config=None,
             **exported["kwargs"],
         )
         module.device = exported["device"]
         module.embedding = nn.Embedding(
-            module.vocab_size,
-            module.hidden_size,
-            device = "meta"
+            module.vocab_size, module.hidden_size, device="meta"
         )
-        emb = consumer.recv(exported["embedding.weight"], cuda = False)
+        emb = consumer.recv(exported["embedding.weight"], cuda=False)
         module.embedding.weight = nn.Parameter(emb)
         return module
