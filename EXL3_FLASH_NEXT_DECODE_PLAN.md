@@ -41,15 +41,17 @@ stall. Two patches took single-stream from 45 -> 80 tok/s:
 Both patch files are readable at:
 `/home/op/models/Qwen3.8-Flash-Next-INT4-Mixed-AutoRound/vllm-patch/3x3090/`
 
-## State of the trees (verified 2026-09-21, rev 2)
+## State of the trees (verified 2026-09-21, rev 3)
 
-Upstream checkout: `/home/op/exllamav3` (v1.5.0+cu128, torch 2.11.0)
-Env: `/home/op/miniforge3/envs/exl3`
-**Fork branch: `qwen38-flash-next-decode-v2`** at
-`/home/op/src/exllamav3-fork`, rebased onto upstream master `6b84a21`
-(v1.5.1) and carrying exactly two own commits: the parity server and this
-plan. (The old `qwen38-gguf-parity-server` branch predates flash-next engine
-support and is retired for engine work.)
+Stale reference checkout (do NOT benchmark from it): `/home/op/exllamav3`
+(v1.5.0+cu128). Env: `/home/op/miniforge3/envs/exl3` (torch 2.11.0).
+**Engine baseline: fork branch `qwen38-flash-next-decode-v2`** at
+`/home/op/src/exllamav3-fork` = upstream master `6b84a21` (v1.5.1) plus this
+branch's own commits (parity server, plan revisions, server hardening). The
+server refuses to start when `EXPECTED_EXL3_ROOT` is set and the imported
+`exllamav3` does not live under it, so the wrong checkout cannot be
+benchmarked silently. (The old `qwen38-gguf-parity-server` branch predates
+flash-next engine support and is retired for engine work.)
 
 | Piece | State |
 |---|---|
@@ -102,10 +104,14 @@ x git-checkout mismatch produces ghost debugging.
 ```
 export CUDA_VISIBLE_DEVICES=0,1,2
 export MODEL_DIR=/home/op/models/Qwen3.8-Flash-Next-exl3-4.05bpw_h6_ng6
+export SERVED_MODEL_NAME=qwen38-flash-next-exl3-4.05bpw-h6-ng6
+export CHAT_TEMPLATE_FILE="$MODEL_DIR/chat_template.jinja"   # quant ships its own
+export EXPECTED_EXL3_ROOT=/home/op/src/exllamav3-fork        # refuse wrong checkout
 export MULTI_GPU=pipeline          # layer-split, the reference topology
 export GPU_SPLIT=22.5,22.5,22.5
 export CACHE_SIZE=65536
 export CHUNK_SIZE=4096
+export MAX_BATCH_SIZE=1            # B1 everywhere for Phases 0-3
 export NGRAM_RAM=1
 cd qwen38_flash_gguf_parity && python -u exl3_qwen38_server.py
 ```
@@ -115,8 +121,9 @@ max_tokens=32` asking for exactly `PHASE0_OK`. We do not care yet whether it
 does 30, 45 or 70 tok/s.
 
 ### Phase 0 acceptance gate
-
-- [ ] Exact ExLlamaV3 SHA recorded (from the startup pin log)
+- [ ] Startup ran under `EXPECTED_EXL3_ROOT=/home/op/src/exllamav3-fork`
+      (guard active: wrong-checkout import aborts)
+- [ ] Exact ExLlamaV3 git SHA + clean/dirty recorded (pin log `git=` / `tree=`)
 - [ ] Exact torch/CUDA/driver recorded
 - [ ] Exact model repo + revision + total/ngram bytes recorded
 - [ ] Qwen4Exp architecture detected in the pin log
@@ -177,30 +184,52 @@ Acceptance: generation output identical (same seed, same prompt) with hoist on
 and off. Throughput measured; expected ~no change alone (see F2 note above) —
 its value is making Phase 3 capture legal.
 
-## Phase 3 — Decode CUDA graphs (the 45->80 multiplier, 1-2 weeks)
+## Phase 3 — Per-stage decode CUDA graphs (the 45->80 multiplier, 1-2 weeks)
 
-New module `exllamav3/generator/cudagraph.py`:
+New module `exllamav3/generator/cudagraph.py`. **One graph per pipeline
+stage/device, NOT one graph around `Model.forward()`.** `Model.forward()`
+runs `prepare_inputs()`, the prefetch loop, `forward_ls()` across several
+CUDA devices, and `advance_recurrent_states()` which mutates Python state
+(`r.position`, `r.last_history`, `post_advance()`). PyTorch CUDA graph
+capture is per-device; whole-function capture over a multi-device layer-split
+forward is not supported. The vLLM reference itself is **PP=3, TP=1** with
+decode graphs captured per rank; its pipeline round trip costs ~1.1 ms.
 
+Decode step shape after this phase:
+
+```
+generator host prep (ids, positions, row ids)
+  -> PLE host gather into fixed buffers      (Phase 2)
+  -> prepare_inputs / recurrent metadata     (host)
+  -> GPU0 stage graph replay                 (fixed-address in/out)
+  -> fixed-address GPU0->GPU1 activation copy
+  -> GPU1 stage graph replay
+  -> fixed-address GPU1->GPU2 activation copy
+  -> GPU2 stage graph replay
+  -> advance_recurrent_states()              (host, outside graphs)
+  -> sampler                                 (outside graphs)
+```
+
+- Partition the layer-split `fwd_modules` into contiguous runs by `.device`;
+  capture one graph per run at warmup, bucketed by batch size.
 - **Batch size 1 first.** The parity server serializes requests through one
-  dispatch worker, so real decode batches are 1 until batching is added;
-  capturing {1,2,4} from day one adds complexity without proving anything.
+  dispatch worker, so real decode batches are 1 until batching is added.
   Bucket {2,4} only after B1 pays off.
 - Requirements after Phase 2 (all satisfiable):
-  - forward contains zero host work (gather hoisted; sampler stays OUTSIDE
-    the graph)
+  - each stage's graphs contain zero host work (gather hoisted; sampler and
+    recurrent-state bookkeeping stay OUTSIDE)
   - per-slot state tensors of fixed shape/address: GDN recurrent state, PLE
     conv_state/id_state, QSA raw/pooled planes — all in-place updated
   - page table as a fixed-address tensor updated in place
-  - input ids / positions in fixed-address staging buffers, batch padded to
-    the bucket
-- Prefill stays eager. This replicates `FULL_DECODE_ONLY` exactly.
+  - input ids / positions / inter-stage activations in fixed-address staging
+    buffers, batch padded to the bucket
+- Prefill stays eager. This replicates `FULL_DECODE_ONLY` on a PP topology.
 - MoE routing: gate + top-k computed on device; no host reads of tensor
-  values inside the captured region (verify with the profiler from Phase 1).
-- Shortcut worth trying first: `torch.compile(mode="reduce-overhead")` on the
-  model forward after Phase 2. Custom ext kernels capture fine as long as no
-  host-side branching reads tensor values. If it cooperates, it replaces most
-  of the custom capture code; if it graph-breaks, fall back to manual
-  `torch.cuda.CUDAGraph`.
+  values inside a captured stage (verify with the profiler from Phase 1).
+- No `torch.compile` shortcut on the primary path: the vLLM reference ran
+  compilation mode:0 with manual full decode graphs — Inductor is not what
+  produced the win, and silent graph-breaks on ext kernels waste profiling
+  time. Manual per-device graphs are the first implementation.
 
 Acceptance: tok/s at 248k ctx >= 70 (target 80); output bit-identical eager
 vs graph on fixed seed; no warmup-dependent drift over 10k steps.
@@ -229,8 +258,11 @@ Acceptance: decode tok/s at 1M ctx within 10% of tok/s at 100k ctx.
 - KLD vs BF16 with the author's measurement script, same trace; expect
   ~0.0067 nats (the quant's number, independent of these patches)
 - A/B every phase: hoist on/off, graph on/off, `EXL3_NGRAM_PREFETCH` 0/1
-- 4-request aggregate throughput through the parity server (batched
-  `iterate_gen`); compare against vLLM's ~155 tok/s
+- 4-request aggregate throughput via a **direct Generator batch harness**
+  (4 jobs in one `iterate_gen` batch), NOT through the parity server: its
+  `_dispatch_worker` serializes requests, so 4 HTTP clients are 4 serial
+  generations, not an EXL3 batch. Server-level batching is a later, separate
+  phase; never compare the serial path against vLLM's ~155 tok/s batch figure
 - Optional single experiment: `MULTI_GPU=tensor` TP3 vs pipeline on the final
   build (topology A/B, never mixed with phase A/Bs)
 
@@ -257,18 +289,28 @@ not just matching it.
 
 ## Risks
 
-- Phase 3 is where the effort is; capture with hybrid state models is fiddly
-  (the states are the easy part — MoE expert routing inside the graph is the
-  part to verify carefully)
-- torch.compile shortcut may silently graph-break on ext kernels: verify with
-  profiler, not with absence of errors
+- Phase 3 is where the effort is: capture with hybrid state models is
+  fiddly, and the per-device stage boundaries add their own risk — the
+  fixed-address inter-stage activation copies must cover every tensor shape
+  a stage emits (MoE routing included); verify with the Phase 1 profiler
+  that no captured stage reads tensor values on host
 - The parity server (`qwen38_flash_gguf_parity/`) must keep working; all
   engine changes stay behind env switches defaulting to old behaviour until
   Phase 3 acceptance passes
 
 ## Changelog
 
-- v2 (this rev): rebased fork onto upstream `6b84a21`; server multi-GPU mode
+- v2 rev 3: per review round 2 — runtime pins now record the git SHA +
+  clean/dirty of the imported exllamav3 and `EXPECTED_EXL3_ROOT` aborts on
+  wrong-checkout imports; `MULTI_GPU` strictly validated (invalid values and
+  tensor-on-unsupported-arch are startup errors, never silent fallbacks);
+  smoke test pins SERVED_MODEL_NAME/CHAT_TEMPLATE_FILE/MAX_BATCH_SIZE=1;
+  Phase 3 rewritten as per-device pipeline-stage CUDA graphs (vLLM reference
+  is PP3/TP1 with per-rank graphs; no torch.compile on the primary path);
+  Phase 5 batch test moved to a direct Generator harness; `mdl.load`
+  max_batch_size aligned with the Generator's; machine-readable
+  `experiment_config=` JSON line at startup.
+- v2 rev 2: rebased fork onto upstream `6b84a21`; server multi-GPU mode
   now explicit (`MULTI_GPU=pipeline|tensor`, pipeline default) with runtime
   pin logging; Phase 0 quant corrected to `turboderp/...@4.05bpw_h6_ng6`
   (100.1 GiB, not 37G); acceptance gate hardened; Phase 2 rewritten around

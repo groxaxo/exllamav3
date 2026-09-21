@@ -69,7 +69,9 @@ SERVED_MODEL_NAME = os.environ.get("SERVED_MODEL_NAME", "qwen38-flash-next-unc-e
 CACHE_KV_BITS = int(os.environ.get("CACHE_KV_BITS", "0"))  # 0=fp16 else quant k/v bits
 CACHE_SIZE = int(os.environ.get("CACHE_SIZE", "65536"))
 GPU_SPLIT = os.environ.get("GPU_SPLIT", "22.5,22.5,22.5")
-MULTI_GPU = os.environ.get("MULTI_GPU", "pipeline")  # pipeline (layer-split) | tensor
+MULTI_GPU = os.environ.get("MULTI_GPU", "pipeline").strip().lower()  # pipeline (layer-split) | tensor
+if MULTI_GPU not in ("pipeline", "tensor"):
+    raise ValueError(f"MULTI_GPU must be 'pipeline' or 'tensor', got {MULTI_GPU!r}")
 TP_BACKEND = os.environ.get("TP_BACKEND", "native")  # TP implementation when MULTI_GPU=tensor
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", "4096"))
 MAX_BATCH_SIZE = int(os.environ.get("MAX_BATCH_SIZE", "4"))
@@ -140,6 +142,23 @@ threading.Thread(target=_dispatch_worker, daemon=True, name="exl3-dispatch").sta
 def _raise_exception(msg: str):
     raise ValueError(f"chat_template: {msg}")
 
+
+def _git_identity(package_file: str) -> tuple[str, str]:
+    """(sha, clean|dirty|unknown) of the checkout containing package_file."""
+    try:
+        root = Path(package_file).resolve().parents[1]
+        sha = subprocess.check_output(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            text=True, timeout=5,
+        ).strip()
+        dirty = subprocess.run(
+            ["git", "-C", str(root), "diff", "--quiet"],
+            timeout=5,
+        ).returncode != 0
+        return sha, "dirty" if dirty else "clean"
+    except Exception:
+        return "unknown", "unknown"
+
 def _gpu_driver() -> str:
     try:
         out = subprocess.run(
@@ -152,23 +171,47 @@ def _gpu_driver() -> str:
 
 
 def _log_runtime_pins(cfg: Config, mdl: Model) -> None:
-    """Reproducibility pins: everything a perf bisect needs in one log block."""
+    """Reproducibility pins + checkout guard: everything a perf bisect needs."""
     import exllamav3
     from exllamav3.version import __version__ as exl3_version
+
+    pkg_file = str(Path(exllamav3.__file__).resolve())
+    sha, tree = _git_identity(pkg_file)
+    expected_root = os.environ.get("EXPECTED_EXL3_ROOT", "")
+    if expected_root and not pkg_file.startswith(str(Path(expected_root).resolve())):
+        # Refuse to benchmark the wrong checkout (e.g. the stale editable
+        # install or site-packages) instead of just logging it.
+        raise RuntimeError(
+            f"exllamav3 imported from {pkg_file}, expected under {expected_root}. "
+            "Fix the env / editable install before benchmarking."
+        )
     log.info(
         "runtime: python=%s torch=%s cuda=%s driver=%s gpus=%d",
         sys.executable, torch.__version__, torch.version.cuda, _gpu_driver(),
         torch.cuda.device_count(),
     )
     log.info(
-        "engine: exllamav3=%s file=%s",
-        exl3_version, exllamav3.__file__,
+        "engine: exllamav3=%s git=%s tree=%s file=%s",
+        exl3_version, sha, tree, pkg_file,
     )
     log.info(
-        "checkpoint: dir=%s arch=%s supports_tp=%s",
+        "checkpoint: dir=%s arch=%s supports_tp=%s served_model=%s chat_template=%s",
         MODEL_DIR, cfg.architecture, bool(mdl.caps.get("supports_tp")),
+        SERVED_MODEL_NAME, CHAT_TEMPLATE_FILE,
     )
-
+    log.info(
+        "experiment_config=%s",
+        json.dumps({
+            "exl3_sha": sha, "exl3_tree": tree,
+            "torch": torch.__version__, "cuda": torch.version.cuda,
+            "driver": _gpu_driver(), "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES", ""),
+            "multi_gpu": MULTI_GPU, "gpu_split": GPU_SPLIT,
+            "cache_size": CACHE_SIZE, "cache_kv_bits": CACHE_KV_BITS,
+            "chunk_size": CHUNK_SIZE, "max_batch_size": MAX_BATCH_SIZE,
+            "ngram_ram": NGRAM_RAM, "model_dir": MODEL_DIR,
+            "served_model": SERVED_MODEL_NAME,
+        }, sort_keys=True),
+    )
 
 def load_model() -> None:
     global config, model, cache, tokenizer, generator, chat_template, EOS_TOKEN_ID
@@ -195,15 +238,15 @@ def load_model() -> None:
     # Qwen4Exp advertises supports_tp=True upstream (9d18a7f), so the mode
     # is explicit now: MULTI_GPU=pipeline (default) forces layer-split
     # regardless of caps; MULTI_GPU=tensor requires the arch to support TP
-    # and otherwise falls back with a warning instead of failing the load.
+    # and refuses to start otherwise — a benchmark topology must never
+    # change silently underneath the measurement.
     supports_tp = bool(mdl.caps.get("supports_tp"))
     use_tp = MULTI_GPU == "tensor"
     if use_tp and not supports_tp:
-        log.warning(
-            "MULTI_GPU=tensor but arch %s lacks supports_tp; falling back to pipeline",
-            cfg.architecture,
+        raise RuntimeError(
+            f"MULTI_GPU=tensor but arch {cfg.architecture} lacks supports_tp; "
+            "refusing to fall back to pipeline implicitly"
         )
-        use_tp = False
     log.info(
         "multi-gpu mode: %s (arch=%s supports_tp=%s)",
         "tensor-parallel" if use_tp else "layer-split pipeline",
@@ -216,7 +259,7 @@ def load_model() -> None:
         progressbar=False,
         verbose=False,
         max_chunk_size=CHUNK_SIZE,
-        max_batch_size=1,
+        max_batch_size=MAX_BATCH_SIZE,
     )
     tok = Tokenizer.from_config(cfg)
     gen = Generator(

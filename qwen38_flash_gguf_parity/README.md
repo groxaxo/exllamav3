@@ -5,7 +5,7 @@ server and pure-stdlib response parser used on `:12703` so EXL3 matches the
 GGUF Unc sibling (`llama-server` + Sharp template) through proxy `:12434`.
 
 Upstream `exllamav3` can be upgraded independently. Keep this tree (and this
-branch `qwen38-gguf-parity-server`) so the parser/server are not lost.
+branch `qwen38-flash-next-decode-v2`) so the parser/server are not lost.
 
 ## Files
 
