@@ -39,6 +39,8 @@ and this backend stays text-only (no mmproj).
 
 from __future__ import annotations
 
+import subprocess
+import sys
 import json
 import logging
 import os
@@ -67,7 +69,8 @@ SERVED_MODEL_NAME = os.environ.get("SERVED_MODEL_NAME", "qwen38-flash-next-unc-e
 CACHE_KV_BITS = int(os.environ.get("CACHE_KV_BITS", "0"))  # 0=fp16 else quant k/v bits
 CACHE_SIZE = int(os.environ.get("CACHE_SIZE", "65536"))
 GPU_SPLIT = os.environ.get("GPU_SPLIT", "22.5,22.5,22.5")
-TP_BACKEND = os.environ.get("TP_BACKEND", "native")
+MULTI_GPU = os.environ.get("MULTI_GPU", "pipeline")  # pipeline (layer-split) | tensor
+TP_BACKEND = os.environ.get("TP_BACKEND", "native")  # TP implementation when MULTI_GPU=tensor
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", "4096"))
 MAX_BATCH_SIZE = int(os.environ.get("MAX_BATCH_SIZE", "4"))
 NGRAM_RAM = os.environ.get("NGRAM_RAM", "1") == "1"
@@ -137,6 +140,35 @@ threading.Thread(target=_dispatch_worker, daemon=True, name="exl3-dispatch").sta
 def _raise_exception(msg: str):
     raise ValueError(f"chat_template: {msg}")
 
+def _gpu_driver() -> str:
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=10,
+        )
+        return out.stdout.strip().splitlines()[0] if out.returncode == 0 else "unknown"
+    except Exception:
+        return "unknown"
+
+
+def _log_runtime_pins(cfg: Config, mdl: Model) -> None:
+    """Reproducibility pins: everything a perf bisect needs in one log block."""
+    import exllamav3
+    from exllamav3.version import __version__ as exl3_version
+    log.info(
+        "runtime: python=%s torch=%s cuda=%s driver=%s gpus=%d",
+        sys.executable, torch.__version__, torch.version.cuda, _gpu_driver(),
+        torch.cuda.device_count(),
+    )
+    log.info(
+        "engine: exllamav3=%s file=%s",
+        exl3_version, exllamav3.__file__,
+    )
+    log.info(
+        "checkpoint: dir=%s arch=%s supports_tp=%s",
+        MODEL_DIR, cfg.architecture, bool(mdl.caps.get("supports_tp")),
+    )
+
 
 def load_model() -> None:
     global config, model, cache, tokenizer, generator, chat_template, EOS_TOKEN_ID
@@ -148,6 +180,7 @@ def load_model() -> None:
         cfg.infer_params.ngram_stream_from_disk = False
         log.info("ngram_stream_from_disk=False (NGRAM_RAM=1)")
     mdl = Model.from_config(cfg)
+    _log_runtime_pins(cfg, mdl)
     cache_desc = "fp16"
     if CACHE_KV_BITS in (2, 3, 4, 6, 8):
         cch = Cache(mdl, max_num_tokens=CACHE_SIZE, layer_type=CacheLayer_quant, k_bits=CACHE_KV_BITS, v_bits=CACHE_KV_BITS)
@@ -156,14 +189,26 @@ def load_model() -> None:
         cch = Cache(mdl, max_num_tokens=CACHE_SIZE, layer_type=CacheLayer_fp16)
     split = [float(x) for x in GPU_SPLIT.split(",")] if GPU_SPLIT else None
     log.info(
-        "loading weights: tensor_parallel TP-backend=%s gpu_split=%s cache=%d %s",
-        TP_BACKEND, split, CACHE_SIZE, cache_desc,
+        "loading weights: multi_gpu=%s tp_backend=%s gpu_split=%s cache=%d %s",
+        MULTI_GPU, TP_BACKEND, split, CACHE_SIZE, cache_desc,
     )
-    # Qwen4Exp: supports_tp=False in exl3 1.5.x -> layer-split (pipeline)
-    # autosplit across all visible GPUs. TP is used automatically if a future
-    # exl3/arch revision enables it.
-    use_tp = bool(mdl.caps.get("supports_tp")) and TP_BACKEND != "layer-split"
-    log.info("multi-gpu mode: %s", "tensor-parallel" if use_tp else "layer-split autosplit")
+    # Qwen4Exp advertises supports_tp=True upstream (9d18a7f), so the mode
+    # is explicit now: MULTI_GPU=pipeline (default) forces layer-split
+    # regardless of caps; MULTI_GPU=tensor requires the arch to support TP
+    # and otherwise falls back with a warning instead of failing the load.
+    supports_tp = bool(mdl.caps.get("supports_tp"))
+    use_tp = MULTI_GPU == "tensor"
+    if use_tp and not supports_tp:
+        log.warning(
+            "MULTI_GPU=tensor but arch %s lacks supports_tp; falling back to pipeline",
+            cfg.architecture,
+        )
+        use_tp = False
+    log.info(
+        "multi-gpu mode: %s (arch=%s supports_tp=%s)",
+        "tensor-parallel" if use_tp else "layer-split pipeline",
+        cfg.architecture, supports_tp,
+    )
     mdl.load(
         use_per_device=split,
         tensor_p=use_tp,

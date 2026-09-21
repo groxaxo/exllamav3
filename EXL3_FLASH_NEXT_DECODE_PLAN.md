@@ -1,9 +1,14 @@
-# EXL3 Flash-Next Decode Optimization Plan
+# EXL3 Flash-Next Decode Optimization Plan (v2)
 
-Date: 2026-09-21
+Date: 2026-09-21 (rev 2 after review)
 Target: match the 80 tok/s single-stream decode of the vLLM AutoRound build,
 using the EXL3 quant (KLD 0.0067 vs BF16, 2.2x better than the AutoRound mixed)
 on the same 3x RTX 3090 hardware.
+
+Multi-GPU policy: **pipeline (layer-split) is the reference topology** for every
+phase in this plan. Tensor parallel TP3 exists upstream (`supports_tp=True`,
+commit 9d18a7f) and is tested only as an optional separate experiment — never
+mixed into a phase's A/B comparisons.
 
 Reference deployment (the one to match):
 - Model: `/home/op/models/Qwen3.8-Flash-Next-INT4-Mixed-AutoRound` (served by
@@ -36,38 +41,94 @@ stall. Two patches took single-stream from 45 -> 80 tok/s:
 Both patch files are readable at:
 `/home/op/models/Qwen3.8-Flash-Next-INT4-Mixed-AutoRound/vllm-patch/3x3090/`
 
-## State of the local ExLlamaV3 tree (verified 2026-09-21)
+## State of the trees (verified 2026-09-21, rev 2)
 
 Upstream checkout: `/home/op/exllamav3` (v1.5.0+cu128, torch 2.11.0)
 Env: `/home/op/miniforge3/envs/exl3`
-Fork (server parity layer only, no engine patches):
-`/home/op/src/exllamav3-fork` branch `qwen38-gguf-parity-server`
+**Fork branch: `qwen38-flash-next-decode-v2`** at
+`/home/op/src/exllamav3-fork`, rebased onto upstream master `6b84a21`
+(v1.5.1) and carrying exactly two own commits: the parity server and this
+plan. (The old `qwen38-gguf-parity-server` branch predates flash-next engine
+support and is retired for engine work.)
 
 | Piece | State |
 |---|---|
-| flash-next arch support | present: `modules/ple.py`, `modules/qsa_indexer.py`, `modules/gated_delta_net.py`, `modules/hyperconnections.py`, arch_specific |
-| n-gram table | streaming first-class: `DiskTensorHandles`, trellis codec, pinned staging (`modules/ngram_embedding.py`). Gather runs INSIDE `forward()` (line 511) with `pin.event.synchronize()` (line 443). A/B switch exists: `EXL3_NGRAM_PREFETCH` |
+| flash-next arch support | present in v2 branch: `modules/ple.py`, `modules/qsa_indexer.py`, `modules/gated_delta_net.py`, `modules/hyperconnections.py`, arch_specific |
+| n-gram table | streaming first-class: `DiskTensorHandles`, trellis codec, pinned staging (`modules/ngram_embedding.py`). Async `prefetch()` exists with ThreadPoolExecutor + CUDA events, but **declines below `PREFETCH_MIN_TOKENS = 256`** (line 45) — decode-sized inputs take the inline gather inside `forward()`. A/B switch: `EXL3_NGRAM_PREFETCH` |
+| PLE prefetch plumbing | `ple.py:220` sets `caps["prefetch_ids"] = True`; `model.py:366,391` calls `m.prefetch(x, params)` on layers advertising it — the hook vLLM's patch-02 added already exists here |
 | QSA cache | `cache/qsa.py`: indexer planes (raw + pooled keys) alongside K/V, all VRAM-resident. No host offload |
 | CUDA graphs | none anywhere in the Python tree (`graph.cu` in ext has no callers) |
-| Decode seam | `generator/generator.py:1027` — `iterate_gen()` calls `self.model.forward(...)` |
-| Sharding | TP=3 works for this model (upstream commit "MoE: Fix gather for TP-split layers") |
-
-This is exactly the pre-decode-patch state of the vLLM build: gather in
-forward, no graphs. The 45 tok/s ceiling class.
+| Decode seam | `generator/generator.py` — `iterate_gen()` calls `self.model.forward(...)` |
+| Sharding | pipeline layer-split (default) and TP both available; Qwen4Exp `supports_tp=True` |
 
 ---
 
 ## Phase 0 — Restore the quant (prerequisite)
 
 The EXL3 quants were deleted in the 2026-09-21 disk cleanup (287G freed).
-Re-download `Qwen3.8-Flash-Next-exl3-4.00bpw_hq_h6_ng6` (~37G, ngram in
-6-bit trellis = 36.4G inside). It is the quant from the author's KLD table.
-Disk has room (564G free at time of writing).
+Re-download the exact quant from the author's KLD table:
 
-Do NOT restore `exl3-unsloth-shaped-h8-mtp5` (98G) unless MTP experiments
-resume; the author measured MTP slower than no drafting in real use.
+- Repo: `turboderp/Qwen3.8-Flash-Next-exl3`
+- **Revision (git branch): `4.05bpw_h6_ng6`** — the KLD-0.0067 entry
+- Full size: **100.1 GiB** (9 model shards ~8.06G each = 64.8G, plus
+  `ngram_embedding.safetensors` 39.0G, `vision_k6.safetensors` 0.56G,
+  `quantization_config.json` 96M, tokenizers). The ~37G figure previously
+  recorded here was the n-gram trellis alone, not the checkpoint.
+- Disk has room (564G free at time of writing).
 
-Acceptance: model loads in the exl3 env, one generation completes.
+```
+hf download turboderp/Qwen3.8-Flash-Next-exl3 \
+  --revision 4.05bpw_h6_ng6 \
+  --local-dir /home/op/models/Qwen3.8-Flash-Next-exl3-4.05bpw_h6_ng6
+```
+
+Record in this file under Measurements: HF repo, revision, total bytes,
+ngram bytes, and the local dir actually used. Do NOT restore
+`exl3-unsloth-shaped-h8-mtp5` (98G) unless MTP experiments resume; the author
+measured MTP slower than no drafting in real use.
+
+Do NOT trust the quant name from memory: `4.00bpw_hq_h6_ng6` (rev 1 of this
+plan) does not exist; the user's own `groxaxo/Qwen3.8-Flash-Next-exl3-3.50bpw_hq_h6_ng6`
+is a different custom quant.
+
+Runtime pins are logged automatically by the server at startup
+(`_log_runtime_pins`): python/torch/CUDA/driver/GPU count, exllamav3 version +
+`__file__` (editable-install trap), model dir + arch + supports_tp. Verify
+`exllamav3.__file__` points at the env's install before load; a pip/site-packages
+x git-checkout mismatch produces ghost debugging.
+
+### Phase 0 smoke test (deliberately boring)
+
+```
+export CUDA_VISIBLE_DEVICES=0,1,2
+export MODEL_DIR=/home/op/models/Qwen3.8-Flash-Next-exl3-4.05bpw_h6_ng6
+export MULTI_GPU=pipeline          # layer-split, the reference topology
+export GPU_SPLIT=22.5,22.5,22.5
+export CACHE_SIZE=65536
+export CHUNK_SIZE=4096
+export NGRAM_RAM=1
+cd qwen38_flash_gguf_parity && python -u exl3_qwen38_server.py
+```
+
+Then `curl /health`, then one completion with `temperature=0, seed=12345,
+max_tokens=32` asking for exactly `PHASE0_OK`. We do not care yet whether it
+does 30, 45 or 70 tok/s.
+
+### Phase 0 acceptance gate
+
+- [ ] Exact ExLlamaV3 SHA recorded (from the startup pin log)
+- [ ] Exact torch/CUDA/driver recorded
+- [ ] Exact model repo + revision + total/ngram bytes recorded
+- [ ] Qwen4Exp architecture detected in the pin log
+- [ ] PLE / QSA / NGramEmbedding present (pin log + module count)
+- [ ] 3x RTX 3090 detected
+- [ ] Pipeline layer-split load succeeds (log: `multi-gpu mode: layer-split pipeline`)
+- [ ] 3 identical deterministic requests complete (`PHASE0_OK` x3)
+- [ ] No NaN/Inf/error in the log
+- [ ] EOS terminates generation correctly
+- [ ] Peak VRAM recorded per GPU
+- [ ] NGRAM mode recorded (RAM vs disk)
+- [ ] (optional, separate session) `MULTI_GPU=tensor` TP3 load + same smoke test
 
 ## Phase 1 — Baseline and profile
 
@@ -84,41 +145,46 @@ Methodology copied from the author's article:
 Acceptance: numbers written into this file under "Measurements" below.
 No patching before this exists.
 
-## Phase 2 — Port the gather hoist (~150 lines, days)
+## Phase 2 — Decode-path gather via the existing prefetch machinery
 
-Port of decode-01 + decode-02 into exllamav3:
+Do NOT port the vLLM patch wholesale. Upstream already ships the ingredients:
+`NGramEmbedding.prefetch()` (ThreadPoolExecutor, pinned staging, CUDA event),
+the `prefetch_ids` cap, and `model.py` calling `m.prefetch(x, params)` before
+the module's forward. Decode simply declines it today (`PREFETCH_MIN_TOKENS`).
+The change is therefore small and surgical:
 
 1. `exllamav3/modules/ngram_embedding.py`:
    - Add a fixed device output buffer `torch.zeros(max_rows, heads, dim)`,
      allocated once at init. Zeros, not empty: a forward running before the
-     first gather must read zeros (this matters for graph capture warmup).
-   - Add `host_gather(ids)`: the disk gather + H2D upload, running OUTSIDE the
-     forward, writing into that buffer. The existing pinned staging and
-     thread pool can be reused; the change is who calls it and when.
-   - Reduce `forward()` (line 511) to returning a view
-     `self._prefetch_buffer[:n]` of the fixed buffer. Address must never
-     change: graph replays re-read the same pointer.
+     first gather must read zeros (matters for graph capture warmup).
+   - Add `host_gather(ids)`: disk gather + H2D upload running OUTSIDE
+     forward, writing into that buffer; reuses `_acquire_pin`/`_stage`/executor
+     — the change is who calls it and when (the generator, not the module's
+     own forward).
+   - Reduce the inline gather branch of `forward()` to returning a view
+     `self._gather_buffer[:n]` of the fixed buffer. Address must never change:
+     graph replays re-read the same pointer.
 2. `exllamav3/generator/generator.py` (`iterate_gen`, before the
-   `self.model.forward` call at line 1027): invoke `host_gather()` with the
-   final row ids — the equivalent of vLLM's `prepare_inputs` hook (patch-02).
-   Batch/padding must be resolved before the call so the buffer covers every
-   row the forward will read.
+   `self.model.forward` call): invoke `host_gather()` with the final row ids —
+   the vLLM `prepare_inputs` equivalent, riding the existing prefetch hook
+   rather than a new one.
 3. Dummy-input path: during capture/profiling, gather zeros so the PLE
    projection has consumable data (patch-02's `_ple_dummy_input_ids`).
-
-Keep an A/B switch mirroring `VLLM_PLE_HOST_GATHER=0` semantics: env var to
-restore the old in-forward gather on the same build.
+4. Make `PREFETCH_MIN_TOKENS` (or a new env, mirroring `EXL3_NGRAM_PREFETCH`)
+   the A/B switch restoring the old in-forward gather on the same build.
 
 Acceptance: generation output identical (same seed, same prompt) with hoist on
-and off. Throughput measured; expected ~no change (see F2 note above).
+and off. Throughput measured; expected ~no change alone (see F2 note above) —
+its value is making Phase 3 capture legal.
 
 ## Phase 3 — Decode CUDA graphs (the 45->80 multiplier, 1-2 weeks)
 
 New module `exllamav3/generator/cudagraph.py`:
 
-- Capture the decode-step model forward at warmup, bucketed by batch size
-  {1, 2, 4} (the real forward batch sizes under the parity server; same
-  reasoning as the author's `cudagraph_capture_sizes`).
+- **Batch size 1 first.** The parity server serializes requests through one
+  dispatch worker, so real decode batches are 1 until batching is added;
+  capturing {1,2,4} from day one adds complexity without proving anything.
+  Bucket {2,4} only after B1 pays off.
 - Requirements after Phase 2 (all satisfiable):
   - forward contains zero host work (gather hoisted; sampler stays OUTSIDE
     the graph)
@@ -165,6 +231,8 @@ Acceptance: decode tok/s at 1M ctx within 10% of tok/s at 100k ctx.
 - A/B every phase: hoist on/off, graph on/off, `EXL3_NGRAM_PREFETCH` 0/1
 - 4-request aggregate throughput through the parity server (batched
   `iterate_gen`); compare against vLLM's ~155 tok/s
+- Optional single experiment: `MULTI_GPU=tensor` TP3 vs pipeline on the final
+  build (topology A/B, never mixed with phase A/Bs)
 
 ---
 
@@ -189,11 +257,20 @@ not just matching it.
 
 ## Risks
 
-- Phase 3 is where the effort is; bucket capture with hybrid state models is
-  fiddly (the states are the easy part — MoE expert routing inside the graph
-  is the part to verify carefully)
+- Phase 3 is where the effort is; capture with hybrid state models is fiddly
+  (the states are the easy part — MoE expert routing inside the graph is the
+  part to verify carefully)
 - torch.compile shortcut may silently graph-break on ext kernels: verify with
   profiler, not with absence of errors
 - The parity server (`qwen38_flash_gguf_parity/`) must keep working; all
   engine changes stay behind env switches defaulting to old behaviour until
   Phase 3 acceptance passes
+
+## Changelog
+
+- v2 (this rev): rebased fork onto upstream `6b84a21`; server multi-GPU mode
+  now explicit (`MULTI_GPU=pipeline|tensor`, pipeline default) with runtime
+  pin logging; Phase 0 quant corrected to `turboderp/...@4.05bpw_h6_ng6`
+  (100.1 GiB, not 37G); acceptance gate hardened; Phase 2 rewritten around
+  the existing prefetch machinery; Phase 3 scoped to batch 1 first.
+- v1: initial plan (commit 54a8683 on the retired branch).
