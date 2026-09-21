@@ -127,7 +127,7 @@ does 30, 45 or 70 tok/s.
 - [ ] Exact torch/CUDA/driver recorded
 - [ ] Exact model repo + revision + total/ngram bytes recorded
 - [ ] Qwen4Exp architecture detected in the pin log
-- [ ] PLE / QSA / NGramEmbedding present (pin log + module count)
+- [ ] PLE / QSA / NGramEmbedding present (`modules:` log line + `experiment_config.modules`)
 - [ ] 3x RTX 3090 detected
 - [ ] Pipeline layer-split load succeeds (log: `multi-gpu mode: layer-split pipeline`)
 - [ ] 3 identical deterministic requests complete (`PHASE0_OK` x3)
@@ -160,21 +160,35 @@ the `prefetch_ids` cap, and `model.py` calling `m.prefetch(x, params)` before
 the module's forward. Decode simply declines it today (`PREFETCH_MIN_TOKENS`).
 The change is therefore small and surgical:
 
-1. `exllamav3/modules/ngram_embedding.py`:
+1. **Boundary: the Generator must not build n-gram history itself.** The
+   knowledge of `id_state`, recurrent slots, carried n-gram context, EOS
+   padding and multimodal alias substitution lives in `PLELayer`
+   (`_prepare_ids` / `_state_history`). Route:
+
+   ```
+   Generator (iterate_gen)
+     -> for module in model._get_prefetch_layers:      # existing hook
+          module.prepare_decode_gather(input_ids, params)
+              -> PLELayer.prepare_decode_gather:
+                   ids = self._prepare_ids(input_ids)
+                   history, _, _ = self._state_history(ids, params)
+                   self.ple_embedding.prepare_gather(history)
+   ```
+
+   The Generator/model layer only iterates the prefetch layers; no PLE
+   logic is replicated (long-context bugs in a copied history builder are
+   the hardest class to detect).
+2. `exllamav3/modules/ngram_embedding.py`:
    - Add a fixed device output buffer `torch.zeros(max_rows, heads, dim)`,
      allocated once at init. Zeros, not empty: a forward running before the
      first gather must read zeros (matters for graph capture warmup).
-   - Add `host_gather(ids)`: disk gather + H2D upload running OUTSIDE
-     forward, writing into that buffer; reuses `_acquire_pin`/`_stage`/executor
-     — the change is who calls it and when (the generator, not the module's
-     own forward).
-   - Reduce the inline gather branch of `forward()` to returning a view
-     `self._gather_buffer[:n]` of the fixed buffer. Address must never change:
-     graph replays re-read the same pointer.
-2. `exllamav3/generator/generator.py` (`iterate_gen`, before the
-   `self.model.forward` call): invoke `host_gather()` with the final row ids —
-   the vLLM `prepare_inputs` equivalent, riding the existing prefetch hook
-   rather than a new one.
+   - `prepare_gather(history)`: disk gather + H2D upload running OUTSIDE
+     forward, writing into that buffer; reuses `_acquire_pin`/`_stage`/
+     executor — the change is who calls it and when (the PLE layer's
+     pre-forward hook, not the module's own forward).
+   - Reduce the inline gather branch of `forward()` to consuming the fixed
+     buffer. Address must never change: graph replays re-read the same
+     pointer.
 3. Dummy-input path: during capture/profiling, gather zeros so the PLE
    projection has consumable data (patch-02's `_ple_dummy_input_ids`).
 4. Make `PREFETCH_MIN_TOKENS` (or a new env, mirroring `EXL3_NGRAM_PREFETCH`)
@@ -210,6 +224,39 @@ generator host prep (ids, positions, row ids)
   -> sampler                                 (outside graphs)
 ```
 
+- **NGram path split: host-stage vs graph-captured GPU part.**
+  `NGramEmbedding.forward()` currently does CPU hash, CPU dedup, CPU
+  gather, packed H2D rows + inverse + heads, then `ngram_dequant` and
+  `index_select` on GPU. Phase 2 leaves the host part outside the graph;
+  `ngram_dequant`/`index_select`/PLE projection then still launch from
+  Python every token. Move them INSIDE the GPU0 stage graph:
+  - host (outside graph): hash/dedup/gather -> persistent pinned buffers
+    (`packed_pin`, `heads_pin`, `inverse_pin`) -> async copies into
+    persistent fixed-address GPU buffers (`packed_d`, `heads_d`,
+    `inverse_d`)
+  - graph: `ngram_dequant` -> `index_select` -> PLE projection
+  - the dedup output `U` is dynamic; graphs need fixed shapes — pad
+    packed/heads to `MAX_DECODE_NGRAM_ROWS` (B1 decode is ~16 rows/token,
+    so the bound is small). `inverse` is fixed-size. Padded rows are
+    harmless as long as no `inverse` index references them.
+- **PLE recurrent-state split** (today `PLE.forward()` does graph-unsafe
+  host work: `get_for_device(...).tolist()`, `torch.stack` over CPU
+  `id_state`, per-slot `copy_` loops):
+  - host, before replay: resolve recurrent slot, read CPU `id_state`,
+    construct n-gram history (Phase 2 `prepare_decode_gather`), update a
+    fixed slot-index staging tensor
+  - graph: select fixed `conv_state`, PLE GPU forward, write next
+    `conv_state`
+  - host, after replay: advance CPU `id_state`, advance
+    `RecurrentState.position` / `last_history` / `post_advance()`
+- **Do not assume P2P for inter-stage copies.** `exllamav3/util/
+  device_copy.py` exists because some platforms report P2P available but
+  corrupt data; it probes the link and falls back to GPU -> host -> GPU.
+  Before capture: `probe device_copy.needs_bounce(0,1)` and `(1,2)`. Use
+  persistent fixed-address stage buffers (`stage0_out_gpu0` ->
+  `stage1_in_gpu1`, ...), direct `copy_` when P2P is safe, a fixed pinned
+  host bounce otherwise. Never `to_device(x, next_device)` on replay — it
+  returns new tensors and addresses can change.
 - Partition the layer-split `fwd_modules` into contiguous runs by `.device`;
   capture one graph per run at warmup, bucketed by batch size.
 - **Batch size 1 first.** The parity server serializes requests through one
@@ -225,7 +272,7 @@ generator host prep (ids, positions, row ids)
     buffers, batch padded to the bucket
 - Prefill stays eager. This replicates `FULL_DECODE_ONLY` on a PP topology.
 - MoE routing: gate + top-k computed on device; no host reads of tensor
-  values inside a captured stage (verify with the profiler from Phase 1).
+    values inside a captured stage (verify with the profiler from Phase 1).
 - No `torch.compile` shortcut on the primary path: the vLLM reference ran
   compilation mode:0 with manual full decode graphs — Inductor is not what
   produced the win, and silent graph-breaks on ext kernels waste profiling
@@ -299,6 +346,29 @@ not just matching it.
   Phase 3 acceptance passes
 
 ## Changelog
+
+### Post-rev-3 hardening (review round 3, all CPU-side)
+
+- Checkout guard uses `Path.is_relative_to()` (sibling `-old` dirs can no
+  longer pass a prefix check); dirty detection switched to
+  `git status --porcelain --untracked-files=all` (staged + untracked now
+  count).
+- NGRAM residency is deterministic: `ngram_stream_from_disk = not NGRAM_RAM`
+  regardless of `EXL3_NGRAM_STREAM`; the effective value is recorded in
+  `experiment_config`.
+- `CACHE_KV_BITS` strictly validated (5 no longer silently means fp16).
+- Module counts (`PLELayer` / `NGramEmbedding` / `QSAIndexer`) logged and
+  recorded in `experiment_config` — the gate item is now mechanical.
+- Template path resolved BEFORE the pin log and hashed (sha256, first 16
+  hex) into `experiment_config`.
+- Phase 2 boundary: history construction belongs to
+  `PLELayer.prepare_decode_gather()`, never the Generator.
+- Phase 3: NGram host/GPU split with `MAX_DECODE_NGRAM_ROWS` padding, PLE
+  recurrent-state host/graph/host split, P2P-or-bounce probing via
+  `device_copy.needs_bounce`, persistent fixed-address inter-stage buffers.
+- Guards extracted to `qwen38_flash_gguf_parity/runtime_config.py` with
+  32 CPU-only tests (50 total in the tree, all green).
+
 
 - v2 rev 3: per review round 2 — runtime pins now record the git SHA +
   clean/dirty of the imported exllamav3 and `EXPECTED_EXL3_ROOT` aborts on

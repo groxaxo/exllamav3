@@ -59,6 +59,15 @@ from exllamav3.cache import CacheLayer_fp16, CacheLayer_quant
 from exllamav3.generator.sampler import ComboSampler
 
 from exl3_qwen38_parser import diff_parsed, parse_completion
+from runtime_config import (
+    check_expected_root,
+    git_identity,
+    resolve_ngram_stream,
+    validate_cache_kv_bits,
+    validate_multi_gpu,
+)
+
+import hashlib
 
 # ---------------------------------------------------------------- config
 
@@ -66,12 +75,10 @@ MODEL_DIR = os.environ.get("MODEL_DIR", "/home/op/models/Qwen3.8-Flash-Next-Unc-
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "12703"))
 SERVED_MODEL_NAME = os.environ.get("SERVED_MODEL_NAME", "qwen38-flash-next-unc-exl3-4bpw")
-CACHE_KV_BITS = int(os.environ.get("CACHE_KV_BITS", "0"))  # 0=fp16 else quant k/v bits
+CACHE_KV_BITS = validate_cache_kv_bits(int(os.environ.get("CACHE_KV_BITS", "0")))  # 0=fp16 else quant k/v bits
 CACHE_SIZE = int(os.environ.get("CACHE_SIZE", "65536"))
 GPU_SPLIT = os.environ.get("GPU_SPLIT", "22.5,22.5,22.5")
-MULTI_GPU = os.environ.get("MULTI_GPU", "pipeline").strip().lower()  # pipeline (layer-split) | tensor
-if MULTI_GPU not in ("pipeline", "tensor"):
-    raise ValueError(f"MULTI_GPU must be 'pipeline' or 'tensor', got {MULTI_GPU!r}")
+MULTI_GPU = validate_multi_gpu(os.environ.get("MULTI_GPU", "pipeline"))  # pipeline (layer-split) | tensor
 TP_BACKEND = os.environ.get("TP_BACKEND", "native")  # TP implementation when MULTI_GPU=tensor
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", "4096"))
 MAX_BATCH_SIZE = int(os.environ.get("MAX_BATCH_SIZE", "4"))
@@ -143,21 +150,6 @@ def _raise_exception(msg: str):
     raise ValueError(f"chat_template: {msg}")
 
 
-def _git_identity(package_file: str) -> tuple[str, str]:
-    """(sha, clean|dirty|unknown) of the checkout containing package_file."""
-    try:
-        root = Path(package_file).resolve().parents[1]
-        sha = subprocess.check_output(
-            ["git", "-C", str(root), "rev-parse", "HEAD"],
-            text=True, timeout=5,
-        ).strip()
-        dirty = subprocess.run(
-            ["git", "-C", str(root), "diff", "--quiet"],
-            timeout=5,
-        ).returncode != 0
-        return sha, "dirty" if dirty else "clean"
-    except Exception:
-        return "unknown", "unknown"
 
 def _gpu_driver() -> str:
     try:
@@ -170,21 +162,27 @@ def _gpu_driver() -> str:
         return "unknown"
 
 
-def _log_runtime_pins(cfg: Config, mdl: Model) -> None:
+def _resolve_template_path() -> Path:
+    template_path = Path(CHAT_TEMPLATE_FILE)
+    if not template_path.is_file():
+        template_path = Path(MODEL_DIR) / "chat_template.jinja"
+    return template_path
+
+
+def _log_runtime_pins(cfg: Config, mdl: Model, template_path: Path) -> None:
     """Reproducibility pins + checkout guard: everything a perf bisect needs."""
     import exllamav3
     from exllamav3.version import __version__ as exl3_version
 
-    pkg_file = str(Path(exllamav3.__file__).resolve())
-    sha, tree = _git_identity(pkg_file)
-    expected_root = os.environ.get("EXPECTED_EXL3_ROOT", "")
-    if expected_root and not pkg_file.startswith(str(Path(expected_root).resolve())):
-        # Refuse to benchmark the wrong checkout (e.g. the stale editable
-        # install or site-packages) instead of just logging it.
-        raise RuntimeError(
-            f"exllamav3 imported from {pkg_file}, expected under {expected_root}. "
-            "Fix the env / editable install before benchmarking."
-        )
+    # Refuse to benchmark the wrong checkout (stale editable install or
+    # site-packages) instead of just logging it.
+    pkg_path = check_expected_root(exllamav3.__file__, os.environ.get("EXPECTED_EXL3_ROOT", ""))
+    sha, tree = git_identity(str(pkg_path))
+    module_names = [type(m).__name__ for m in mdl]
+    try:
+        template_sha = hashlib.sha256(template_path.read_bytes()).hexdigest()[:16]
+    except Exception:
+        template_sha = "unreadable"
     log.info(
         "runtime: python=%s torch=%s cuda=%s driver=%s gpus=%d",
         sys.executable, torch.__version__, torch.version.cuda, _gpu_driver(),
@@ -192,12 +190,18 @@ def _log_runtime_pins(cfg: Config, mdl: Model) -> None:
     )
     log.info(
         "engine: exllamav3=%s git=%s tree=%s file=%s",
-        exl3_version, sha, tree, pkg_file,
+        exl3_version, sha, tree, pkg_path,
     )
     log.info(
-        "checkpoint: dir=%s arch=%s supports_tp=%s served_model=%s chat_template=%s",
+        "checkpoint: dir=%s arch=%s supports_tp=%s served_model=%s",
         MODEL_DIR, cfg.architecture, bool(mdl.caps.get("supports_tp")),
-        SERVED_MODEL_NAME, CHAT_TEMPLATE_FILE,
+        SERVED_MODEL_NAME,
+    )
+    log.info(
+        "modules: PLELayer=%d NGramEmbedding=%d QSAIndexer=%d",
+        module_names.count("PLELayer"),
+        module_names.count("NGramEmbedding"),
+        module_names.count("QSAIndexer"),
     )
     log.info(
         "experiment_config=%s",
@@ -208,22 +212,34 @@ def _log_runtime_pins(cfg: Config, mdl: Model) -> None:
             "multi_gpu": MULTI_GPU, "gpu_split": GPU_SPLIT,
             "cache_size": CACHE_SIZE, "cache_kv_bits": CACHE_KV_BITS,
             "chunk_size": CHUNK_SIZE, "max_batch_size": MAX_BATCH_SIZE,
-            "ngram_ram": NGRAM_RAM, "model_dir": MODEL_DIR,
-            "served_model": SERVED_MODEL_NAME,
+            "ngram_ram": NGRAM_RAM,
+            "ngram_stream_from_disk": resolve_ngram_stream(NGRAM_RAM),
+            "model_dir": MODEL_DIR, "served_model": SERVED_MODEL_NAME,
+            "chat_template": str(template_path), "chat_template_sha256_16": template_sha,
+            "modules": {
+                "PLELayer": module_names.count("PLELayer"),
+                "NGramEmbedding": module_names.count("NGramEmbedding"),
+                "QSAIndexer": module_names.count("QSAIndexer"),
+            },
         }, sort_keys=True),
     )
+
 
 def load_model() -> None:
     global config, model, cache, tokenizer, generator, chat_template, EOS_TOKEN_ID
     t0 = time.time()
     log.info("loading config from %s", MODEL_DIR)
     cfg = Config.from_directory(MODEL_DIR)
-    if NGRAM_RAM:
-        # PLE n-gram table fully in RAM (tens of GB) instead of per-token disk reads
-        cfg.infer_params.ngram_stream_from_disk = False
-        log.info("ngram_stream_from_disk=False (NGRAM_RAM=1)")
+    # Deterministic n-gram residency: NGRAM_RAM decides RAM vs disk outright,
+    # regardless of EXL3_NGRAM_STREAM (A/B runs must not depend on ambient env).
+    cfg.infer_params.ngram_stream_from_disk = resolve_ngram_stream(NGRAM_RAM)
+    log.info(
+        "ngram_stream_from_disk=%s (NGRAM_RAM=%d)",
+        cfg.infer_params.ngram_stream_from_disk, int(NGRAM_RAM),
+    )
     mdl = Model.from_config(cfg)
-    _log_runtime_pins(cfg, mdl)
+    template_path = _resolve_template_path()
+    _log_runtime_pins(cfg, mdl, template_path)
     cache_desc = "fp16"
     if CACHE_KV_BITS in (2, 3, 4, 6, 8):
         cch = Cache(mdl, max_num_tokens=CACHE_SIZE, layer_type=CacheLayer_quant, k_bits=CACHE_KV_BITS, v_bits=CACHE_KV_BITS)
@@ -271,13 +287,11 @@ def load_model() -> None:
     )
     from jinja2 import BaseLoader, Environment
 
-    template_path = Path(CHAT_TEMPLATE_FILE)
-    if not template_path.is_file():
+    if template_path != Path(CHAT_TEMPLATE_FILE):
         log.warning(
-            "CHAT_TEMPLATE_FILE %s missing; falling back to stock %s/chat_template.jinja",
-            template_path, MODEL_DIR,
+            "CHAT_TEMPLATE_FILE %s missing; using stock %s",
+            CHAT_TEMPLATE_FILE, template_path,
         )
-        template_path = Path(MODEL_DIR) / "chat_template.jinja"
     env = Environment(loader=BaseLoader(), autoescape=False)
     env.globals["raise_exception"] = _raise_exception
     chat_template = env.from_string(template_path.read_text())
