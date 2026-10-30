@@ -21,7 +21,7 @@ from .common import block_span, check_blocks_supported, drop_cached_props, run_b
 
 class Worker:
 
-    def __init__(self, model_dir: str, lo: int, hi: int, device: str):
+    def __init__(self, model_dir: str, lo: int, hi: int, device: str, override_dynamic_seq_len: int | None = None):
         # The worker's own model must never get remote stages spliced in
         os.environ.pop("EXL3_REMOTE", None)
         from exllamav3 import Config, Model
@@ -30,6 +30,9 @@ class Worker:
         self.device = torch.device(device)
         torch.cuda.set_device(self.device)
         self.config = Config.from_directory(model_dir)
+        if override_dynamic_seq_len:
+            self.config.override_dynamic_seq_len(override_dynamic_seq_len)
+        self.rope = wire.rope_fingerprint(self.config)
         self.model = Model.from_config(self.config)
         s, e = block_span(self.model, lo, hi)
         blocks = self.model.modules[s:e]
@@ -132,9 +135,13 @@ class Worker:
         self.stats["busy_s"] += time.perf_counter() - t0
         return y
 
+    # Cache tensors are allocated under inference mode by Model.load, so in-place updates must run there too
+
+    @torch.inference_mode()
     def copy_page(self, from_page: int, to_page: int, num_tokens: int):
         self.cache.copy_page(self.cache, from_page, to_page, num_tokens)
 
+    @torch.inference_mode()
     def rotate(self, rotations: torch.Tensor):
         # Same per-tensor call PageTable.defrag makes on local caches
         from exllamav3.ext import exllamav3_ext as ext
@@ -197,7 +204,12 @@ def handle(worker, conn: socket.socket, token: str | None, takeover = None, op_l
         return
     # A head probing for a different model (a draft model, another config) must not cut off the active head
     if meta.get("fingerprint") != worker.fingerprint:
-        wire.send_frame(conn, wire.ERROR, {"error": "model mismatch", "mismatch": True})
+        wire.send_frame(conn, wire.ERROR, {"error": "model mismatch", "mismatch": "model"})
+        return
+    if meta.get("rope") != worker.rope:
+        wire.send_frame(conn, wire.ERROR, {"mismatch": "rope", "error":
+            "head and worker use different effective RoPE settings (a runtime override such as "
+            "override_dynamic_seq_len); start the worker with the same --override-dynamic-seq-len"})
         return
     conn.settimeout(None)
     if takeover:
@@ -254,13 +266,15 @@ def main():
     ap.add_argument("--device", default = "cuda:0")
     ap.add_argument("--bind", required = True, help = "LAN address to listen on (never 0.0.0.0 on an open network)")
     ap.add_argument("--port", type = int, default = 50070)
+    ap.add_argument("--override-dynamic-seq-len", type = int, default = None,
+                    help = "same value the head passes to Config.override_dynamic_seq_len (Phi-3 LongRoPE)")
     ap.add_argument("--insecure-no-token", action = "store_true", help = "allow running without EXL3_REMOTE_TOKEN")
     a = ap.parse_args()
     token = os.environ.get("EXL3_REMOTE_TOKEN")
     if not token and not a.insecure_no_token:
         sys.exit("set EXL3_REMOTE_TOKEN (same value on both boxes) or pass --insecure-no-token")
     lo, hi = wire.parse_layers(a.layers)
-    serve(Worker(a.model, lo, hi, a.device), a.bind, a.port, token)
+    serve(Worker(a.model, lo, hi, a.device, a.override_dynamic_seq_len), a.bind, a.port, token)
 
 
 if __name__ == "__main__":

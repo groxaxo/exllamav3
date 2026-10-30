@@ -240,6 +240,8 @@ class Model(Model_TPMixin, Model_LSMixin):
             "Cannot specify both memory usage and memory reserve."
         assert not self.remote_stages() or (device is None and not tensor_p), \
             "A model with a remote stage loads in layer-split mode only."
+        for stage in self.remote_stages():
+            stage.max_chunk_size = max_chunk_size
 
         assert max_chunk_size >= 1, "max_chunk_size must be positive"
         assert max_output_size >= 1, "max_output_size must be positive"

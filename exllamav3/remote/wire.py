@@ -240,6 +240,19 @@ def config_fingerprint(model_dir: str) -> str:
     return h.hexdigest()
 
 
+def rope_fingerprint(config) -> str | None:
+    """
+    Hash of the effective RoPE settings. Runtime overrides (e.g. override_dynamic_seq_len on Phi-3 LongRoPE)
+    change them without touching config.json, so both sides must compare these too
+    """
+    rs = getattr(config, "rope_settings", None)
+    if rs is None:
+        return None
+    import dataclasses
+    d = dataclasses.asdict(rs) if dataclasses.is_dataclass(rs) else dict(vars(rs))
+    return hashlib.sha256(json.dumps(d, sort_keys = True, default = str).encode()).hexdigest()
+
+
 def read_st_headers(model_dir: str) -> dict[str, tuple[str, int]]:
     """tensor key -> (file name, nbytes), from safetensors headers only"""
     out = {}

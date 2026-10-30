@@ -52,7 +52,9 @@ python -m exllamav3.remote.worker --model /models/X-exl3 --layers 0-7 --bind 10.
 EXL3_REMOTE=10.0.0.2:50070 EXL3_REMOTE_TOKEN=$EXL3_REMOTE_TOKEN python server_openai.py ...
 ```
 
-Use `use_per_device` (or the server's GPU split) from the plan. The worker keeps its weights loaded across
+Use `use_per_device` (or the server's GPU split) from the plan. Head and worker compare `config.json` and the
+effective RoPE settings before the worker accepts a head. If the head applies a runtime override such as
+`override_dynamic_seq_len` (Phi-3 LongRoPE), start the worker with the same `--override-dynamic-seq-len`. The worker keeps its weights loaded across
 head restarts. A new head replaces the old connection, and a changed cache config rebuilds the worker's cache.
 
 The planner ports `plan_layers.py`: 3090 VRAM first, then the remote 3060 (`min-remote` policy: fewest

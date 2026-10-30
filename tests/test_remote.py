@@ -85,6 +85,7 @@ class FakeWorker:
         self.lo, self.hi = 0, 4
         self.block_keys = [f"model.layers.{i}" for i in range(4)]
         self.fingerprint = "f"
+        self.rope = None
         self.ops = []
         self.stats = {"forwards": 0, "tokens": 0, "busy_s": 0.0}
 
@@ -218,6 +219,33 @@ def test_mismatched_model_leaves_active_head_alone():
     c1.close()
 
 
+def test_rope_override_mismatch_is_reported():
+    """Same model, different effective RoPE settings: refused before takeover, with its own kind"""
+    w = FakeWorker()
+    w.rope = "worker-rope"
+    port = _worker_server(w, None, n = 2)
+    try:
+        smod.RemoteClient("127.0.0.1", port, None, "f", "head-rope")
+        raise AssertionError("expected ModelMismatch")
+    except wire.ModelMismatch as e:
+        assert e.kind == "rope" and "override-dynamic-seq-len" in str(e)
+    c = smod.RemoteClient("127.0.0.1", port, None, "f", "worker-rope")
+    c.call(wire.PING)
+    c.close()
+
+
+def test_rope_fingerprint_tracks_runtime_override():
+    from exllamav3.util.rope import RopeSettings
+
+    class Cfg:
+        rope_settings = RopeSettings()
+
+    a = wire.rope_fingerprint(Cfg())
+    Cfg.rope_settings = RopeSettings(override_max_position_embeddings = 2048)
+    assert wire.rope_fingerprint(Cfg()) != a
+    assert wire.rope_fingerprint(object()) is None
+
+
 def _raw_frame(op, meta, blob = b""):
     mb = json.dumps(meta).encode()
     return wire.HDR.pack(wire.MAGIC, wire.PROTO, op, 0, len(mb), len(blob)) + mb + blob
@@ -339,7 +367,7 @@ def test_splice_and_hooks():
 
         fake = _FakeClient(d)
         orig = smod.RemoteClient
-        smod.RemoteClient = lambda host, port, token, fp: fake
+        smod.RemoteClient = lambda host, port, token, fp, rope: fake
         os.environ["EXL3_REMOTE"] = "10.0.0.2:50070"
         try:
             model = Model.from_config(Config.from_directory(d))
@@ -379,6 +407,10 @@ def test_splice_and_hooks():
             raise AssertionError("tensor_p should be refused")
         except AssertionError as e:
             assert "layer-split" in str(e)
+
+        # autosplit calls module.load(device) without the chunk size, so load_gen hands it to the stage
+        next(model.load_gen(max_chunk_size = 512))
+        assert stages[0].max_chunk_size == 512
 
         st = stages[0]
         st.device = torch.device("cpu")
@@ -424,6 +456,22 @@ def test_worker_needs_only_its_shards():
             raise AssertionError("missing shards should be reported")
         except FileNotFoundError:
             pass
+
+        # Cache tensors come from Model.load under inference mode: page ops must run there as well
+        with torch.inference_mode():
+            pages = torch.zeros(4, 8)
+
+        class FakeCache:
+            def copy_page(self, target, f, t, n):
+                pages[t].copy_(pages[f])
+
+            def get_all_tensors(self):
+                return []
+
+        w.cache = FakeCache()
+        w.device = torch.device("cpu")
+        w.copy_page(1, 2, 8)
+        w.rotate(torch.tensor([0, 1], dtype = torch.int))
 
 
 # Planner

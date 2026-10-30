@@ -21,11 +21,19 @@ from .common import block_span, check_blocks_supported, drop_cached_props
 
 class RemoteClient:
 
-    def __init__(self, host: str, port: int, token: str | None, fingerprint: str, timeout: float | None = None):
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        token: str | None,
+        fingerprint: str,
+        rope: str | None = None,
+        timeout: float | None = None,
+    ):
         """
-        fingerprint: config_fingerprint() of the model to attach. The worker checks it before it hands its
-        connection over, so probing with a different model (e.g. a draft model) leaves the active head alone.
-        Raises wire.ModelMismatch when the worker serves another model
+        fingerprint, rope: config_fingerprint() and rope_fingerprint() of the model to attach. The worker checks
+        them before it hands its connection over, so probing with a different model (e.g. a draft model) leaves
+        the active head alone. Raises wire.ModelMismatch when they differ
         """
         self.addr = (host, port)
         self.lock = threading.Lock()
@@ -38,12 +46,14 @@ class RemoteClient:
         if meta.get("auth") and not token:
             raise PermissionError("worker requires EXL3_REMOTE_TOKEN")
         mac = wire.auth_mac(token or "", bytes.fromhex(meta["nonce"]))
-        wire.send_frame(self.sock, wire.AUTH, {"mac": mac, "fingerprint": fingerprint})
+        wire.send_frame(self.sock, wire.AUTH, {"mac": mac, "fingerprint": fingerprint, "rope": rope})
         op, self.info, _ = wire.recv_frame(self.sock)
         if op == wire.ERROR:
             self.close()
             if self.info.get("mismatch"):
-                raise wire.ModelMismatch(f"{host}:{port} serves a different model")
+                e = wire.ModelMismatch(f"{host}:{port}: {self.info.get('error')}")
+                e.kind = self.info["mismatch"]
+                raise e
             raise PermissionError(self.info.get("error"))
         # Loads take minutes; a dead peer still surfaces as a reset or EOF
         self.sock.settimeout(timeout if timeout is not None else float(os.environ.get("EXL3_REMOTE_TIMEOUT", 3600)))
@@ -83,6 +93,7 @@ class RemoteStage(Module):
         self.replaced_keys = replaced_keys
         self.wire_dtype = os.environ.get("EXL3_REMOTE_WIRE_DTYPE")  # e.g. float16 to halve fp32 traffic
         self.remote_loaded = False
+        self.max_chunk_size = 2048  # set by Model.load_gen before loading
         self.cache_ref = None
         self.skipped_warned = set()
         self.stats = {"calls": 0, "s": 0.0, "bytes": 0}
@@ -91,7 +102,7 @@ class RemoteStage(Module):
         self.device = device
         if not self.remote_loaded:
             t0 = time.time()
-            info, _ = self.client.call(wire.LOAD, {"max_chunk_size": kwargs.get("max_chunk_size", 2048)})
+            info, _ = self.client.call(wire.LOAD, {"max_chunk_size": self.max_chunk_size})
             self.remote_loaded = True
             print(f" -- {self.key}: worker loaded in {time.time() - t0:.1f} s, "
                   f"{info['allocated'] / 1024**3:.2f} GiB allocated, {info['vram_free'] / 1024**3:.2f} GiB free")
@@ -171,12 +182,16 @@ def attach_remote(model, endpoints: list[tuple[str, int]], token: str | None) ->
     Returns the stages (empty if no worker serves this model)
     """
     fp = wire.config_fingerprint(model.config.directory)
+    rope = wire.rope_fingerprint(model.config)
     from ..version import __version__ as exl3_version
     clients = []
     for host, port in endpoints:
         try:
-            c = RemoteClient(host, port, token, fp)
-        except wire.ModelMismatch:
+            c = RemoteClient(host, port, token, fp, rope)
+        except wire.ModelMismatch as e:
+            # Same model with incompatible runtime settings is a setup error; another model (a draft) is not
+            if getattr(e, "kind", "model") != "model":
+                raise
             print(f" -- exl3 remote: {host}:{port} serves a different model, not attaching to {model.config.directory}")
             continue
         if c.info.get("exl3") != exl3_version:
