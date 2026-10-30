@@ -159,32 +159,38 @@ def plan(a):
                          f"locally (more if per-device packing strands space). Lower bpw, cache tokens or cache bits. "
                          f"--ram-experts plans system-RAM experts, which needs an exllamav3 with EXL3_MOE_CPU_OFFLOAD "
                          f"(upstream 1.x; this fork's base does not have it)")
+    alt = None
     if choice is None:
+        # Smallest whole-layer offload and smallest per-layer split that fit VRAM; the RAM cap picks between them
         k = k_max
+        cands = []
         for n in range(1, L - k + 1):
             r = pack_local(k, L, dense, experts, kv, local, head_bytes, embed_gpu, cpu_layers = n)
             if r:
-                choice = (k, r, n, 0)
+                cands.append(("offload", n, r))
                 break
-        split_n = 0
         max_e = max(n_exp[k:]) if any(experts[k:]) else 0
         for m in range(1, max_e):
-            r2 = pack_local(k, L, dense, experts, kv, local, head_bytes, embed_gpu, split = m, n_exp = n_exp)
-            if r2:
-                split_n = m
+            r = pack_local(k, L, dense, experts, kv, local, head_bytes, embed_gpu, split = m, n_exp = n_exp)
+            if r:
+                cands.append(("split", m, r))
                 break
-        if choice is None and not split_n:
+        if not cands:
             short = sum(layer[k:]) + head_bytes + embed_gpu - sum(local)
             raise SystemExit(f"DOES NOT FIT even with all local experts in RAM: short ~{short / GiB:.1f} GiB. "
                              f"Lower bpw, cache tokens or cache bits.")
-        if choice is None:
-            choice = (k, pack_local(k, L, dense, experts, kv, local, head_bytes, embed_gpu, split = split_n, n_exp = n_exp), 0, split_n)
-        else:
-            choice = (*choice[:3], split_n)
+        fits = [c for c in cands if a.ram_gib is None or (c[2][1] + embed_cpu) / GiB <= a.ram_gib]
+        if not fits:
+            need = min(c[2][1] for c in cands) + embed_cpu
+            raise SystemExit(f"DOES NOT FIT: needs at least {need / GiB:.1f} GiB of system RAM for experts + embedding, "
+                             f"--ram-gib allows {a.ram_gib}")
+        mode, n, r = fits[0]
+        alt = next(((m2, n2) for m2, n2, r2 in fits if m2 != mode), None)
+        choice = (k, r, n if mode == "offload" else 0, n if mode == "split" else 0)
 
     k, (used, ram), cpu_layers, split_n = choice
     if a.ram_gib is not None and (ram + embed_cpu) / GiB > a.ram_gib:
-        raise SystemExit(f"DOES NOT FIT: needs {(ram + embed_cpu) / GiB:.1f} GiB of system RAM for experts + embedding, "
+        raise SystemExit(f"DOES NOT FIT: needs {(ram + embed_cpu) / GiB:.1f} GiB of system RAM for the embedding, "
                          f"--ram-gib allows {a.ram_gib}")
     hidden = tcfg["hidden_size"]
     remote_files = sorted(set().union(*files[:k])) if k else []
@@ -198,6 +204,7 @@ def plan(a):
         "gpu_split": [round(u / GiB + a.reserve_gib, 1) for u in used],
         "moe_cpu_offload": cpu_layers,
         "moe_cpu_split": split_n,
+        "ram_alternative": ({"moe_cpu_offload": alt[1]} if alt[0] == "offload" else {"moe_cpu_split": alt[1]}) if alt else None,
         "ram_experts_gib": round(ram / GiB, 2),
         "ram_embedding_gib": round(embed_cpu / GiB, 2),
         "kv_tokens": a.cache_tokens,
@@ -238,11 +245,11 @@ def main():
     else:
         print("remote      : not needed, the model fits locally")
     print(f"local       : layers {p['local_layers']}  per GPU {p['local_gib_per_device']} GiB")
-    if p["moe_cpu_offload"]:
-        print(f"RAM experts : EXL3_MOE_CPU_OFFLOAD={p['moe_cpu_offload']} (or EXL3_MOE_CPU_SPLIT={p['moe_cpu_split']})"
-              f", {p['ram_experts_gib']} GiB")
-    elif p["moe_cpu_split"]:
-        print(f"RAM experts : EXL3_MOE_CPU_SPLIT={p['moe_cpu_split']}, {p['ram_experts_gib']} GiB")
+    if p["moe_cpu_offload"] or p["moe_cpu_split"]:
+        mode = f"EXL3_MOE_CPU_OFFLOAD={p['moe_cpu_offload']}" if p["moe_cpu_offload"] else f"EXL3_MOE_CPU_SPLIT={p['moe_cpu_split']}"
+        alt = p["ram_alternative"]
+        alt_s = f" (also fits: EXL3_{next(iter(alt)).upper()}={next(iter(alt.values()))})" if alt else ""
+        print(f"RAM experts : {mode}, {p['ram_experts_gib']} GiB{alt_s}")
     print(f"wire        : {p['wire_bytes_per_decode_token']} B per decode token, "
           f"{p['wire_mib_per_prefill_chunk']} MiB per {a.chunk}-token prefill chunk (round trip, fp16 residual)")
     print()

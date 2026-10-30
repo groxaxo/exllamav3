@@ -19,6 +19,8 @@ HDR = struct.Struct("<4sBBHIQ")  # magic, proto, op, reserved, meta_len, blob_le
 MAX_META = 16 << 20
 MAX_BLOB = 2 << 30
 
+PRE_AUTH_META = 4096
+
 HELLO, AUTH, CONFIG_CACHE, LOAD, UNLOAD, FORWARD, COPY_PAGE, ROTATE, PING, RESULT, ERROR = \
     0x01, 0x02, 0x10, 0x11, 0x12, 0x20, 0x21, 0x22, 0x30, 0x7E, 0x7F
 
@@ -39,6 +41,10 @@ _DNAMES = {v: k for k, v in _DTYPES.items()}
 
 class RemoteError(RuntimeError):
     pass
+
+
+class ModelMismatch(RemoteError):
+    """The worker serves a different model or quant; it kept its current head"""
 
 
 def _pack(obj, tensors: list):
@@ -145,32 +151,65 @@ def send_frame(sock: socket.socket, op: int, meta: dict | None = None, tensors: 
     _sendall_vec(sock, [HDR.pack(MAGIC, PROTO, op, 0, len(mb), off), mb, *bufs])
 
 
-def recv_frame(sock: socket.socket, device: torch.device | None = None) -> tuple[int, dict, list]:
+_ITEMSIZE = {name: torch.empty(0, dtype = dt).element_size() for name, dt in _DTYPES.items()}
+MAX_DIMS = 8
+
+
+def _check_desc(d, blen: int) -> int:
+    """Validate one tensor descriptor against the blob before anything is allocated. Returns its byte count"""
+    if not isinstance(d, dict) or d.get("dt") not in _DTYPES:
+        raise ConnectionError("bad tensor descriptor")
+    shape, off, n = d.get("shape"), d.get("off"), d.get("n")
+    if not isinstance(shape, list) or len(shape) > MAX_DIMS or \
+            not all(type(x) is int and x >= 0 for x in shape) or type(off) is not int or type(n) is not int:
+        raise ConnectionError("bad tensor descriptor")
+    numel = 1
+    for x in shape:
+        numel *= x
+    if numel * _ITEMSIZE[d["dt"]] != n or off < 0 or off + n > blen:
+        raise ConnectionError("tensor descriptor does not match the frame's data")
+    return n
+
+
+def recv_frame(
+    sock: socket.socket,
+    device: torch.device | None = None,
+    max_meta: int = MAX_META,
+    max_blob: int = MAX_BLOB,
+) -> tuple[int, dict, list]:
     """
     Read one frame. Tensors that were on a GPU at the sender land on device (if given), CPU tensors stay
-    on the CPU (attention reads host-side cache_seqlens on purpose, see Attention.forward)
+    on the CPU (attention reads host-side cache_seqlens on purpose). Every descriptor must account for
+    exactly its bytes of the blob, so a frame cannot make the reader allocate more than it sent.
+    Pre-authentication reads pass small limits and max_blob = 0.
     """
     hb = bytearray(HDR.size)
     _recv_into(sock, hb)
     magic, proto, op, _, mlen, blen = HDR.unpack(hb)
     if magic != MAGIC or proto != PROTO:
         raise ConnectionError(f"bad frame header {magic!r} v{proto}")
-    if mlen > MAX_META or blen > MAX_BLOB:
+    if mlen > max_meta or blen > max_blob:
         raise ConnectionError(f"frame too large ({mlen}, {blen})")
     mb = bytearray(mlen)
     _recv_into(sock, mb)
     meta = json.loads(mb)
+    if not isinstance(meta, dict):
+        raise ConnectionError("bad frame metadata")
+    descs = meta.pop("__tensors", [])
+    if not isinstance(descs, list):
+        raise ConnectionError("bad tensor list")
+    sizes = [_check_desc(d, blen) for d in descs]
     blob = bytearray(blen)
     if blen:
         _recv_into(sock, blob)
     tensors = []
-    for d in meta.pop("__tensors", []):
+    for d, n in zip(descs, sizes):
         dt = _DTYPES[d["dt"]]
-        if d["n"] == 0:
+        if n == 0:
             t = torch.empty(d["shape"], dtype = dt)
         else:
-            t = torch.frombuffer(blob, dtype = torch.uint8, offset = d["off"], count = d["n"]).view(dt).reshape(d["shape"])
-        if device is not None and d["dev"] == "cuda":
+            t = torch.frombuffer(blob, dtype = torch.uint8, offset = d["off"], count = n).view(dt).reshape(d["shape"])
+        if device is not None and d.get("dev") == "cuda":
             t = t.to(device)
         tensors.append(t)
     return op, meta, tensors

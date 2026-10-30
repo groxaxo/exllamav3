@@ -189,9 +189,15 @@ def handle(worker, conn: socket.socket, token: str | None, takeover = None, op_l
     nonce = wire.new_nonce()
     conn.settimeout(30)
     wire.send_frame(conn, wire.HELLO, {"nonce": nonce.hex(), "auth": bool(token)})
-    op, meta, _ = wire.recv_frame(conn)
-    if op != wire.AUTH or (token and not hmac.compare_digest(meta.get("mac", ""), wire.auth_mac(token, nonce))):
+    # Nothing is allocated for an unauthenticated peer: small metadata only, no tensor data
+    op, meta, _ = wire.recv_frame(conn, max_meta = wire.PRE_AUTH_META, max_blob = 0)
+    mac = meta.get("mac")
+    if op != wire.AUTH or (token and not (isinstance(mac, str) and hmac.compare_digest(mac, wire.auth_mac(token, nonce)))):
         wire.send_frame(conn, wire.ERROR, {"error": "authentication failed"})
+        return
+    # A head probing for a different model (a draft model, another config) must not cut off the active head
+    if meta.get("fingerprint") != worker.fingerprint:
+        wire.send_frame(conn, wire.ERROR, {"error": "model mismatch", "mismatch": True})
         return
     conn.settimeout(None)
     if takeover:

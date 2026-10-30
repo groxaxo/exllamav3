@@ -84,6 +84,7 @@ class FakeWorker:
         self.device = torch.device("cpu")
         self.lo, self.hi = 0, 4
         self.block_keys = [f"model.layers.{i}" for i in range(4)]
+        self.fingerprint = "f"
         self.ops = []
         self.stats = {"forwards": 0, "tokens": 0, "busy_s": 0.0}
 
@@ -135,7 +136,7 @@ def _worker_server(w, token, n = 1):
 def test_loopback_worker():
     w = FakeWorker()
     port = _worker_server(w, "s3cret")
-    c = smod.RemoteClient("127.0.0.1", port, "s3cret")
+    c = smod.RemoteClient("127.0.0.1", port, "s3cret", "f")
     assert c.info["gpu"] == "fake"
     x = torch.randn(2, 1, 3072, dtype = torch.float32)
     params = {"attn_mode": "flash_attn", "cache_seqlens": torch.tensor([3, 4], dtype = torch.int32),
@@ -161,7 +162,7 @@ def test_bad_token_rejected():
     w = FakeWorker()
     port = _worker_server(w, "right")
     try:
-        smod.RemoteClient("127.0.0.1", port, "wrong")
+        smod.RemoteClient("127.0.0.1", port, "wrong", "f")
         raise AssertionError("expected PermissionError")
     except PermissionError:
         pass
@@ -172,8 +173,8 @@ def test_new_head_takes_over():
     """A second head (restart, model reload) replaces the first instead of queueing behind it"""
     w = FakeWorker()
     port = _worker_server(w, "t", n = 2)
-    c1 = smod.RemoteClient("127.0.0.1", port, "t")
-    c2 = smod.RemoteClient("127.0.0.1", port, "t")
+    c1 = smod.RemoteClient("127.0.0.1", port, "t", "f")
+    c2 = smod.RemoteClient("127.0.0.1", port, "t", "f")
     c2.call(wire.PING)
     try:
         c1.call(wire.PING)
@@ -186,7 +187,7 @@ def test_new_head_takes_over():
 def test_decode_round_trip_overhead():
     w = FakeWorker()
     port = _worker_server(w, None)
-    c = smod.RemoteClient("127.0.0.1", port, None)
+    c = smod.RemoteClient("127.0.0.1", port, None, "f")
     x = torch.randn(1, 1, 3072).half()
     params = {"attn_mode": "flash_attn", "cache_seqlens": torch.tensor([100], dtype = torch.int32),
               "block_table": torch.zeros(1, 64, dtype = torch.int32), "positions": None, "prefill": False}
@@ -201,6 +202,81 @@ def test_decode_round_trip_overhead():
     print(f"loopback decode round trip: {us:.0f} us (ping {c.rtt_us:.0f} us)")
     c.close()
     assert us < 5000
+
+
+def test_mismatched_model_leaves_active_head_alone():
+    """A head probing with another model (e.g. a draft model) must not take the worker over"""
+    w = FakeWorker()
+    port = _worker_server(w, "t", n = 2)
+    c1 = smod.RemoteClient("127.0.0.1", port, "t", "f")
+    try:
+        smod.RemoteClient("127.0.0.1", port, "t", "some-other-model")
+        raise AssertionError("expected ModelMismatch")
+    except wire.ModelMismatch:
+        pass
+    c1.call(wire.PING)   # still connected
+    c1.close()
+
+
+def _raw_frame(op, meta, blob = b""):
+    mb = json.dumps(meta).encode()
+    return wire.HDR.pack(wire.MAGIC, wire.PROTO, op, 0, len(mb), len(blob)) + mb + blob
+
+
+def test_frame_descriptors_must_match_data():
+    bad = [
+        {"dt": "float32", "shape": [1 << 20, 1 << 20], "dev": "cpu", "off": 0, "n": 0},   # huge shape, no data
+        {"dt": "float32", "shape": [4], "dev": "cpu", "off": 0, "n": 8},                   # 16 B claimed as 8
+        {"dt": "float32", "shape": [4], "dev": "cpu", "off": 8, "n": 16},                  # runs past the blob
+        {"dt": "float32", "shape": [-1], "dev": "cpu", "off": 0, "n": 0},
+        {"dt": "nope", "shape": [1], "dev": "cpu", "off": 0, "n": 4},
+        {"dt": "float32", "shape": [1.5], "dev": "cpu", "off": 0, "n": 4},
+    ]
+    for d in bad:
+        a, b = socket.socketpair()
+        a.sendall(_raw_frame(wire.FORWARD, {"__tensors": [d]}, b"\0" * 16))
+        try:
+            wire.recv_frame(b)
+            raise AssertionError(f"accepted {d}")
+        except ConnectionError:
+            pass
+        a.close()
+        b.close()
+    a, b = socket.socketpair()
+    a.sendall(_raw_frame(wire.FORWARD, {"__tensors": [{"dt": "float32", "shape": [4], "dev": "cpu", "off": 0, "n": 16}]}, b"\0" * 16))
+    _, _, ts = wire.recv_frame(b)
+    assert ts[0].shape == (4,)
+    a.close()
+    b.close()
+
+
+def test_unauthenticated_peer_cannot_send_tensors():
+    """The AUTH read takes no tensor data and small metadata only, before the MAC is checked"""
+    w = FakeWorker()
+    srv = socket.create_server(("127.0.0.1", 0))
+    port = srv.getsockname()[1]
+    done = threading.Event()
+    err = []
+
+    def one():
+        conn, _ = srv.accept()
+        try:
+            wmod.handle(w, conn, "secret")
+        except ConnectionError as e:
+            err.append(str(e))
+        finally:
+            conn.close()
+            done.set()
+
+    threading.Thread(target = one, daemon = True).start()
+    s_ = socket.create_connection(("127.0.0.1", port))
+    wire.recv_frame(s_)  # HELLO
+    d = {"dt": "float32", "shape": [1 << 20, 1 << 20], "dev": "cpu", "off": 0, "n": 0}
+    s_.sendall(_raw_frame(wire.AUTH, {"mac": "x", "__tensors": [d]}, b"\0" * 64))
+    assert done.wait(10)
+    assert err and "too large" in err[0], err
+    s_.close()
+    assert not w.ops
 
 
 # Model splice against this repo's classes
@@ -263,7 +339,7 @@ def test_splice_and_hooks():
 
         fake = _FakeClient(d)
         orig = smod.RemoteClient
-        smod.RemoteClient = lambda host, port, token: fake
+        smod.RemoteClient = lambda host, port, token, fp: fake
         os.environ["EXL3_REMOTE"] = "10.0.0.2:50070"
         try:
             model = Model.from_config(Config.from_directory(d))
@@ -401,6 +477,34 @@ def test_plan():
         assert err and "DOES NOT FIT" in err and "--ram-experts" in err, err
         w, err = _plan("--model", whale, *common, "--ram-experts")
         assert w and w["remote_layers"] == "0-7" and w["moe_cpu_offload"] > 0, (w, err)
+
+
+def test_plan_ram_cap_picks_split_when_offload_is_too_big():
+    """Whole-layer offload fits VRAM but needs 104 GiB of RAM; splitting 3 of 4 experts needs 93 GiB"""
+    def write(path, tensors):
+        off, hdr = 0, {}
+        for n, b in tensors:
+            hdr[n] = {"dtype": "U8", "shape": [b], "data_offsets": [off, off + b]}
+            off += b
+        h = json.dumps(hdr).encode()
+        with open(path, "wb") as f:
+            f.write(struct.pack("<Q", len(h)) + h)
+    with tempfile.TemporaryDirectory() as d:
+        t = [("lm_head.trellis", 2 * GiB)]
+        for i, (dn, ex) in enumerate(zip((2, 1, 1, 4), (40, 24, 40, 20))):
+            t.append((f"model.layers.{i}.self_attn.q_proj.trellis", dn * GiB))
+            t += [(f"model.layers.{i}.mlp.experts.{e}.w1.trellis", ex * GiB // 4) for e in range(4)]
+        write(os.path.join(d, "model.safetensors"), t)
+        json.dump({"num_hidden_layers": 4, "hidden_size": 64, "num_attention_heads": 1, "num_key_value_heads": 1,
+                   "head_dim": 8}, open(os.path.join(d, "config.json"), "w"))
+        base = ["--model", d, "--remote-gib", "0", "--local-gib", "18,33", "--reserve-gib", "0",
+                "--cache-tokens", "256", "--ram-experts"]
+        p, err = _plan(*base)
+        assert p and p["moe_cpu_offload"] == 3 and p["ram_alternative"] == {"moe_cpu_split": 3}, (p, err)
+        p, err = _plan(*base, "--ram-gib", "100")
+        assert p and p["moe_cpu_split"] == 3 and not p["moe_cpu_offload"] and p["ram_experts_gib"] == 93.0, (p, err)
+        _, err = _plan(*base, "--ram-gib", "90")
+        assert err and "at least 93.0 GiB" in err, err
 
 
 if __name__ == "__main__":

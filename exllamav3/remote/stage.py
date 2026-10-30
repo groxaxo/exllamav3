@@ -21,20 +21,29 @@ from .common import block_span, check_blocks_supported, drop_cached_props
 
 class RemoteClient:
 
-    def __init__(self, host: str, port: int, token: str | None, timeout: float | None = None):
+    def __init__(self, host: str, port: int, token: str | None, fingerprint: str, timeout: float | None = None):
+        """
+        fingerprint: config_fingerprint() of the model to attach. The worker checks it before it hands its
+        connection over, so probing with a different model (e.g. a draft model) leaves the active head alone.
+        Raises wire.ModelMismatch when the worker serves another model
+        """
         self.addr = (host, port)
         self.lock = threading.Lock()
         self.sock = socket.create_connection(self.addr, timeout = 10)
         self.sock.settimeout(30)
         wire.tune_socket(self.sock)
-        op, meta, _ = wire.recv_frame(self.sock)
+        op, meta, _ = wire.recv_frame(self.sock, max_meta = wire.PRE_AUTH_META, max_blob = 0)
         if op != wire.HELLO:
             raise ConnectionError("worker did not greet")
         if meta.get("auth") and not token:
             raise PermissionError("worker requires EXL3_REMOTE_TOKEN")
-        wire.send_frame(self.sock, wire.AUTH, {"mac": wire.auth_mac(token or "", bytes.fromhex(meta["nonce"]))})
+        mac = wire.auth_mac(token or "", bytes.fromhex(meta["nonce"]))
+        wire.send_frame(self.sock, wire.AUTH, {"mac": mac, "fingerprint": fingerprint})
         op, self.info, _ = wire.recv_frame(self.sock)
         if op == wire.ERROR:
+            self.close()
+            if self.info.get("mismatch"):
+                raise wire.ModelMismatch(f"{host}:{port} serves a different model")
             raise PermissionError(self.info.get("error"))
         # Loads take minutes; a dead peer still surfaces as a reset or EOF
         self.sock.settimeout(timeout if timeout is not None else float(os.environ.get("EXL3_REMOTE_TIMEOUT", 3600)))
@@ -165,10 +174,10 @@ def attach_remote(model, endpoints: list[tuple[str, int]], token: str | None) ->
     from ..version import __version__ as exl3_version
     clients = []
     for host, port in endpoints:
-        c = RemoteClient(host, port, token)
-        if c.info["fingerprint"] != fp:
+        try:
+            c = RemoteClient(host, port, token, fp)
+        except wire.ModelMismatch:
             print(f" -- exl3 remote: {host}:{port} serves a different model, not attaching to {model.config.directory}")
-            c.close()
             continue
         if c.info.get("exl3") != exl3_version:
             print(f" !! exl3 remote: worker {host} runs exllamav3 {c.info.get('exl3')}, head runs {exl3_version}: "
