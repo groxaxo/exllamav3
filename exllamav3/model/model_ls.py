@@ -65,6 +65,7 @@ class Model_LSMixin:
         prev_load_device = None
         touched_devices = []
         params = self.default_load_params()
+        params["autosplit_measure"] = True
 
         with ProgressBar(f"Loading (LS)" if progressbar else None, len(modules)) as progress:
 

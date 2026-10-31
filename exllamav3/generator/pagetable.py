@@ -656,6 +656,8 @@ class PageTable:
                 buffer = get_buffer(cache[0].shape, cache.device, cache.dtype)
                 all_rotations = get_all_rotations(cache.device)
                 ext.cache_rotate(cache, all_rotations, buffer)
+            for stage in self.cache.model.remote_stages():
+                stage.rotate_cache_pages(all_rotations_cpu)
 
         # Write new page indices
         for page in self.all_pages:

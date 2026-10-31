@@ -120,6 +120,8 @@ class Cache:
         }
 
         self.attach_to_model()
+        for stage in self.model.remote_stages():
+            stage.configure_cache(self, kwargs)
 
 
     def attach_to_model(self, model: Model | None = None):
@@ -182,6 +184,10 @@ class Cache:
                 dst = target.layers[idx]
                 assert type(src) is type(dst)
                 dst.copy_page(src, from_page, to_page, num_tokens)
+            stages = self.model.remote_stages()
+            assert not stages or target is self, "Cannot copy pages between distinct caches with a remote stage."
+            for stage in stages:
+                stage.copy_page(from_page, to_page, num_tokens)
         else:
             self.model.tp_cache_page_copy(id(self), from_page, to_page, num_tokens)
 

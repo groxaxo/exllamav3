@@ -6,6 +6,10 @@ scripts used to deploy quantized models on the Ampere machines in this project.
 The goal of this README is to be the canonical deployment playbook so future
 launches do not require repeated trial-and-error.
 
+## Remote-stage inference across machines
+
+The opt-in remote stage can place transformer layers and their KV cache on a GPU in another machine. See the [remote-stage guide](doc/remote.md) and [31 October 2026 GPU validation](doc/validation/remote-stage-2026-10-31.md). The tested dense-backbone configuration passed with documented numerical and coverage limits; it added placement capacity and reduced speed in that measurement.
+
 ## Current best-known deployments
 
 ### Fastest stable dual RTX 3060 deployment for Qwen3.5-9B

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from functools import cached_property
 from typing import Callable
+import os
 import torch
 from .config import Config
 from ..util.memory import free_mem
@@ -65,6 +66,10 @@ class Model(Model_TPMixin, Model_LSMixin):
         return self._get_recurrent_layers
 
 
+    def remote_stages(self):
+        return [m for m in self.modules if m.caps.get("remote_stage")]
+
+
     @staticmethod
     def from_config(
         config: Config,
@@ -85,6 +90,10 @@ class Model(Model_TPMixin, Model_LSMixin):
             f"{config.architecture} does not define a '{component}' component model"
 
         model = config.model_classes[component](config, **kwargs)
+        # Opt-in: run a span of blocks on a GPU in another machine (see doc/remote.md)
+        if component == "text" and os.environ.get("EXL3_REMOTE"):
+            from ..remote.stage import attach_from_env
+            attach_from_env(model)
         return model
 
 
@@ -229,6 +238,10 @@ class Model(Model_TPMixin, Model_LSMixin):
 
         assert not (bool(reserve_per_device) and bool(use_per_device)), \
             "Cannot specify both memory usage and memory reserve."
+        assert not self.remote_stages() or (device is None and not tensor_p), \
+            "A model with a remote stage loads in layer-split mode only."
+        for stage in self.remote_stages():
+            stage.max_chunk_size = max_chunk_size
 
         assert max_chunk_size >= 1, "max_chunk_size must be positive"
         assert max_output_size >= 1, "max_output_size must be positive"

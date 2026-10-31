@@ -1,0 +1,5 @@
+local : pp   3183.2 tok/s  tg  69.68 tok/s  remote calls 0
+remote: pp   3001.0 tok/s  tg  67.59 tok/s  remote calls 558
+raw: max |dlogit| 0  mean KL 0  max KL 0  greedy prefix match 100%
+generator, matching prefix per prompt: before defrag ['100%', '100%', '100%', '100%', '100%', '100%'], after page reuse + defrag ['100%', '100%', '100%', '100%', '100%', '100%']
+OK

@@ -93,6 +93,7 @@ setup(
         "exllamav3.tokenizer",
         "exllamav3.cache",
         "exllamav3.loader",
+        "exllamav3.remote",
         "exllamav3.util",
     ],
     url="https://github.com/turboderp/exllamav3",
