@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-31",
+  "timezone": "Pacific/Auckland",
+  "tested_commit": "971b0a9fd0a2f5e73fbd503f36c38e8e22240b88",
+  "verdict": "PASS_WITH_LIMITS",
+  "checks": {
+    "original_completed_exit_0": true,
+    "detailed_completed_exit_0": true,
+    "control_completed_exit_0": true,
+    "source_unchanged": true,
+    "original_finite_and_kl_within_unchanged_tolerances": true,
+    "two_supplemental_prompts_match": true,
+    "real_partial_page_copies_and_defrag": true,
+    "within_mode_reuse_exact": true,
+    "same_gpu_logits_bit_identical": true,
+    "cross_host_model_files_identical": true,
+    "owned_worker_stopped_and_tokens_removed": true
+  },
+  "model": {
+    "name": "MOSS-TTS-v1.5 EXL3-4 adapted Qwen3 text backbone",
+    "source_sha256": "e0df9f724ea33af5d10be89a19b612f5ba63c1552061d8fe74363ee041a523c6",
+    "layers": 36,
+    "remote_layers": [
+      0,
+      3
+    ],
+    "head_dim": 128,
+    "cpu_embedding": true,
+    "full_speech_model": false
+  },
+  "original": {
+    "local": {
+      "prompt": 962,
+      "pp_tok_s": 3185.1434737045697,
+      "tg_tok_s": 69.2416751280306,
+      "remote_calls": 0
+    },
+    "remote": {
+      "prompt": 962,
+      "pp_tok_s": 1524.9733068316066,
+      "tg_tok_s": 59.61639625121132,
+      "remote_calls": 558
+    }
+  },
+  "generator": {
+    "gen_first": [
+      {
+        "prompt": 0,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 1,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 2,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 3,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [
+          4
+        ],
+        "token_accuracy": 0.9787234042553191
+      },
+      {
+        "prompt": 4,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 5,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      }
+    ],
+    "gen_second": [
+      {
+        "prompt": 0,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 1,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 2,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 3,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [
+          4
+        ],
+        "token_accuracy": 0.9787234042553191
+      },
+      {
+        "prompt": 4,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      },
+      {
+        "prompt": 5,
+        "local_tokens": 47,
+        "remote_tokens": 47,
+        "mismatch_positions": [],
+        "token_accuracy": 1.0
+      }
+    ]
+  },
+  "supplementary": {
+    "prompt_tokens": [
+      512,
+      384
+    ],
+    "decode_tokens_each": 24,
+    "raw_token_agreement": 1.0,
+    "partial_page_copies_per_mode": 11,
+    "moved_pages_per_mode": 11,
+    "worker_forwards_total": 1135,
+    "worker_copy_page_total": 22,
+    "worker_rotate_total": 2
+  },
+  "same_gpu_control": {
+    "max_abs_dlogit": 0,
+    "mean_kl": 0,
+    "max_kl": 0,
+    "all_generator_completions_equal": true
+  },
+  "worker_memory": {
+    "process_peak_mib": 1050,
+    "cuda_peak_allocated_mib": 808.9560546875
+  },
+  "limitations": [
+    "adapted TTS text backbone with saturated control-slot predictions",
+    "one cross-device Generator control-token difference",
+    "short context, FP16 cache, four remote layers only",
+    "temporary FlashAttention build limited to head_dim 128",
+    "default CPU embedding; not an all-weight-GPU-residency test"
+  ]
+}

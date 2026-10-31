@@ -5,6 +5,12 @@ GPU in a second machine over Ethernet. The rest of the model loads in layer-spli
 usual. This is the ExLlamaV3 version of the llama.cpp RPC layer split from `groxaxo/llama.cpp-cluster`, for
 the 3x RTX 3090 + remote RTX 3060 setup.
 
+## GPU validation status
+
+On 31 October 2026, the unchanged PR #4 GPU check passed on one RTX 3090 head and an RTX 3060 worker (layers 0–3), using an explicitly adapted MOSS EXL3-4 Qwen3 text backbone. Real page copies and defrag were verified. Decode measured 69.24 tok/s local versus 59.62 tok/s remote. One Generator control token differed across GPUs; a same-GPU loopback control was bit-identical. This is **PASS_WITH_LIMITS**, not general production or language-quality validation.
+
+See the [GPU validation report, metrics and scope](validation/remote-stage-2026-10-31.md) before deploying another model, runtime or context size.
+
 ## How it works
 
 `Model.from_config` checks `EXL3_REMOTE` (`host:port[,host:port]`). When a worker there serves the same model
